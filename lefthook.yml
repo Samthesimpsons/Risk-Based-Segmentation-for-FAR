@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    lint:
+      run: uv run poe lint
+    format:
+      run: uv run poe format
+    type:
+      run: uv run poe type
+    # test:
+    #   run: uv run poe test

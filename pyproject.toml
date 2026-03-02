@@ -1,0 +1,99 @@
+[project]
+name = "smu-capstone"
+version = "0.1.0"
+description = "Transformer-based financial asset recommender jointly optimising user interest and profitability"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.4.2",
+    "optuna>=4.8.0",
+    "pandas>=3.0.1",
+    "pydantic-settings>=2.13.1",
+    "python-dateutil>=2.9.0.post0",
+    "ray[tune]==2.54.1",
+    "scikit-learn>=1.8.0",
+    "torch>=2.11.0",
+    "torch-geometric>=2.7.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.2.0",
+    "jupyterlab>=4.5.5",
+    "lefthook>=2.1.4",
+    "poethepoet>=0.42.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.15.8",
+    "ty>=0.0.27",
+]
+
+[tool.poe.tasks]
+lint = { cmd = "uv run ruff check src/ tests/", help = "Lint source and test files with ruff" }
+format = { cmd = "uv run ruff format src/ tests/", help = "Format source and test files with ruff" }
+type = { cmd = "uv run ty check src/ tests/", help = "Type-check source and test files with ty" }
+test = { cmd = "uv run pytest tests/ -v", help = "Run test suite with pytest" }
+setup = { cmd = "uv run lefthook install", help = "Install git hooks via lefthook" }
+
+[tool.poe.tasks.preprocess]
+help = "Preprocess FAR-Trans data: load, split, and save to disk"
+cmd = "uv run python -m src.pipeline.preprocessing"
+
+[tool.poe.tasks.tune]
+help = "Tune hyperparameters (--device cuda|cpu, --models random_forest light_gcn sasrec tisasrec hybrid_dual_head)"
+shell = "uv run python -m src.pipeline.tuning --device $device ${models:+--models $models}"
+
+  [[tool.poe.tasks.tune.args]]
+  name = "device"
+  options = ["--device"]
+  default = "cuda"
+  help = "Compute device: cuda or cpu"
+
+  [[tool.poe.tasks.tune.args]]
+  name = "models"
+  options = ["--models"]
+  default = ""
+  help = "Space-separated model names to tune (default: all)"
+
+[tool.poe.tasks.run]
+help = "Train and evaluate models (--device cuda|cpu, --models ..., --config PATH, --splits-dir PATH, --results-dir PATH)"
+shell = "uv run python -m src.pipeline.runner --device $device ${models:+--models $models} ${config:+--config $config} --splits-dir $splits_dir --results-dir $results_dir"
+
+  [[tool.poe.tasks.run.args]]
+  name = "device"
+  options = ["--device"]
+  default = "cuda"
+  help = "Compute device: cuda or cpu"
+
+  [[tool.poe.tasks.run.args]]
+  name = "models"
+  options = ["--models"]
+  default = ""
+  help = "Space-separated model names to run (default: all)"
+
+  [[tool.poe.tasks.run.args]]
+  name = "config"
+  options = ["--config"]
+  default = ""
+  help = "Path to best_hyperparameters.json from tuning (optional)"
+
+  [[tool.poe.tasks.run.args]]
+  name = "splits_dir"
+  options = ["--splits-dir"]
+  default = "data/splits"
+  help = "Directory containing preprocessed splits"
+
+  [[tool.poe.tasks.run.args]]
+  name = "results_dir"
+  options = ["--results-dir"]
+  default = "outputs/results"
+  help = "Directory to save evaluation result CSVs"
+
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::UserWarning:torch",
+    "ignore::DeprecationWarning:torch",
+    "ignore::DeprecationWarning:torch_geometric",
+]
