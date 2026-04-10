@@ -9,7 +9,7 @@ import math
 
 import pandas as pd
 
-DEFAULT_PERIODS: tuple[int, ...] = (21, 63, 126)
+DEFAULT_PERIODS: tuple[int, ...] = (21, 63, 126, 189)
 
 ANNUALIZATION_FACTOR: float = math.sqrt(252)
 RSI_PERIOD: int = 14
@@ -129,7 +129,7 @@ def _add_avg_price(
 
 def _add_roi(
     frame: pd.DataFrame,
-    periods: tuple[int, ...] = (1, 21, 63, 126),
+    periods: tuple[int, ...] = (1, 21, 63, 126, 189),
 ) -> pd.DataFrame:
     """Add past-profitability columns for each requested lookback period."""
     for period in periods:

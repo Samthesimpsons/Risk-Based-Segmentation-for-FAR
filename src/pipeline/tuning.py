@@ -152,7 +152,7 @@ RANDOM_FOREST_TUNING = ModelTuningSpec(
     model_name="random_forest",
     config_class=RandomForestConfig,
     grid={
-        "number_of_estimators": [50, 75, 100],
+        "number_of_estimators": [20, 50, 75, 100],
         "max_depth": [None],
     },
     needs_indicators=True,
