@@ -23,7 +23,7 @@
 #SBATCH --partition=msc
 #SBATCH --account=msc
 #SBATCH --qos=studentqos
-#SBATCH --mail-user=samuel.sim.2024@msc.smu.edu.sg, samuelsimweixuan@gmail.com
+#SBATCH --mail-user=samuel.sim.2024@msc.smu.edu.sg,samuelsimweixuan@gmail.com
 #SBATCH --job-name=far-tuning
 
 #################################################
