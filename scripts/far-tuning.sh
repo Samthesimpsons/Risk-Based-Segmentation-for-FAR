@@ -9,8 +9,9 @@
 
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16GB
+#SBATCH --mem=32GB
 #SBATCH --gres=gpu:1
+#SBATCH --constraint=l40s
 #SBATCH --time=01-00:00:00
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --output=/common/home/users/s/samuel.sim.2024/SMU-Capstone/outputs/%u.%j.out

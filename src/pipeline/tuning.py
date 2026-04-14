@@ -178,7 +178,7 @@ LIGHT_GCN_TUNING = ModelTuningSpec(
     needs_indicators=False,
     needs_sequences=False,
     primary_metric="ndcg",
-    max_concurrent_trials=1,
+    max_concurrent_trials=4,
 )
 
 SASREC_TUNING = ModelTuningSpec(
@@ -197,7 +197,7 @@ SASREC_TUNING = ModelTuningSpec(
     needs_indicators=False,
     needs_sequences=True,
     primary_metric="ndcg",
-    max_concurrent_trials=1,
+    max_concurrent_trials=4,
 )
 
 TISASREC_TUNING = ModelTuningSpec(
@@ -217,6 +217,7 @@ TISASREC_TUNING = ModelTuningSpec(
     needs_indicators=False,
     needs_sequences=True,
     primary_metric="ndcg",
+    max_concurrent_trials=4,
 )
 
 HYBRID_DUAL_HEAD_TUNING = ModelTuningSpec(
@@ -239,6 +240,7 @@ HYBRID_DUAL_HEAD_TUNING = ModelTuningSpec(
     needs_indicators=True,
     needs_sequences=True,
     primary_metric="roi",
+    max_concurrent_trials=4,
 )
 
 ALL_TUNING_SPECS: dict[str, ModelTuningSpec] = {
@@ -312,7 +314,7 @@ def tune_model(
     # when --device cuda is passed; otherwise it blocks the single GPU unnecessarily
     # and serializes RF trials that could otherwise run in parallel on CPU.
     trial_resources: dict[str, float] = (
-        {"gpu": 1.0, "cpu": 1.0}
+        {"gpu": 0.25, "cpu": 1.0}
         if use_gpu and spec.model_name != "random_forest"
         else {"cpu": 1.0}
     )
