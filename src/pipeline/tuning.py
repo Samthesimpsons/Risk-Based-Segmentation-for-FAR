@@ -178,7 +178,7 @@ LIGHT_GCN_TUNING = ModelTuningSpec(
     needs_indicators=False,
     needs_sequences=False,
     primary_metric="ndcg",
-    max_concurrent_trials=2,
+    max_concurrent_trials=1,
 )
 
 SASREC_TUNING = ModelTuningSpec(
@@ -197,7 +197,7 @@ SASREC_TUNING = ModelTuningSpec(
     needs_indicators=False,
     needs_sequences=True,
     primary_metric="ndcg",
-    max_concurrent_trials=2,
+    max_concurrent_trials=1,
 )
 
 TISASREC_TUNING = ModelTuningSpec(
@@ -308,8 +308,17 @@ def tune_model(
 
     metric_key = "average_roi" if spec.primary_metric == "roi" else "average_ndcg"
 
+    # Random Forest is sklearn (CPU-only), so never claim a GPU slot for it even
+    # when --device cuda is passed; otherwise it blocks the single GPU unnecessarily
+    # and serializes RF trials that could otherwise run in parallel on CPU.
+    trial_resources: dict[str, float] = (
+        {"gpu": 1.0, "cpu": 1.0}
+        if use_gpu and spec.model_name != "random_forest"
+        else {"cpu": 1.0}
+    )
+
     tuner = tune.Tuner(
-        tune.with_resources(trainable, {"gpu": 1} if use_gpu else {"cpu": 1}),
+        tune.with_resources(trainable, trial_resources),
         param_space=_build_grid_search_space(spec),
         tune_config=tune.TuneConfig(
             metric=metric_key,

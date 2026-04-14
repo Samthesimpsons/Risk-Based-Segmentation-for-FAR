@@ -18,7 +18,7 @@ A sequential Transformer-based recommender for the FAR-Trans dataset that models
 
 This section summarises the FAR-Trans paper that forms the foundation of this project. It is intended as my self-contained reference of the entire paper.
 
-I have also taken the liberty of converting the research paper into `markdown` format from `TeX` so that large language modelling tools can digest its context more easily compared to `pdf` format, which serves as a good grounding context for me to ask questions on it.
+I have also taken the liberty of converting the research paper into `markdown` format from `TeX` so that large language modelling tools can digest its context more easily compared to `pdf` format. The markdown version serves as good grounding context for asking questions about the paper.
 
 ### What is FAR?
 
@@ -154,7 +154,7 @@ The majority of investors have low investment capacity (< €30k), consistent wi
 
 #### 1st Category: Price-based
 
-- **Not personalised** with same predictions for all customers
+- **Not personalised**: same predictions for all customers
 - Regression models (Random Forest, SVM) on technical indicators to estimate asset profitability
 - More complex models explore time series similarities between assets
 - Some incorporate external data: news, social media sentiment
@@ -192,20 +192,15 @@ The paper poses **two research questions**:
 
 #### Dataset Split
 
-The dataset is split into **69 temporal evaluation points**:
-- The first time point is **t₀ = August 1, 2019** (providing ~1.5 years of training data from Jan 2018), snapped to the nearest trading day.
-- Subsequent time points are spaced approximately **9 trading days** apart (t₁, t₂, ..., t₆₈), with the last point near May 23, 2022.
-- At each time point *t*:
-  - **Training set**: All pricing data and transactions **before** *t*.
-  - **Test set**: All transactions in the 6-month window **(t, t + 6 months)**.
-  - Deduplication: If the same (user, asset) pair appears in both train and test, it is kept only in training (to avoid trivial predictions).
-  - Filtering: Only users with at least one interaction in *both* train and test are retained. Only assets with pricing data spanning the full test window are retained.
+The paper does not describe its evaluation schedule explicitly, but the authors' code (`run_experiments.py`) runs two separate date ranges: Aug 2019 to Feb 2021 (28 splits) and Sep 2020 to May 2022 (31 splits), totalling 61 evaluation points. At each time point *t*:
+- **Training set**: All pricing data and transactions before *t*.
+- **Test set**: All transactions in the 6-month window (t, t + 6 months).
+- **Deduplication**: (user, asset) pairs appearing in both sets are kept only in training.
+- **Filtering**: Only users active in both sets and assets with pricing data spanning the full test window are retained.
 
-Because time points are ~9 trading days apart but each test window spans ~6 months (~130 trading days), consecutive test windows overlap heavily by design. This sliding-window approach ensures the averaged metrics are not dominated by any single market condition.
+Because consecutive test windows overlap heavily by design, the sliding-window approach ensures the averaged metrics are not dominated by any single market condition.
 
-> **Note on the original FAR-Trans implementation:** The paper does not describe its evaluation schedule explicitly, but the authors' code (`run_experiments.py`) runs two separate date ranges: Aug 2019 to Feb 2021 (28 splits) and Sep 2020 to May 2022 (31 splits), totalling 61 evaluation points. Our implementation merges these into one continuous range (Aug 2019 to May 2022, 68 splits) to produce 69 evenly-spaced points covering the full dataset period.
-
-All metrics are **averaged across all 69 time points**, providing a robust estimate of model performance across different market conditions.
+All metrics are **averaged across all evaluation time points**, providing a robust estimate of model performance across different market conditions.
 
 #### nDCG@10 : Normalised Discounted Cumulative Gain at 10
 
@@ -242,11 +237,13 @@ nDCG@10 tells me whether the recommender is surfacing assets the investor actual
 Return(i) = (Price at t + 6 months - Price at t) / Price at t
 ```
 
-3. Convert to a monthly average return:
+3. Convert to a geometric monthly return (compounding-aware):
 
 ```
-Monthly_Return(i) = Return(i) / 6
+Monthly_Return(i) = (1 + Return(i))^(30 / days_in_period) - 1
 ```
+
+Where `days_in_period` is the calendar days between the recommendation date and the test-end date.
 
 4. ROI@10 is the average monthly return across all 10 recommended assets (equally weighted portfolio):
 
@@ -254,7 +251,7 @@ Monthly_Return(i) = Return(i) / 6
 ROI@10 = (1/10) * Σ Monthly_Return(asset_i)   for i = 1 to 10
 ```
 
-5. This is then averaged across all users and all 69 time points.
+5. This is then averaged across all users and all 61 time points.
 
 **Benchmark values from the paper**:
 - **Market average ROI**: 0.0079 (0.79% per month), the return if you bought every asset equally.
@@ -303,7 +300,7 @@ These models use only the binary user-item interaction matrix (did user *u* buy 
 | **Popularity** | Ranks assets by total purchase count. Non-personalised but surprisingly strong because the top 12 assets dominate 50%+ of transactions. |
 | **Matrix Factorisation (MF)** | Decomposes the user-item matrix into two low-rank matrices (user embeddings x item embeddings). A user's score for an item is the dot product of their embeddings. Classic collaborative filtering approach. |
 | **LightGCN** | Graph Convolutional Network for collaborative filtering. Builds a bipartite user-item graph, then propagates embeddings across edges to learn higher-order collaborative signals (e.g., "users who bought A and B also bought C"). **Best nDCG@10 in the paper (0.3404)**. |
-| **ItemKNN (UB kNN)** | User-Based k-Nearest Neighbours. Finds users with similar purchase histories, then recommends assets those similar users bought. |
+| **UB kNN** | User-Based k-Nearest Neighbours. Finds users with similar purchase histories, then recommends assets those similar users bought. |
 | **ARM (Apriori)** | Association Rule Mining. Discovers rules like "users who bought asset A tend to also buy asset B" and uses these rules to generate recommendations. |
 
 **Limitation**: These models have no awareness of asset prices or returns. They optimise purely for predicting user purchases, which is why they achieve high nDCG but near-zero ROI.
@@ -365,7 +362,7 @@ All 11 baselines treat interactions as static; they ignore the temporal order an
 - **End-to-end joint interest-profitability optimisation**: The original paper's hybrid baselines are **two-stage pipelines** that first score relevance, then rerank by profitability. This has two key limitations:
   - The CF model is trained to maximise relevance only; it receives no gradient signal from profitability.
   - The reranking model can only reshuffle the CF model's output: it cannot surface assets the CF model missed.
-  - I propose a **single, end-to-end dual-head neural model** that jointly optimises both objectives through shared representations. I describe the full architecture in the [Proposed Approach](#proposed-approach) section.
+  - I propose a **single, end-to-end dual-head model** that jointly optimises both objectives through shared representations. I describe the full architecture in the [Proposed Approach](#proposed-approach) section.
 
 ## Proposed Approach
 
@@ -395,19 +392,19 @@ Output embedding at position L -> dot product with candidate asset embeddings ->
 
 **What changes from SASRec**:
 
-1. **Relative time intervals**: For each consecutive pair of transactions, I compute the time gap in days: `delta_k = timestamp_{k+1} - timestamp_k`. These are bucketed into bins (e.g., [0, 1, 2, 3, 7, 14, 30, 90, 180, 365+]) to handle long tails and embedded via a learnable lookup table.
+1. **Relative time intervals**: For each pair of positions (i, j) in the sequence, I compute the time gap in days: `delta_{ij} = |timestamp_i - timestamp_j|`. These are bucketed via log-scale bucketing into `[0, time_bucket_count)` to handle the long tail of time gaps, then each bucket is mapped to a per-head scalar bias via a learnable embedding table.
 
-2. **Absolute time positions**: Days since a reference date are also bucketed and embedded.
+2. **Absolute time positions**: Days since a reference date are also log-bucketed and embedded into per-head scalar biases.
 
 3. **Modified attention computation**:
 
 ```
-Attention(Q, K) = softmax( (Q·K^T + Q·K_time_rel^T + K_time_abs·Q^T) / sqrt(d) )
+Attention(Q, K) = softmax( (Q·K^T + R_rel + R_abs) / sqrt(d) )
 ```
 
-The standard attention score `Q·K^T` is augmented with two additional terms that allow the model to weight attention based on temporal proximity and absolute calendar position.
+Where `R_rel` and `R_abs` are per-head additive bias matrices looked up from learnable embedding tables indexed by the bucketed relative and absolute time values. The standard attention score `Q·K^T` is augmented with these two bias terms that allow the model to weight attention based on temporal proximity and absolute calendar position.
 
-**Why this matters for financial data**: An investor who made 5 trades in the last week is behaving very differently from one whose 5 trades are spread over 3 years. Standard SASRec cannot distinguish these two users because their *sequences* look identical. However, TiSASRec can as it encodes the time gaps.
+**Why this matters for financial data**: An investor who made 5 trades in the last week is behaving very differently from one whose 5 trades are spread over 3 years. Standard SASRec cannot distinguish these two users because their *sequences* look identical. However, TiSASRec can, as it encodes the time gaps.
 
 ### Stage 3: Hybrid Dual-Head (Interest + Profitability)
 
@@ -442,6 +439,19 @@ score_interest              score_profit
 - `lambda`: Hyperparameter controlling the trade-off between the two losses
 
 **Inference**: At recommendation time, each candidate asset gets two scores. The final ranking uses `alpha * score_interest + (1 - alpha) * score_profit`, where `alpha` is tunable (or could be learned per user based on their risk profile).
+
+### Our Evaluation Schedule
+
+Our implementation merges the paper's two separate date ranges into one continuous range (Aug 2019 to May 2022, 68 slots) to produce **69 evenly-spaced evaluation points** covering the full dataset period:
+- The first time point is **t₀ = August 1, 2019** (providing ~1.5 years of training data from Jan 2018), snapped to the nearest trading day.
+- Subsequent time points are spaced approximately **9 trading days** apart (t₁, t₂, ..., t₆₈), with the last point near May 23, 2022.
+- At each time point *t*:
+  - **Training set**: All pricing data and transactions **before** *t*.
+  - **Test set**: All transactions in the 6-month window **(t, t + 6 months)**.
+  - Deduplication: If the same (user, asset) pair appears in both train and test, it is kept only in training (to avoid trivial predictions).
+  - Filtering: Only users with at least one interaction in *both* train and test are retained. Only assets with pricing data spanning the full test window are retained.
+
+Because time points are ~9 trading days apart but each test window spans ~6 months (~130 trading days), consecutive test windows overlap heavily by design. This sliding-window approach ensures the averaged metrics are not dominated by any single market condition. All metrics are **averaged across all 69 time points**.
 
 ## Source Code Architecture
 
@@ -487,9 +497,9 @@ These two files define all the data structures and hyperparameters that every ot
 
 ### Data Pipeline
 
-1. **Loading** (`data/loading.py`): Loads 6 CSVs with date parsing. For close prices, mirrors `data/financial_asset_time_series.py:load` from the [FAR-Trans reference](https://github.com/JavierSanzCruza/far-trans): drops every asset that ever has a zero close price, dedups `(ISIN, timestamp)` keeping the last value, and sorts. Customer and asset CSVs are deduped by keeping the latest timestamp per ID. Note: for pure paper replication only `transactions.csv` and `close_prices.csv` are needed; the other files are loaded so the dual-head extension can reuse them for per-user risk conditioning.
+1. **Loading** (`data/loading.py`): Loads 5 CSVs with date parsing. For close prices, mirrors `data/financial_asset_time_series.py:load` from the [FAR-Trans reference](https://github.com/JavierSanzCruza/far-trans): drops every asset that ever has a zero close price, dedups `(ISIN, timestamp)` keeping the last value, and sorts. Customer and asset CSVs are deduped by keeping the latest timestamp per ID. Note: for pure paper replication only `transactions.csv` and `close_prices.csv` are needed; the other files are loaded for future extensions (e.g., per-user risk conditioning) but are not consumed by any current model.
 
-3. **Temporal Splits** (`data/splitting.py`): Generates 69 evaluation splits by snapping to actual trading days from `close_prices.csv` over a single range defined by `EVALUATION_DATE_RANGE = (2019-08-01, 2022-05-23, 68 slots, 13 future steps)`. The algorithm divides all trading days in that range into evenly spaced slots (~9 trading days apart) and pairs each slot `i` with slot `i+13` as its test-end date (13 steps spans ~6 months). This adapts `data/financial_data_continuous.py:get_dates()` from the [FAR-Trans reference](https://github.com/JavierSanzCruza/far-trans) to a single continuous range. The cold-start positives filter (test items must have appeared in training) is applied unconditionally, mirroring `data/financial_interaction_data.py:106-107` in the same repo. Per-split, three filters run: per-user test-in-train dedup, global train-item filter, and asset eligibility (must have a close price on exactly the recommendation date AND the future date). The core loop in `generate_all_splits` cumulatively builds training interactions via `_add_delta_transactions` (mutates in place), then `copy.deepcopy` snapshots the state for each split.
+2. **Temporal Splits** (`data/splitting.py`): Generates 69 evaluation splits by snapping to actual trading days from `close_prices.csv` over a single range defined by `EVALUATION_DATE_RANGE = (2019-08-01, 2022-05-23, 68 slots, 13 future steps)`. The algorithm divides all trading days in that range into evenly spaced slots (~9 trading days apart) and pairs each slot `i` with slot `i+13` as its test-end date (13 steps spans ~6 months). This adapts `data/financial_data_continuous.py:get_dates()` from the [FAR-Trans reference](https://github.com/JavierSanzCruza/far-trans) to a single continuous range. The cold-start positives filter (test items must have appeared in training) is applied unconditionally, mirroring `data/financial_interaction_data.py:106-107` in the same repo. Per-split, three filters run: per-user test-in-train dedup, global train-item filter, and asset eligibility (must have a close price on exactly the recommendation date AND the future date). The core loop in `generate_all_splits` cumulatively builds training interactions via `_add_delta_transactions` (mutates in place), then `copy.deepcopy` snapshots the state for each split.
 
     Sample `TemporalSplitData` (one of the 69 splits):
     ```python
@@ -512,7 +522,7 @@ These two files define all the data structures and hyperparameters that every ot
     )
     ```
 
-4. **Sequences** (`data/sequences.py`): Builds chronologically ordered purchase sequences per user including repeat purchases, plus time bucketing utilities for the TiSASRec / HybridDualHead extensions. Not used by the RF or LightGCN baselines. Five utilities: `build_user_sequences` (chronological `(asset_id, date)` pairs), `truncate_sequences` (keep last N items), `compute_relative_time_intervals` (days between consecutive purchases), `compute_absolute_positions` (absolute position indices), and `bucket_time_values` (log-scale bucketing to handle the long tail of time gaps).
+3. **Sequences** (`data/sequences.py`): Builds chronologically ordered purchase sequences per user including repeat purchases, plus time bucketing utilities for the TiSASRec / HybridDualHead extensions. Not used by the RF or LightGCN baselines. Five utilities: `build_user_sequences` (chronological `(asset_id, date)` pairs), `truncate_sequences` (keep last N items), `compute_relative_time_intervals` (days between consecutive purchases), `compute_absolute_positions` (days since a reference date), and `bucket_time_values` (log-scale bucketing to handle the long tail of time gaps).
 
     Sample `SequenceData` (one split's worth of user sequences):
     ```python
@@ -532,7 +542,7 @@ These two files define all the data structures and hyperparameters that every ot
     )
     ```
 
-5. **Technical Indicators** (`features/technical_indicators.py`): Computes the `full_short` indicator set the FAR-Trans paper uses for its RF baseline. `INDICATOR_COLUMNS` defines the canonical 30 columns across three rolling horizons (21d, 63d, 126d): ROI, volatility, average price, Sharpe ratio, momentum, rate of change, EMA; plus single-horizon MACD (12/26), RSI-14, DCO-22, and rolling min/max. `DEFAULT_PERIODS` is `(21, 63, 126, 189)`, meaning the DataFrame also computes 189d variants of the period-based indicators beyond the 30 canonical columns. After computing all indicators, a 5-day moving-average smoothing pass is applied to every numeric column, followed by per-asset `dropna()`. This matches `algorithms/kpi_gen/indicators.py` + `algorithms/kpi_gen/ma_kpi_generator.py` from the [FAR-Trans reference](https://github.com/JavierSanzCruza/far-trans) formula-by-formula, and `recommendation.py:85-94` column-by-column in identical order for the 30 canonical columns. `compute_all_indicators` is a helper that zero-fills missing-asset rows at lookup time; it is only used by HybridDualHead while the RF baseline queries the indicator DataFrame directly.
+4. **Technical Indicators** (`features/technical_indicators.py`): Computes the `full_short` indicator set the FAR-Trans paper uses for its RF baseline. `INDICATOR_COLUMNS` defines the canonical 30 columns across three rolling horizons (21d, 63d, 126d): ROI, volatility, average price, Sharpe ratio, momentum, rate of change, EMA; plus single-horizon MACD (12/26), RSI-14, DCO-22, and rolling min/max. `DEFAULT_PERIODS` is `(21, 63, 126, 189)`, meaning the DataFrame also computes 189d variants of the period-based indicators beyond the 30 canonical columns. After computing all indicators, a 5-day moving-average smoothing pass is applied to every numeric column, followed by per-asset `dropna()`. This matches `algorithms/kpi_gen/indicators.py` + `algorithms/kpi_gen/ma_kpi_generator.py` from the [FAR-Trans reference](https://github.com/JavierSanzCruza/far-trans) formula-by-formula, and `recommendation.py:85-94` column-by-column in identical order for the 30 canonical columns. `compute_all_indicators` is a helper that zero-fills missing-asset rows at lookup time; it is only used by HybridDualHead while the RF baseline queries the indicator DataFrame directly.
 
     | Indicator family | Horizons | Formula |
     |---|---|---|
@@ -644,13 +654,22 @@ Recommender hierarchy:
 
 ### Hyperparameter Tuning
 
-The tuning pipeline (`pipeline/tuning.py`) uses Ray Tune's native grid search via `tune.grid_search(...)`. Each model declares a `ModelTuningSpec` with a small grid centered on each model's reference configuration so that the reference hyperparameters are always one of the trial points. Evaluation is on 3 validation splits at fixed dates (2019-04-01, 2019-10-01, 2020-01-31), snapped to the nearest trading day. All three validation dates precede the first evaluation split (2019-08-01), preventing leakage into Table 2. Best configs are saved to a timestamped JSON directory under `outputs/configs/` and loaded by the runner via `--config`.
+The tuning pipeline (`pipeline/tuning.py`) uses Ray Tune's native grid search via `tune.grid_search(...)`. Each model declares a `ModelTuningSpec` with a small grid centered on each model's reference configuration so that the reference hyperparameters are always one of the trial points. Evaluation is on 3 validation splits at fixed dates (2019-04-01, 2019-10-01, 2020-01-31), snapped to the nearest trading day. Only the first validation date (2019-04-01) precedes the first evaluation split (2019-08-01); the other two fall within the evaluation period. Because models are retrained from scratch for every evaluation split, the validation step selects hyperparameters but does not leak trained weights into Table 2. Best configs are saved to a timestamped JSON directory under `outputs/configs/` and loaded by the runner via `--config`.
+
+#### Trial Concurrency and Resource Allocation
+
+Ray Tune assigns resources per trial based on each model's compute profile, not a single blanket rule:
+
+- **Random Forest** always claims `{"cpu": 1}` regardless of `--device`, because sklearn has no GPU backend. With `max_concurrent_trials=3`, all 3 RF trials run in parallel on the CPU pool.
+- **LightGCN, SASRec, TiSASRec, HybridDualHead** claim `{"gpu": 1, "cpu": 1}` when `--device cuda` is passed. `max_concurrent_trials=1` for all four because a single physical GPU can only satisfy one `{"gpu": 1}` request at a time; setting it higher has no effect on a single-GPU node.
+
+The single-GPU cluster allocation (1 GPU, 4 CPUs, 16 GB RAM on the SMU `msc` partition) is the reason for this split. If you run on a multi-GPU node you can raise `max_concurrent_trials` for the Transformer models to match the GPU count, or experiment with fractional `{"gpu": 0.5}` allocation to share a GPU between two small SASRec/TiSASRec trials (expected gain is modest at this model size because PyTorch serialises kernels on the default CUDA stream).
 
 #### Grid Search Rationale
 
 **Random Forest** (3 trials): The FAR-Trans reference code hardcodes `n_estimators=20` with no documented tuning. The grid `[20, 50, 75]` keeps 20 as the paper anchor and searches moderately larger ensembles.
 
-**LightGCN** (32 trials): Grid is centered on the FAR-Trans reference config (`emb_dim=64`, `lr=0.01`, `keep_prob=0.6`, `weight_decay=1e-5`, `epochs=50`) and searches one step in each direction for embedding size, layers, learning rate, weight decay, and keep probability.
+**LightGCN** (32 trials): Grid is centered on the FAR-Trans reference config (`emb_dim=64`, `lr=0.01`, `keep_prob=0.6`, `weight_decay=1e-5`, `epochs=50`) and searches one alternative value for embedding size, layers, learning rate, weight decay, and keep probability.
 
 **SASRec** (8 trials): Grid is informed by the original SASRec paper (Kang & McAuley, ICDM 2018) whose reference implementation uses `emb_dim=50`, `num_heads=1`, `maxlen=50`, `dropout=0.5`, `lr=0.001`. Key choices:
 - `embedding_dimension=[64]`: fixed at 64 (the nearest power-of-2 to the paper's 50 that stays divisible by both 1 and 2 heads)
@@ -666,7 +685,7 @@ The tuning pipeline (`pipeline/tuning.py`) uses Ray Tune's native grid search vi
 - `time_bucket_count=[64, 256]`: the original paper searched `{1, 64, 256, 1024, 2048}`; 256 is the paper default and 64 is included because FAR-Trans transactions are infrequent (many users trade only a few times per year), making coarser time buckets potentially better
 - `max_sequence_length=[50]`: fixed for the same reason as SASRec
 
-**HybridDualHead** (18 trials): Transformer backbone is fixed at the TiSASRec best config (tuned separately). The search targets only the novel dual-head parameters:
+**HybridDualHead** (18 trials): Transformer backbone is fixed at the TiSASRec default config (update these values after TiSASRec tuning if the best config differs). The search targets only the novel dual-head parameters:
 - `profitability_hidden_dimension=[32, 64]`: searches a smaller vs. larger MLP for the profitability head
 - `loss_lambda=[0.1, 0.5, 1.0]`: controls the training trade-off between interest loss (BCE) and profit loss (MSE); 0.5 is the symmetric midpoint anchor
 - `inference_alpha=[0.3, 0.5, 0.7]`: controls the scoring blend at recommendation time; anchored at 0.5 (equal weight) and searched asymmetrically towards interest (0.7) and profit (0.3)
@@ -840,17 +859,7 @@ chmod +x job.sh
 sbatch job.sh
 ```
 
-An output log will appear in the working directory as `<username>.<jobid>.out`.
-
-Email notifications are sent when the job starts, completes, or fails.
-
-### GPU Selection
-
-Use constraints to request specific GPU types:
-
-```bash
-srun -p researchlong -c 4 --mem=8gb --gres=gpu:1 --constraint="h100|h100nvl" nvidia-smi
-```
+An output log will appear in the working directory set in the script. Email notifications are sent when the job starts, completes, or fails based on script.
 
 ### GPU Monitoring
 

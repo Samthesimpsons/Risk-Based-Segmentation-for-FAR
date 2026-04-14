@@ -13,7 +13,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --time=01-00:00:00
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --output=~/%u.%j.out
+#SBATCH --output=/common/home/users/s/samuel.sim.2024/SMU-Capstone/outputs/%u.%j.out
 #SBATCH --requeue
 
 ################################################################
@@ -40,4 +40,4 @@ module load CUDA/12.9.1
 source .venv/bin/activate
 
 # Submit your job to the cluster
-srun --gres=gpu:1 uv run poe tune --models all
+srun --gres=gpu:1 uv run poe tune --models "random_forest light_gcn sasrec tisasrec" --device cuda
