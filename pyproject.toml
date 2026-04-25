@@ -95,6 +95,58 @@ shell = "uv run python -m src.pipeline.baseline_evaluation --device $device ${mo
   help = "Cap concurrent Ray trials (useful on memory-constrained hosts)."
 
 
+[tool.poe.tasks.evaluate-profile-coherent]
+help = "PC-LGCN ablation + lambda-sensitivity sweep at the winning LightGCN backbone (7 trials x 69 splits)."
+shell = "uv run python -m src.pipeline.profile_coherent_evaluation --device $device --splits-dir $splits_dir --results-dir $results_dir ${baseline_best_config_path:+--baseline-best-config-path $baseline_best_config_path} ${splits_limit:+--splits-limit $splits_limit} ${max_concurrent_trials:+--max-concurrent-trials $max_concurrent_trials} ${no_lambda_sweep:+--no-lambda-sweep}"
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "device"
+  options = ["--device"]
+  default = "cuda"
+  help = "Compute device: cuda or cpu"
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "splits_dir"
+  options = ["--splits-dir"]
+  default = "data/splits"
+  help = "Directory containing preprocessed splits"
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "results_dir"
+  options = ["--results-dir"]
+  default = "outputs/results"
+  help = "Directory to save evaluation result CSVs"
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "baseline_best_config_path"
+  options = ["--baseline-best-config-path"]
+  default = ""
+  help = "Path to baseline best_hyperparameters.json (default: latest under outputs/configs/)."
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "splits_limit"
+  options = ["--splits-limit"]
+  default = ""
+  help = "Run only the first N splits (smoke test). Default: all 69 splits."
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "max_concurrent_trials"
+  options = ["--max-concurrent-trials"]
+  default = ""
+  help = "Cap concurrent Ray trials."
+
+  [[tool.poe.tasks.evaluate-profile-coherent.args]]
+  name = "no_lambda_sweep"
+  options = ["--no-lambda-sweep"]
+  default = ""
+  help = "Set to any value to skip the lambda sensitivity sweep (run only the 4-cell ablation)."
+
+
+[tool.poe.tasks.panel-regression]
+help = "Fit panel OLS of PC@k on declared band x model with cluster-robust SEs."
+cmd = "uv run python -m src.analysis.panel_regression"
+
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore::UserWarning:torch",

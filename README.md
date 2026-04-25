@@ -282,11 +282,14 @@ src/
         light_gcn.py            # LightGCN collaborative filtering (paper baseline)
         profile_coherent_lgcn.py# Profile-Coherent LightGCN (method-contribution model)
     pipeline/
-        preprocessing.py        # Generate splits, save to disk
-        baseline_evaluation.py  # Ray-driven grid sweep (6 RF + 8 LightGCN trials), each trial is a full 69-split eval
+        preprocessing.py                # Generate splits, save to disk
+        baseline_evaluation.py          # Ray-driven baseline grid sweep (6 RF + 8 LightGCN trials), each trial = full 69-split eval
+        profile_coherent_evaluation.py  # Ray-driven PC-LGCN ablation + lambda-sensitivity sweep at the winning LightGCN backbone (7 trials)
     analysis/
-        eda_profile_coherence.py# Dataset audit (figures + summary.json)
-        baseline_decomposition.py # Post-evaluation: best-trial selection, decomposition, scatter
+        eda_profile_coherence.py            # Dataset audit (figures + summary.json)
+        baseline_decomposition.py           # Post-evaluation: best-trial selection, decomposition, scatter
+        profile_coherent_decomposition.py   # PC-LGCN ablation + lambda-sensitivity tables and per-cell ROI breakdown
+        panel_regression.py                 # OLS of PC@k on declared band x model with cluster-robust SEs
 ```
 
 ### Configuration
@@ -325,18 +328,20 @@ There is deliberately no central registry. With three known recommenders, each p
 ### Pipeline Orchestration
 
 ```sh
-uv run poe preprocess              # Step 0: generate splits to data/splits/
-uv run poe eda                     # Step 1: dataset audit -> outputs/eda/profile_coherence/
-uv run poe evaluate-baselines      # Step 2: Ray grid sweep + decomposition (one command, all artefacts)
+uv run poe preprocess                  # Step 0: generate splits to data/splits/
+uv run poe eda                         # Step 1: dataset audit -> outputs/eda/profile_coherence/
+uv run poe evaluate-baselines          # Step 2: baseline Ray grid sweep + decomposition
+uv run poe evaluate-profile-coherent   # Step 3: PC-LGCN ablation + lambda-sensitivity sweep + decomposition
+uv run poe panel-regression            # Step 4: cluster-robust OLS of PC@k on declared band x model
 ```
 
-`evaluate-baselines` runs end-to-end: the Ray grid sweep, the per-trial parquet dump, the best-trial selection, the headline tables, and the scatter plots. The decomposition step (`src/analysis/baseline_decomposition.py`) runs automatically at the end. To re-run only the decomposition without retraining, call it directly:
+Each pipeline step is end-to-end: it runs the Ray grid sweep, dumps per-trial parquets, picks the best trial per primary metric, runs its decomposition, and saves headline tables. The decomposition steps run automatically at the end of each evaluation. To re-run only a decomposition without retraining, call it directly:
 
 ```sh
 uv run python -m src.analysis.baseline_decomposition --run-timestamp <YYYYMMDD_HHMMSS>
+uv run python -m src.analysis.profile_coherent_decomposition --run-timestamp <YYYYMMDD_HHMMSS>
+uv run python -m src.analysis.panel_regression --run-timestamp <YYYYMMDD_HHMMSS>
 ```
-
-The Profile-Coherent LightGCN pipeline will be a separate poe task added later.
 
 ### Baseline Grid Sweep
 
@@ -347,7 +352,7 @@ The Profile-Coherent LightGCN pipeline will be a separate poe task added later.
 | Random Forest | `number_of_estimators in {20, 50, 100}` x `max_depth in {None, 15}`; other axes pinned to paper | 6 | ROI@10 |
 | LightGCN | `embedding_dimension in {64, 128}` x `number_of_layers in {2, 3}` x `learning_rate in {1e-2, 1e-3}`; other axes pinned to paper | 8 | nDCG@10 |
 
-**Paper defaults are explicitly included** in both grids (`n_estimators=20, max_depth=None` for RF; `emb_dim=64, layers=3, lr=1e-2` for LightGCN), so benchmark replication is always one of the trial points. The LightGCN grid is deliberately chosen to be cheap enough that the Profile-Coherent LightGCN ablation can mirror it across {profile-embedding on/off} x {L_PC on/off} (8 x 4 = 32 trials) within one SLURM job.
+**Paper defaults are explicitly included** in both grids (`n_estimators=20, max_depth=None` for RF; `emb_dim=64, layers=3, lr=1e-2` for LightGCN), so benchmark replication is always one of the trial points. The LightGCN grid is kept tight (8 trials) because the Profile-Coherent LightGCN pipeline reuses its winning backbone rather than re-sweeping every axis: the ablation runs at the chosen backbone, not on the full cartesian product.
 
 Outputs after one run:
 
@@ -372,6 +377,47 @@ The cluster job (`scripts/evaluate-baselines.sh`) requests `--gres=gpu:1` on an 
 
 The legacy validation-split tuning had a known overlap issue between validation and early evaluation splits. The new design eliminates this entirely: every trial is a full 69-split evaluation, so there is no separate validation set whose splits could overlap with the benchmark.
 
+### Profile-Coherent LightGCN Sweep
+
+`src/pipeline/profile_coherent_evaluation.py` runs a focused 7-trial sweep on top of the winning LightGCN backbone. The backbone hyperparameters are read from `outputs/configs/<latest>/best_hyperparameters.json` (selected by mean nDCG@10 in the baseline run). All seven trials use the same backbone; only the profile-conditioning components vary.
+
+| Sub-sweep | Axes | Trials | Purpose |
+|---|---|---|---|
+| 2x2 ablation | `profile_embedding_enabled in {False, True}` x `profile_coherence_enabled in {False, True}`, `lambda_pc = 0.5` (paper default) | 4 | Attribute gains to each component independently. The (False, False) cell reduces exactly to vanilla LightGCN, so the table reads as a delta against the baseline. |
+| Lambda sensitivity | `profile_coherence_lambda in {0.1, 1.0, 2.0}` with both flags True (`0.5` is reused from the ablation cell) | 3 | Quantify robustness of the regulariser strength. |
+
+Selecting the backbone first on nDCG@10 means the ablation answers the question *"given the best plain backbone, do profile-conditioning components add coherence without hurting accuracy?"* This avoids confounding ablation with hyperparameter sensitivity. The thesis flags this as a deliberate scope choice; if the winning cell underperforms, the runner-up backbone can be retried at low cost since each PC-LGCN run is short.
+
+Outputs after one run:
+
+- `outputs/results/evaluation/profile_coherent_light_gcn/{timestamp}/{trial_id}/per_split_metrics.csv` and `recommendations.parquet`: same schema as the baseline pipeline, so the decomposition module consumes them unchanged.
+- `outputs/results/tuning/profile_coherent_light_gcn/{timestamp}.csv`: per-trial roll-up.
+- `outputs/analysis/baseline_decomposition/{timestamp}/main_results.csv`: now includes a Profile-Coherent LightGCN row alongside the two baselines.
+- `outputs/analysis/profile_coherent_decomposition/{timestamp}/`:
+    - `ablation.csv`: 4 rows, one per (profile-embedding, L_PC) cell, with means + std + per-trial coherent/discordant ROI.
+    - `lambda_sensitivity.csv`: 4 rows (the ablation's both-on cell + 3 sensitivity points) ordered by lambda.
+    - `summary.json`: machine-readable headline numbers.
+
+Resource model: the SLURM script (`scripts/evaluate-profile-coherent.sh`) requests the same 1xL40s envelope as the baseline run with a 24h wall-clock cap. Ray distributes 4 concurrent GPU trials at 0.25 GPU each, so the 7 trials run as roughly two waves.
+
+### Panel Regression
+
+`src/analysis/panel_regression.py` tests RQ2/RQ3 jointly: does the per-band coherence gap close or widen between models? Each model's best-trial recommendations parquet is reduced to one row per (customer, split) carrying the customer's coherent share for that split. The model fits
+
+```
+coherent_share ~ C(declared_band) * C(model) + C(split_index)
+```
+
+with cluster-robust standard errors on `customer_id`. The interaction terms are the headline coefficients: each one quantifies how a given model shifts a given band's coherence relative to the reference cell (Conservative band, alphabetically-first model).
+
+Outputs under `outputs/analysis/panel_regression/{timestamp}/`:
+
+- `coefficients.csv`: every coefficient with point estimate, SE, t, p, and 95% CI.
+- `predicted_pc_by_band_model.csv`: model-implied PC@10 per (band, model) cell at the median split, with 95% CIs.
+- `forest_predicted_pc.png`: forest figure of the predicted PC@10 grid, which is the headline visualization for the thesis's structural-discordance claim.
+- `regression_summary.txt`: the full statsmodels OLS summary.
+- `panel.csv`: the assembled (customer, split, model) panel for replication.
+
 ## Project Roadmap
 
 Tasks for the thesis. Items marked `[x]` are done; `[ ]` is pending.
@@ -384,11 +430,13 @@ Tasks for the thesis. Items marked `[x]` are done; `[ ]` is pending.
 - [x] `src/pipeline/baseline_evaluation.py`: Ray-driven grid where each trial is a full 69-split eval. Paper defaults are guaranteed grid points (RF: `n_estimators in {20, 50, 100}` x `max_depth in {None, 15}`, ROI@10 primary, 6 trials; LightGCN: `embedding_dimension in {64, 128}` x `number_of_layers in {2, 3}` x `learning_rate in {1e-2, 1e-3}`, nDCG@10 primary, 8 trials).
 - [x] `src/analysis/baseline_decomposition.py`: best-trial selection, profile-coherent vs profile-discordant ROI breakdown, scatter plots, summary JSON. Runs automatically as the final step of `evaluate-baselines`.
 - [x] `ProfileCoherentLightGCNBaseline` implemented (`src/models/profile_coherent_lgcn.py`).
+- [x] `src/pipeline/profile_coherent_evaluation.py`: reads the winning LightGCN backbone from the baseline best-config JSON and runs a 4-cell ablation (`profile_embedding_enabled` x `profile_coherence_enabled`) plus a 3-point lambda sensitivity sweep on top. Each trial = full 69-split evaluation. Decomposition runs automatically.
+- [x] `src/analysis/profile_coherent_decomposition.py`: ablation + lambda-sensitivity tables with per-cell coherent/discordant ROI breakdown. Runs automatically as the final step of `evaluate-profile-coherent`.
+- [x] `src/analysis/panel_regression.py`: cluster-robust OLS of PC@10 on declared band x model with predicted-PC forest figure. Available as `uv run poe panel-regression`.
 - [ ] Submit `scripts/evaluate-baselines.sh` to the SMU L40s GPU. One sbatch produces per-trial artefacts, the per-trial roll-up CSV, the best-config JSON, the main results table, the decomposition table, and the scatter plots.
 - [ ] Update this README's "Dataset Audit Findings" section with the baseline-audit table once the GPU job completes.
-- [ ] `src/analysis/panel_regression.py`: per-transaction panel, OLS with cluster-robust SEs, point estimate + 95% CI + effect-size translation (a 1-band increase in discordance corresponds to X% lower realised excess return).
-- [ ] `src/pipeline/profile_coherent_evaluation.py`: mirrors the baseline pipeline but runs the Profile-Coherent LightGCN grid. Toggles `(profile_embedding_enabled, profile_coherence_enabled) in {False, True}^2` (the 2x2 ablation), with `profile_coherence_lambda in {0.1, 0.5, 1.0}` when the regulariser is on. Each trial = full 69-split evaluation, same output layout as the baseline pipeline.
-- [ ] Re-train Profile-Coherent LightGCN on all 69 splits with the best ablation cell.
+- [ ] Submit `scripts/evaluate-profile-coherent.sh` to the SMU L40s GPU once baselines are in. One sbatch produces the PC-LGCN per-trial artefacts, the ablation table, the lambda-sensitivity table, and the updated headline main-results table.
+- [ ] Run `uv run poe panel-regression` after both pipelines have completed to produce the per-band coherence-gap table and forest figure.
 - [ ] Main results table (3 rows: RF, LightGCN, Profile-Coherent LightGCN x 4 metrics).
 - [ ] Ablation table (4 rows: 2x2 of profile-embedding x L_PC x 4 metrics).
 - [ ] Sensitivity table: ordinal vs squared discordance, profile-feature subsets, volatility-window length, declared-only vs declared+predicted profiles.
@@ -442,15 +490,17 @@ graphify claude install               # optional: Claude Code integration
 
 ### Running the Full Pipeline
 
-The thesis pipeline is three commands. The third one is the single end-to-end driver: it runs the Ray grid sweep, dumps per-trial metrics + per-recommendation parquet, picks the best trial per primary metric, runs the decomposition, prints the headline tables, and saves the scatter plots, all in one invocation.
+The thesis pipeline is five commands. Each evaluation step is a single end-to-end driver: it runs the Ray grid sweep, dumps per-trial metrics + per-recommendation parquet, picks the best trial per primary metric, runs the decomposition, prints the headline tables, and saves the scatter plots, all in one invocation.
 
 ```sh
-uv run poe preprocess              # one-off: generate 69 evaluation splits
-uv run poe eda                     # dataset audit -> outputs/eda/profile_coherence/
-uv run poe evaluate-baselines      # full grid sweep + decomposition (single command)
+uv run poe preprocess                  # one-off: generate 69 evaluation splits
+uv run poe eda                         # dataset audit -> outputs/eda/profile_coherence/
+uv run poe evaluate-baselines          # baseline grid sweep + decomposition
+uv run poe evaluate-profile-coherent   # PC-LGCN ablation + lambda sweep + decomposition (depends on baseline best-config JSON)
+uv run poe panel-regression            # cluster-robust OLS across all completed runs
 ```
 
-The recommended way to run `evaluate-baselines` is on the GPU cluster (see below); locally on CPU it is workable for smoke tests with `--splits-limit` and `--max-concurrent-trials`.
+The recommended way to run both `evaluate-*` tasks is on the GPU cluster (see below); locally on CPU they are workable for smoke tests with `--splits-limit` and `--max-concurrent-trials`.
 
 ### Common Tasks
 
@@ -460,8 +510,11 @@ uv run poe type                                                  # ty
 uv run poe test                                                  # pytest
 uv run poe format                                                # ruff format
 
-uv run poe evaluate-baselines --splits-limit 2 --max-concurrent-trials 1   # smoke test
-uv run python -m src.analysis.baseline_decomposition --run-timestamp <ts>   # re-run decomposition only
+uv run poe evaluate-baselines --splits-limit 2 --max-concurrent-trials 1          # baseline smoke test
+uv run poe evaluate-profile-coherent --splits-limit 2 --max-concurrent-trials 1   # PC-LGCN smoke test
+uv run python -m src.analysis.baseline_decomposition --run-timestamp <ts>            # re-run baseline decomposition only
+uv run python -m src.analysis.profile_coherent_decomposition --run-timestamp <ts>    # re-run PC-LGCN ablation tables only
+uv run python -m src.analysis.panel_regression --run-timestamp <ts>                  # re-run panel regression only
 ```
 
 ### Git Hooks
@@ -477,13 +530,16 @@ The SMU `msc` partition (1 L40s GPU, 4 CPUs, 32 GB RAM, 5-day max job time, `stu
 
 ### Submitting the Pipeline
 
-The cluster job is a single sbatch:
+Two sbatch jobs, run in order:
 
 ```bash
-sbatch scripts/evaluate-baselines.sh
+sbatch scripts/evaluate-baselines.sh           # waits ~24-34h on 1xL40s; produces baseline outputs + best_hyperparameters.json
+sbatch scripts/evaluate-profile-coherent.sh    # depends on the baseline best-config JSON; ~12-18h on 1xL40s
 ```
 
-`scripts/evaluate-baselines.sh` is the full pipeline driver. It loads the cluster Python and CUDA modules, activates the venv, and runs `uv run poe evaluate-baselines --device cuda`. That single command produces every artefact under `outputs/` (see "Pipeline Orchestration" above for the full list), including the headline tables and scatter plots from the decomposition step.
+`scripts/evaluate-baselines.sh` is the baseline pipeline driver. It loads the cluster Python and CUDA modules, activates the venv, and runs `uv run poe evaluate-baselines --device cuda`. That command produces every baseline artefact under `outputs/` (see "Pipeline Orchestration" above for the full list), including the headline tables and scatter plots from the baseline decomposition step.
+
+`scripts/evaluate-profile-coherent.sh` is the PC-LGCN pipeline driver. It reads the latest baseline best-config JSON, runs the 4-cell ablation plus 3-point lambda sensitivity (7 trials), updates the main-results table to include a Profile-Coherent LightGCN row, and writes the ablation + sensitivity tables under `outputs/analysis/profile_coherent_decomposition/`.
 
 Job email notifications go to the addresses listed in the `#SBATCH --mail-user` line. Live job output streams to `outputs/{user}.{jobid}.out` on the cluster filesystem.
 

@@ -12,7 +12,11 @@ import pandas as pd
 
 from src.config.settings import DataPaths
 from src.data.loading import load_assets, load_close_prices, load_customers
-from src.pipeline.baseline_evaluation import GRID_SPECS, _PRIMARY_METRIC_TO_KEY
+from src.pipeline.baseline_evaluation import (
+    GRID_SPECS,
+    GridSpec,
+    _PRIMARY_METRIC_TO_KEY,
+)
 from src.profile_coherence.customer_profile import build_customer_profile_lookup
 from src.profile_coherence.risk_classification import build_asset_risk_classes
 
@@ -284,9 +288,11 @@ def run_decomposition(
     run_timestamp: str | None = None,
     data_paths: DataPaths | None = None,
     top_k: int = 10,
+    extra_grid_specs: dict[str, GridSpec] | None = None,
 ) -> dict[str, Any]:
-    """Run the post-evaluation decomposition. Returns the headline summary dict."""
+    """Run the post-evaluation decomposition; returns the headline summary dict."""
     data_paths = data_paths or DataPaths()
+    all_grid_specs: dict[str, GridSpec] = {**GRID_SPECS, **(extra_grid_specs or {})}
     print("Loading customer profiles and asset risk classes...")
     customers = load_customers(
         data_paths.data_directory / data_paths.customer_information_file
@@ -311,14 +317,14 @@ def run_decomposition(
     chosen_run_timestamp = run_timestamp
 
     for model_name, run_directory in runs.items():
-        if model_name not in GRID_SPECS:
+        if model_name not in all_grid_specs:
             print(f"  Skipping unknown model directory '{model_name}'")
             continue
 
         if chosen_run_timestamp is None:
             chosen_run_timestamp = run_directory.name
 
-        primary_metric = GRID_SPECS[model_name].primary_metric
+        primary_metric = all_grid_specs[model_name].primary_metric
         primary_metric_key = _PRIMARY_METRIC_TO_KEY[primary_metric]
         print(
             f"\n[{model_name}] reading {run_directory}"
