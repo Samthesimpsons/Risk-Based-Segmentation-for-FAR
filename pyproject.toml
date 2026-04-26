@@ -40,10 +40,9 @@ explicit = true
 torch = { index = "pytorch-cu129" }
 
 [tool.poe.tasks]
-lint = { cmd = "uv run ruff check src/ tests/", help = "Lint source and test files with ruff" }
-format = { cmd = "uv run ruff format src/ tests/", help = "Format source and test files with ruff" }
-type = { cmd = "uv run ty check src/ tests/", help = "Type-check source and test files with ty" }
-test = { cmd = "uv run pytest tests/ -v", help = "Run test suite with pytest" }
+lint = { cmd = "uv run ruff check src/", help = "Lint source files with ruff" }
+format = { cmd = "uv run ruff format src/", help = "Format source files with ruff" }
+type = { cmd = "uv run ty check src/", help = "Type-check source files with ty" }
 setup = { cmd = "uv run lefthook install", help = "Install git hooks via lefthook" }
 
 [tool.poe.tasks.preprocess]
@@ -51,100 +50,42 @@ help = "Preprocess FAR-Trans data: load, split, and save to disk"
 cmd = "uv run python -m src.pipeline.preprocessing"
 
 [tool.poe.tasks.eda]
-help = "Run the profile-coherence dataset audit and save figures to outputs/eda/profile_coherence/"
-cmd = "uv run python -m src.analysis.eda_profile_coherence"
+help = "Run the profile-coherence dataset audit and save figures to outputs/eda/"
+cmd = "uv run python -m src.pipeline.eda"
 
-[tool.poe.tasks.evaluate-baselines]
-help = "Ray-driven grid sweep across RF + LightGCN (6 + 8 = 14 trials). Each trial = full 69-split eval."
-shell = "uv run python -m src.pipeline.baseline_evaluation --device $device ${models:+--models $models} --splits-dir $splits_dir --results-dir $results_dir ${splits_limit:+--splits-limit $splits_limit} ${max_concurrent_trials:+--max-concurrent-trials $max_concurrent_trials}"
+[tool.poe.tasks.tune]
+help = "End-to-end thesis pipeline: RF + LightGCN grid, PC-LGCN sweep, 3-model decomposition, and both canonical panel regressions, in one invocation."
+shell = "uv run python -m src.pipeline.tune --device $device --splits-dir $splits_dir --results-dir $results_dir ${splits_limit:+--splits-limit $splits_limit} ${max_concurrent_trials:+--max-concurrent-trials $max_concurrent_trials}"
 
-  [[tool.poe.tasks.evaluate-baselines.args]]
+  [[tool.poe.tasks.tune.args]]
   name = "device"
   options = ["--device"]
   default = "cuda"
   help = "Compute device: cuda or cpu"
 
-  [[tool.poe.tasks.evaluate-baselines.args]]
-  name = "models"
-  options = ["--models"]
-  default = ""
-  help = "Subset of {random_forest, light_gcn} (default: both)"
-
-  [[tool.poe.tasks.evaluate-baselines.args]]
+  [[tool.poe.tasks.tune.args]]
   name = "splits_dir"
   options = ["--splits-dir"]
   default = "data/splits"
   help = "Directory containing preprocessed splits"
 
-  [[tool.poe.tasks.evaluate-baselines.args]]
+  [[tool.poe.tasks.tune.args]]
   name = "results_dir"
   options = ["--results-dir"]
   default = "outputs/results"
   help = "Directory to save evaluation result CSVs"
 
-  [[tool.poe.tasks.evaluate-baselines.args]]
+  [[tool.poe.tasks.tune.args]]
   name = "splits_limit"
   options = ["--splits-limit"]
   default = ""
   help = "Run only the first N splits (smoke test). Default: all 69 splits."
 
-  [[tool.poe.tasks.evaluate-baselines.args]]
+  [[tool.poe.tasks.tune.args]]
   name = "max_concurrent_trials"
   options = ["--max-concurrent-trials"]
   default = ""
   help = "Cap concurrent Ray trials (useful on memory-constrained hosts)."
-
-
-[tool.poe.tasks.evaluate-profile-coherent]
-help = "PC-LGCN ablation + lambda-sensitivity sweep at the winning LightGCN backbone (7 trials x 69 splits)."
-shell = "uv run python -m src.pipeline.profile_coherent_evaluation --device $device --splits-dir $splits_dir --results-dir $results_dir ${baseline_best_config_path:+--baseline-best-config-path $baseline_best_config_path} ${splits_limit:+--splits-limit $splits_limit} ${max_concurrent_trials:+--max-concurrent-trials $max_concurrent_trials} ${no_lambda_sweep:+--no-lambda-sweep}"
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "device"
-  options = ["--device"]
-  default = "cuda"
-  help = "Compute device: cuda or cpu"
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "splits_dir"
-  options = ["--splits-dir"]
-  default = "data/splits"
-  help = "Directory containing preprocessed splits"
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "results_dir"
-  options = ["--results-dir"]
-  default = "outputs/results"
-  help = "Directory to save evaluation result CSVs"
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "baseline_best_config_path"
-  options = ["--baseline-best-config-path"]
-  default = ""
-  help = "Path to baseline best_hyperparameters.json (default: latest under outputs/configs/)."
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "splits_limit"
-  options = ["--splits-limit"]
-  default = ""
-  help = "Run only the first N splits (smoke test). Default: all 69 splits."
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "max_concurrent_trials"
-  options = ["--max-concurrent-trials"]
-  default = ""
-  help = "Cap concurrent Ray trials."
-
-  [[tool.poe.tasks.evaluate-profile-coherent.args]]
-  name = "no_lambda_sweep"
-  options = ["--no-lambda-sweep"]
-  default = ""
-  help = "Set to any value to skip the lambda sensitivity sweep (run only the 4-cell ablation)."
-
-
-[tool.poe.tasks.panel-regression]
-help = "Fit panel OLS of PC@k on declared band x model with cluster-robust SEs."
-cmd = "uv run python -m src.analysis.panel_regression"
 
 
 [tool.pytest.ini_options]

@@ -46,7 +46,8 @@ outputs/*
 !outputs/configs/
 !outputs/results/
 !outputs/*.out
-
+!outputs/eda/
+!outputs/analysis/
 
 # IDEs and editors
 .idea/

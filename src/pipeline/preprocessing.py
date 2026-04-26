@@ -1,6 +1,7 @@
 """Preprocessing pipeline: data loading, split generation, and serialization."""
 
 import json
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Literal
@@ -13,11 +14,21 @@ from src.config.settings import DataPaths
 from src.data.loading import load_all, load_close_prices
 from src.data.splitting import generate_all_splits
 
-VALIDATION_DATES: list[date] = [
-    date(2019, 4, 1),
-    date(2019, 10, 1),
-    date(2020, 1, 31),
-]
+
+@dataclass(frozen=True)
+class ValidationSchedule:
+    """Schedule of validation recommendation dates."""
+
+    dates: tuple[date, ...]
+
+
+VALIDATION_SCHEDULE = ValidationSchedule(
+    dates=(
+        date(2019, 4, 1),
+        date(2019, 10, 1),
+        date(2020, 1, 31),
+    ),
+)
 
 
 def _save_split(split: TemporalSplitData, path: Path) -> None:
@@ -53,11 +64,6 @@ def load_evaluation_splits(splits_root: Path) -> list[TemporalSplitData]:
     return load_splits(splits_root / "evaluation")
 
 
-def load_validation_splits(splits_root: Path) -> list[TemporalSplitData]:
-    """Load validation splits from the preprocessing output directory."""
-    return load_splits(splits_root / "validation")
-
-
 def load_preprocessed_close_prices(splits_root: Path) -> pd.DataFrame:
     """Load close prices using the path stored in preprocessing metadata."""
     metadata_path = splits_root / "metadata.json"
@@ -69,11 +75,7 @@ def load_preprocessed_close_prices(splits_root: Path) -> pd.DataFrame:
 def _snap_to_trading_day(
     target: date, trading_days: list[date], mode: Literal["nearest", "next"]
 ) -> date:
-    """Snap a calendar date to a trading day present in the close-prices file.
-
-    `mode="nearest"` chooses the closest trading day in absolute calendar
-    distance; `mode="next"` chooses the first trading day on or after target.
-    """
+    """Snap to a trading day: nearest absolute distance, or first on/after target."""
     if not trading_days:
         raise ValueError("trading_days must not be empty")
 
@@ -90,19 +92,14 @@ def _generate_validation_splits(
     transactions: pd.DataFrame,
     close_prices: pd.DataFrame,
 ) -> list[TemporalSplitData]:
-    """Generate splits at the 3 paper-specified validation dates.
-
-    Each validation recommendation date is snapped to the nearest trading day
-    and its 6-month future window is snapped to the next trading day on/after
-    the target. This guarantees non-empty candidate pools for asset eligibility.
-    """
+    """Generate splits at the validation dates, snapped to trading days."""
     trading_days = sorted(
         {timestamp.date() for timestamp in close_prices["timestamp"].unique()}
     )
 
     validation_splits: list[TemporalSplitData] = []
 
-    for index, validation_date in enumerate(VALIDATION_DATES):
+    for index, validation_date in enumerate(VALIDATION_SCHEDULE.dates):
         snapped_time_point = _snap_to_trading_day(
             validation_date, trading_days, mode="nearest"
         )
@@ -134,7 +131,7 @@ def _save_metadata(
 ) -> None:
     """Save preprocessing metadata to a JSON file."""
     metadata = {
-        "validation_dates": [d.isoformat() for d in VALIDATION_DATES],
+        "validation_dates": [d.isoformat() for d in VALIDATION_SCHEDULE.dates],
         "number_of_evaluation_splits": number_of_evaluation_splits,
         "number_of_validation_splits": number_of_validation_splits,
         "close_prices_path": str(close_prices_path),

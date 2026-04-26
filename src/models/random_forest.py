@@ -1,4 +1,4 @@
-"""Price-based Random Forest profitability regressor."""
+"""Random Forest profitability regressor baseline."""
 
 import datetime
 
@@ -8,17 +8,19 @@ from sklearn.ensemble import RandomForestRegressor
 
 from src.config.schemas import TemporalSplitData
 from src.config.settings import RandomForestConfig
-from src.features.technical_indicators import INDICATOR_COLUMNS, TRADING_DAYS_PER_MONTH
+from src.features.technical_indicators import DEFAULT_INDICATOR_PARAMETERS
+from src.utils.profile_coherence import TRADING_DAYS_PER_MONTH
 
 
 class RandomForestBaseline:
-    """Price-based Random Forest regressor for asset profitability prediction."""
+    """Random Forest regressor for asset profitability prediction."""
 
     def __init__(
         self,
         random_forest_config: RandomForestConfig,
         indicator_dataframe: pd.DataFrame,
     ) -> None:
+        """Store configuration and the indicator dataframe used for training."""
         self._config = random_forest_config
         self._indicator_dataframe = indicator_dataframe
         self._model: RandomForestRegressor | None = None
@@ -30,7 +32,7 @@ class RandomForestBaseline:
         return "RandomForest"
 
     def train_on_split(self, split: TemporalSplitData, **kwargs: object) -> None:
-        """Train RF on historical indicator/return pairs, then rank eligible assets."""
+        """Train the regressor on historical indicators and rank eligible assets by predicted ROI."""
         train_date = pd.Timestamp(split.time_point)
         horizon_months = self._config.prediction_horizon_months
         forward_trading_days = horizon_months * TRADING_DAYS_PER_MONTH
@@ -60,7 +62,11 @@ class RandomForestBaseline:
         training_data = pd.concat(asset_frames, ignore_index=True)
         training_data = training_data[training_data["timestamp"] < (train_date - delta)]
 
-        feature_columns = [c for c in INDICATOR_COLUMNS if c in training_data.columns]
+        feature_columns = [
+            c
+            for c in DEFAULT_INDICATOR_PARAMETERS.columns
+            if c in training_data.columns
+        ]
         keep_columns = feature_columns + ["target"]
         training_data = training_data[keep_columns].dropna()
 
@@ -118,7 +124,7 @@ class RandomForestBaseline:
         excluded_assets: set[str],
         k: int = 10,
     ) -> list[str]:
-        """Return top-k assets by predicted ROI, excluding already-acquired ones."""
+        """Return top-k assets by predicted ROI, excluding held assets."""
         recommendations: list[str] = []
         for asset_id in self._ranked_assets:
             if asset_id in excluded_assets:

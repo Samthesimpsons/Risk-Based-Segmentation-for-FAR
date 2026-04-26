@@ -1,10 +1,10 @@
-"""LightGCN collaborative filtering with BPR loss."""
+"""LightGCN collaborative filtering baseline."""
 
 import random
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch_geometric.nn import LGConv
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
 
@@ -13,7 +13,7 @@ from src.config.settings import LightGCNConfig
 
 
 class LightGCNModel(nn.Module):
-    """LightGCN graph convolution model with BPR loss."""
+    """LightGCN graph convolution model."""
 
     def __init__(
         self,
@@ -22,6 +22,7 @@ class LightGCNModel(nn.Module):
         embedding_dimension: int,
         number_of_layers: int,
     ) -> None:
+        """Initialise user and asset embeddings and the LGConv layers."""
         super().__init__()
         self.number_of_users = number_of_users
         self.number_of_assets = number_of_assets
@@ -41,16 +42,7 @@ class LightGCNModel(nn.Module):
         edge_index: torch.Tensor,
         edge_weight: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Return final user and asset embeddings after LightGCN propagation.
-
-        `edge_index` and `edge_weight` must already be symmetrically normalized
-        (e.g. via `torch_geometric.nn.conv.gcn_conv.gcn_norm(..., add_self_loops=False)`).
-        The convolution layers are instantiated with `normalize=False` so they
-        apply the given weights directly, which lets the training loop drop
-        edges from the pre-normalized graph and rescale the survivors by
-        `1/keep_probability` without the normalization being recomputed on the
-        reduced graph.
-        """
+        """Return final user and asset embeddings after LightGCN propagation."""
         all_embeddings = torch.cat(
             [self.user_embedding.weight, self.asset_embedding.weight], dim=0
         )
@@ -79,7 +71,7 @@ class LightGCNModel(nn.Module):
         asset_embeddings: torch.Tensor,
         regularization_weight: float = 0.0,
     ) -> torch.Tensor:
-        """Compute BPR loss with L2 regularization on initial (0th-layer) embeddings."""
+        """Compute BPR loss with optional L2 regularisation on initial embeddings."""
         user_vectors = user_embeddings[user_indices]
         positive_vectors = asset_embeddings[positive_asset_indices]
         negative_vectors = asset_embeddings[negative_asset_indices]
@@ -104,7 +96,7 @@ class LightGCNModel(nn.Module):
 
 
 class BPRDataset(torch.utils.data.Dataset):
-    """Dataset yielding (user_index, positive_asset_index, negative_asset_index) triples."""
+    """Dataset of user, positive asset, negative asset triples for BPR training."""
 
     def __init__(
         self,
@@ -113,6 +105,7 @@ class BPRDataset(torch.utils.data.Dataset):
         asset_id_to_index: dict[str, int],
         number_of_assets: int,
     ) -> None:
+        """Build the triples list from training interactions."""
         self._all_asset_indices = set(range(number_of_assets))
         self._user_positive_assets: dict[int, set[int]] = {}
         self._triples: list[tuple[int, int, int]] = []
@@ -140,10 +133,11 @@ class BPRDataset(torch.utils.data.Dataset):
                 self._triples.append((user_index, positive_index, negative_index))
 
     def __len__(self) -> int:
+        """Return the number of training triples."""
         return len(self._triples)
 
     def __getitem__(self, index: int) -> tuple[int, int, int]:
-        """Return (user_index, positive_asset_index, negative_asset_index)."""
+        """Return the triple at the given index."""
         return self._triples[index]
 
 
@@ -152,15 +146,7 @@ def _drop_edges_with_inverted_scaling(
     edge_weight: torch.Tensor,
     keep_probability: float,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Drop a fraction of edges and rescale the survivors by `1/keep_probability`.
-
-    This is the inverted-dropout pattern standard in dropout-family
-    regularizers: on expectation, the propagated signal magnitude is
-    unchanged, so no post-hoc correction is needed at inference time.
-    Operates on the already-normalized `(edge_index, edge_weight)` pair so
-    that the symmetric `D^{-1/2} A D^{-1/2}` weights computed on the full
-    graph are not re-derived on the dropped subgraph.
-    """
+    """Inverted-dropout edge sampling for graph regularisation."""
     if keep_probability >= 1.0:
         return edge_index, edge_weight
 
@@ -179,6 +165,7 @@ class LightGCNBaseline:
     """LightGCN collaborative filtering baseline."""
 
     def __init__(self, config: LightGCNConfig) -> None:
+        """Store configuration and initialise empty embedding state."""
         self._config = config
         self._model: LightGCNModel | None = None
         self._user_embeddings: torch.Tensor | None = None
@@ -194,7 +181,7 @@ class LightGCNBaseline:
         return "LightGCN"
 
     def train_on_split(self, split: TemporalSplitData, **kwargs: object) -> None:
-        """Train LightGCN on the full interaction graph, filtering at recommendation time."""
+        """Train LightGCN on the full interaction graph for the given split."""
         device_name = kwargs.get("device", "cpu")
         device = torch.device(str(device_name))
 
@@ -317,7 +304,7 @@ class LightGCNBaseline:
         excluded_assets: set[str],
         k: int = 10,
     ) -> list[str]:
-        """Return top-k eligible assets by embedding similarity, excluding already-acquired ones."""
+        """Return top-k eligible assets by embedding similarity, excluding held assets."""
         if self._user_embeddings is None or self._asset_embeddings is None:
             return []
 

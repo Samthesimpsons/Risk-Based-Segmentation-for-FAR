@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 
 class TemporalSplitData(BaseModel):
@@ -20,17 +20,13 @@ class TemporalSplitData(BaseModel):
     customer_id_to_index: dict[str, int]
     asset_id_to_index: dict[str, int]
 
+    @field_serializer("training_interactions", "test_interactions")
+    def _serialise_sorted(self, value: dict[str, set[str]]) -> dict[str, list[str]]:
+        return {key: sorted(assets) for key, assets in value.items()}
+
 
 class CustomerProfile(BaseModel):
-    """Regulatory profile signals available for a single customer.
-
-    `risk_band` is the ordinal MiFID II level on a 4-band scale:
-    Conservative=0, Income=1, Balanced=2, Aggressive=3. `None` means the
-    customer has no usable risk signal (raw `Not_Available` in FAR-Trans).
-    The `predicted_*` flag distinguishes regression-imputed values from
-    questionnaire-declared ones, which the FAR-Trans paper documents as a
-    fallback for customers who never completed the MiFID survey.
-    """
+    """Regulatory profile signals available for a single customer."""
 
     customer_id: str
     risk_band: int | None
@@ -49,3 +45,4 @@ class EvaluationResult(BaseModel):
     roi_at_k: float
     recall_at_k: float
     profile_coherence_at_k: float
+    profile_coherence_lift_at_k: float

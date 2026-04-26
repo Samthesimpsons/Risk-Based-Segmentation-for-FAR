@@ -5,17 +5,27 @@ import math
 from collections import defaultdict
 from collections.abc import Sequence
 from datetime import date
-from typing import cast
+from typing import NamedTuple, cast
 
 import pandas as pd
 
 from src.config.schemas import TemporalSplitData
 
-EVALUATION_DATE_RANGE: tuple[date, date, int, int] = (
-    date(2019, 8, 1),
-    date(2022, 5, 23),
-    68,
-    13,
+
+class EvaluationGridConfig(NamedTuple):
+    """Trading-day grid parameters for the evaluation split schedule."""
+
+    earliest_trading_day: date
+    latest_trading_day: date
+    base_split_count: int
+    forward_step_count: int
+
+
+EVALUATION_DATE_RANGE = EvaluationGridConfig(
+    earliest_trading_day=date(2019, 8, 1),
+    latest_trading_day=date(2022, 5, 23),
+    base_split_count=68,
+    forward_step_count=13,
 )
 
 
@@ -124,7 +134,7 @@ def _build_trading_grid_schedule(
     number_of_splits: int,
     number_of_future_steps: int,
 ) -> list[tuple[date, date]]:
-    """Match the upstream FAR-Trans trading-date schedule generation."""
+    """Build the trading-date schedule of (time_point, test_end) pairs."""
     mask = close_prices["timestamp"].between(
         pd.Timestamp(min_date), pd.Timestamp(max_date)
     )
@@ -163,9 +173,12 @@ def _build_schedule(
     if explicit_schedule is not None:
         return list(explicit_schedule)
 
-    min_date, max_date, number_of_splits, future_steps = EVALUATION_DATE_RANGE
     return _build_trading_grid_schedule(
-        close_prices, min_date, max_date, number_of_splits, future_steps
+        close_prices,
+        EVALUATION_DATE_RANGE.earliest_trading_day,
+        EVALUATION_DATE_RANGE.latest_trading_day,
+        EVALUATION_DATE_RANGE.base_split_count,
+        EVALUATION_DATE_RANGE.forward_step_count,
     )
 
 

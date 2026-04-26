@@ -1,1 +1,1 @@
-"""Feature engineering: technical indicators derived from close prices."""
+"""Feature engineering modules for technical indicators."""

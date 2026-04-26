@@ -13,16 +13,7 @@ def load_transactions(path: Path) -> pd.DataFrame:
 
 
 def load_close_prices(path: Path) -> pd.DataFrame:
-    """Load the close prices CSV with FAR-Trans cleaning rules applied.
-
-    Matches the cleaning logic in `data/financial_asset_time_series.py:load`
-    from the FAR-Trans reference implementation
-    (https://github.com/JavierSanzCruza/far-trans):
-
-    1. Drop every asset that ever has a zero close price.
-    2. Deduplicate `(ISIN, timestamp)` keeping the last value.
-    3. Sort by `(ISIN, timestamp)` and reset the index.
-    """
+    """Load close prices, drop zero-price assets, deduplicate, and sort by (ISIN, timestamp)."""
     dataframe = pd.read_csv(path, parse_dates=["timestamp"])
 
     zero_price_assets = set(

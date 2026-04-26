@@ -1,4 +1,4 @@
-"""Structural type that every recommendation model implements."""
+"""Recommender protocol that all models implement."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from src.config.schemas import TemporalSplitData
 
 
 class Recommender(Protocol):
-    """Interface that all recommendation models must implement."""
+    """Structural protocol implemented by every recommender model."""
 
     @property
     def name(self) -> str:
@@ -25,5 +25,5 @@ class Recommender(Protocol):
         excluded_assets: set[str],
         k: int = 10,
     ) -> list[str]:
-        """Return top-k recommended asset IDs for the given user."""
+        """Return top-k recommended asset ids for the given user."""
         ...

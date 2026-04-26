@@ -38,16 +38,7 @@ class LightGCNConfig(BaseSettings):
 
 
 class ProfileCoherentLightGCNConfig(BaseSettings):
-    """Hyperparameters for the Profile-Coherent LightGCN extension.
-
-    Adds two scalar controls on top of the LightGCN backbone:
-    - `profile_embedding_enabled`: when False the profile-conditioning embedding
-      tables are skipped, leaving the user representation identical to vanilla
-      LightGCN. Used for the 2x2 ablation row.
-    - `profile_coherence_enabled` and `profile_coherence_lambda`: when the flag
-      is False the regulariser term is dropped entirely. The lambda controls the
-      magnitude when the flag is True.
-    """
+    """Hyperparameters for the Profile-Coherent LightGCN extension."""
 
     embedding_dimension: int = 64
     number_of_layers: int = 3
