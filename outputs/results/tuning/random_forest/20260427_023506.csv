@@ -1,0 +1,13 @@
+number_of_estimators,max_depth,random_state,prediction_horizon_months,average_ndcg,average_roi,average_recall,average_profile_coherence,average_profile_coherence_lift
+20,,42,6,,,,,
+20,15.0,42,6,,,,,
+20,25.0,42,6,,,,,
+30,,42,6,,,,,
+30,15.0,42,6,,,,,
+30,25.0,42,6,,,,,
+40,,42,6,,,,,
+40,15.0,42,6,,,,,
+40,25.0,42,6,,,,,
+50,,42,6,,,,,
+50,15.0,42,6,,,,,
+50,25.0,42,6,0.019938251312351597,0.01155849839106732,0.03874931953583496,0.6702760038746044,1.0659655731794553

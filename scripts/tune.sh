@@ -12,7 +12,7 @@
 #SBATCH --mem=16GB
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=l40s
-#SBATCH --time=01-00:00:00
+#SBATCH --time=02-00:00:00
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --output=/common/home/users/s/samuel.sim.2024/SMU-Capstone/outputs/%u.%j.out
 #SBATCH --requeue
