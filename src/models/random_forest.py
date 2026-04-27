@@ -81,6 +81,7 @@ class RandomForestBaseline:
             n_estimators=self._config.number_of_estimators,
             max_depth=self._config.max_depth,
             random_state=self._config.random_state,
+            n_jobs=-1,
         )
         self._model.fit(feature_matrix, target_vector)
 

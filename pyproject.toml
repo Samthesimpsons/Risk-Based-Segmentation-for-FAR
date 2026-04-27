@@ -55,7 +55,7 @@ cmd = "uv run python -m src.pipeline.eda"
 
 [tool.poe.tasks.tune]
 help = "End-to-end thesis pipeline: RF + LightGCN grid, PC-LGCN sweep, 3-model decomposition, and both canonical panel regressions, in one invocation."
-shell = "uv run python -m src.pipeline.tune --device $device --splits-dir $splits_dir --results-dir $results_dir ${splits_limit:+--splits-limit $splits_limit} ${max_concurrent_trials:+--max-concurrent-trials $max_concurrent_trials}"
+shell = "uv run python -m src.pipeline.tune --device $device --splits-dir $splits_dir --results-dir $results_dir ${splits_limit:+--splits-limit $splits_limit}"
 
   [[tool.poe.tasks.tune.args]]
   name = "device"
@@ -80,12 +80,6 @@ shell = "uv run python -m src.pipeline.tune --device $device --splits-dir $split
   options = ["--splits-limit"]
   default = ""
   help = "Run only the first N splits (smoke test). Default: all 69 splits."
-
-  [[tool.poe.tasks.tune.args]]
-  name = "max_concurrent_trials"
-  options = ["--max-concurrent-trials"]
-  default = ""
-  help = "Cap concurrent Ray trials (useful on memory-constrained hosts)."
 
 
 [tool.pytest.ini_options]

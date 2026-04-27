@@ -62,7 +62,7 @@ _PRIMARY_METRIC_TO_KEY: dict[PrimaryMetric, str] = {
 
 RANDOM_FOREST_GRID: dict[str, list[Any]] = {
     "number_of_estimators": [20, 30, 40, 50],
-    "max_depth": [None, 15, 25],
+    "max_depth": [15, 25, 50],
     "random_state": [42],
     "prediction_horizon_months": [6],
 }
@@ -100,7 +100,7 @@ GRID_SPECS: dict[str, GridSpec] = {
         primary_metric="roi",
         needs_indicators=True,
         use_gpu_per_trial=False,
-        max_concurrent_trials=4,
+        max_concurrent_trials=1,
     ),
     "light_gcn": GridSpec(
         model_name="light_gcn",
@@ -109,7 +109,7 @@ GRID_SPECS: dict[str, GridSpec] = {
         primary_metric="ndcg",
         needs_indicators=False,
         use_gpu_per_trial=True,
-        max_concurrent_trials=4,
+        max_concurrent_trials=1,
     ),
 }
 
@@ -150,7 +150,7 @@ PROFILE_COHERENT_GRID_SPEC = GridSpec(
     primary_metric=_PC_LGCN_SWEEP.primary_metric,
     needs_indicators=False,
     use_gpu_per_trial=True,
-    max_concurrent_trials=4,
+    max_concurrent_trials=1,
 )
 
 
@@ -478,7 +478,6 @@ def _run_baseline_grid_for_spec(
     context: EvaluationContext,
     use_gpu: bool,
     results_directory: Path,
-    max_concurrent_trials_override: int | None,
 ) -> tuple[ModelConfig, tune.ResultGrid]:
     """Run one model's grid via Ray Tune and return the best config + the result grid."""
     evaluation_dir = (
@@ -486,22 +485,17 @@ def _run_baseline_grid_for_spec(
     ).resolve()
     context_ref = ray.put(context)
     trainable = _make_baseline_trainable(spec, context_ref, evaluation_dir)
-    effective_concurrency = (
-        max_concurrent_trials_override
-        if max_concurrent_trials_override is not None
-        else spec.max_concurrent_trials
-    )
 
     tuner = tune.Tuner(
         tune.with_resources(
-            trainable, _trial_resources(spec, use_gpu, effective_concurrency)
+            trainable, _trial_resources(spec, use_gpu, spec.max_concurrent_trials)
         ),
         param_space=_build_grid_search_space(spec),
         tune_config=tune.TuneConfig(
             metric=_PRIMARY_METRIC_TO_KEY[spec.primary_metric],
             mode="max",
             num_samples=1,
-            max_concurrent_trials=effective_concurrency,
+            max_concurrent_trials=spec.max_concurrent_trials,
         ),
         run_config=tune.RunConfig(
             name=f"{spec.model_name}_grid_search",
@@ -571,7 +565,6 @@ def run_baseline_grid_search(
     data_paths: DataPaths | None = None,
     selected_models: list[str] | None = None,
     splits_limit: int | None = None,
-    max_concurrent_trials_override: int | None = None,
 ) -> tuple[dict[str, ModelConfig], str]:
     """Run RF + LightGCN grid sweeps; return best configs and the run timestamp."""
     experiment_config = experiment_config or ExperimentConfig()
@@ -621,7 +614,6 @@ def run_baseline_grid_search(
                 context,
                 use_gpu,
                 results_directory,
-                max_concurrent_trials_override,
             )
             summary_path = _save_baseline_trial_summary(
                 spec, result_grid, results_directory, run_timestamp
@@ -787,7 +779,6 @@ def run_profile_coherent_grid(
     baseline_best_config_path: Path | None = None,
     include_lambda_sweep: bool = True,
     splits_limit: int | None = None,
-    max_concurrent_trials: int = 4,
 ) -> tuple[ProfileCoherentLightGCNConfig, str]:
     """Run the PC-LGCN ablation + sensitivity grid; return best cell and run timestamp."""
     experiment_config = experiment_config or ExperimentConfig()
@@ -835,8 +826,9 @@ def run_profile_coherent_grid(
         results_directory / "evaluation" / PC_LGCN_MODEL_NAME / run_timestamp
     ).resolve()
     use_gpu = device != "cpu"
+    pc_lgcn_max_concurrent_trials = PROFILE_COHERENT_GRID_SPEC.max_concurrent_trials
     resources: dict[str, float] = (
-        {"gpu": 1.0 / max(1, max_concurrent_trials), "cpu": 1.0}
+        {"gpu": 1.0 / max(1, pc_lgcn_max_concurrent_trials), "cpu": 1.0}
         if use_gpu
         else {"cpu": 1.0}
     )
@@ -851,7 +843,7 @@ def run_profile_coherent_grid(
                 metric=_PRIMARY_METRIC_TO_KEY[_PC_LGCN_SWEEP.primary_metric],
                 mode="max",
                 num_samples=1,
-                max_concurrent_trials=max_concurrent_trials,
+                max_concurrent_trials=pc_lgcn_max_concurrent_trials,
             ),
             run_config=tune.RunConfig(
                 name=f"{PC_LGCN_MODEL_NAME}_grid_search",
@@ -1804,7 +1796,6 @@ def run_tune(
     experiment_config: ExperimentConfig | None = None,
     data_paths: DataPaths | None = None,
     splits_limit: int | None = None,
-    max_concurrent_trials: int | None = None,
 ) -> None:
     """Orchestrate the full thesis pipeline in one invocation."""
     experiment_config = experiment_config or ExperimentConfig()
@@ -1817,7 +1808,6 @@ def run_tune(
         experiment_config=experiment_config,
         data_paths=data_paths,
         splits_limit=splits_limit,
-        max_concurrent_trials_override=max_concurrent_trials,
     )
 
     print("\n=== Stage 2: Profile-Coherent LightGCN sweep ===")
@@ -1827,9 +1817,6 @@ def run_tune(
         experiment_config=experiment_config,
         data_paths=data_paths,
         splits_limit=splits_limit,
-        max_concurrent_trials=max_concurrent_trials
-        if max_concurrent_trials is not None
-        else 4,
     )
 
     print("\n=== Stage 3: 3-model decomposition + PC-LGCN ablation tables ===")
@@ -1910,7 +1897,6 @@ if __name__ == "__main__":
     parser.add_argument("--results-dir", type=str, default="outputs/results")
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--splits-limit", type=int, default=None)
-    parser.add_argument("--max-concurrent-trials", type=int, default=None)
     arguments = parser.parse_args()
 
     run_tune(
@@ -1918,5 +1904,4 @@ if __name__ == "__main__":
         results_directory=Path(arguments.results_dir),
         experiment_config=ExperimentConfig(device=arguments.device),
         splits_limit=arguments.splits_limit,
-        max_concurrent_trials=arguments.max_concurrent_trials,
     )
