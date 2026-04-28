@@ -1,8 +1,6 @@
 # SMU Capstone: Profile Coherence as a Diagnostic and Design Lens for Financial Asset Recommendation
 
-A measurement framework and a profile-aware extension of LightGCN for the FAR-Trans dataset. The thesis introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines actually are, and proposes a minimal **Profile-Coherent LightGCN** that uses regulatory profile signals as both a conditioning input and a learning constraint.
-
-This README is the single source of truth for the project: thesis framing, methodology, code architecture, and expected outputs all live here.
+A measurement framework and a profile-aware extension of LightGCN for the FAR-Trans dataset. The thesis introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines actually are, and proposes a minimal **Profile-Coherent LightGCN** that uses regulatory profile signals as both a conditioning input and a learning constraint. This README is the single source of truth for the project.
 
 ## Table of Contents
 
@@ -13,16 +11,15 @@ This README is the single source of truth for the project: thesis framing, metho
 5. [Dataset Audit Findings](#dataset-audit-findings)
 6. [Novelty and Research Contributions](#novelty-and-research-contributions)
 7. [Proposed Approach](#proposed-approach)
-8. [Source Code Architecture](#source-code-architecture)
+8. [Source Architecture](#source-architecture)
 9. [Expected Outputs](#expected-outputs)
-10. [Risks and Mitigations](#risks-and-mitigations)
-11. [Working with this Repository](#working-with-this-repository)
-12. [GPU Cluster](#gpu-cluster)
-13. [References](#references)
+10. [Working with this Repository](#working-with-this-repository)
+11. [GPU Cluster](#gpu-cluster)
+12. [References](#references)
 
 ## Thesis
 
-The full thesis writeup (Abstract, Introduction, Methodology, Findings, Ablation Studies, Discussion, Conclusion) lives in [thesis.md](thesis.md). The numerics, tables, and figures there come from prior runs and will be regenerated when the pipeline is rerun fresh on the cluster; methodology, ablation design, and panel-regression specification are stable.
+The full thesis writeup (Abstract, Introduction, Methodology, Findings, Ablation Studies, Discussion, Conclusion) lives in [thesis.md](thesis.md).
 
 ## Paper Summary: FAR-Trans
 
@@ -260,68 +257,7 @@ Setting both toggles to False reduces the model exactly to vanilla LightGCN, whi
 
 The original FAR-Trans evaluation schedule is preserved unchanged: 69 evenly-spaced evaluation splits at ~9-trading-day intervals, each with a 6-month test window. See `src/data/splitting.py` and the FAR-Trans paper's Section 4 for the full mechanics.
 
-## Source Code Architecture
-
-### Module Structure
-
-```
-src/
-    config/
-        settings.py             # Pydantic BaseSettings: hyperparameters and data paths
-        schemas.py              # TemporalSplitData, CustomerProfile, EvaluationResult
-    data/
-        loading.py              # Load raw CSVs (FAR-Trans cleaning conventions)
-        splitting.py            # 69 temporal train/test splits
-    features/
-        technical_indicators.py # 30-column indicator set for the Random Forest baseline
-    utils/
-        profile_coherence.py    # Risk-band assignment, customer profile parsing, discordance, coherence predicate, calendar/trading-day constants, RISK_BAND_NAMES
-        metrics.py              # nDCG@k, ROI@k, Recall@k, PC@k, PC-lift@k
-    models/
-        protocol.py             # Recommender Protocol (structural type only)
-        random_forest.py        # Price-based RF regressor (paper baseline)
-        light_gcn.py            # LightGCN collaborative filtering (paper baseline)
-        pc_light_gcn.py         # Profile-Coherent LightGCN (method-contribution model)
-    pipeline/
-        preprocessing.py    # Generate splits, save to disk
-        eda.py              # Dataset audit (figures + summary.json); the transaction-discordance annotator lives here since it only has one consumer
-        tune.py             # End-to-end pipeline: RF + LightGCN grid + PC-LGCN sweep + 3-model decomposition + PC-LGCN ablation tables + both canonical panel regressions, all in one driver
-```
-
-The `analysis/` subpackage was retired in an earlier consolidation: the post-evaluation analyses (`run_decomposition`, `run_profile_coherent_decomposition`, `run_panel_regression`) are now module-private functions inside `pipeline/tune.py`, called sequentially by `run_tune` after the two grid sweeps finish.
-
-### Configuration
-
-- `src/config/settings.py`: `RandomForestConfig`, `LightGCNConfig`, `ProfileCoherentLightGCNConfig`, `ExperimentConfig`, `DataPaths`. The new model's config carries six profile-related fields (the embedding dimension, the two boolean toggles, the regulariser scale, and the squared-distance flag).
-- `src/config/schemas.py`: `TemporalSplitData` (one split), `CustomerProfile` (regulatory record per customer), `EvaluationResult` (now includes `profile_coherence_at_k`).
-
-### Models
-
-All three models implement the `Recommender` Protocol:
-
-```python
-class Recommender(Protocol):
-    @property
-    def name(self) -> str: ...
-    def train_on_split(self, split: TemporalSplitData, **kwargs: object) -> None: ...
-    def recommend_for_user(self, user_id: str, excluded_assets: set[str], k: int = 10) -> list[str]: ...
-```
-
-There is deliberately no central registry. With three known recommenders, each pipeline (baselines, profile-coherent) constructs its models directly: the registry indirection of the legacy code added complexity without buying anything.
-
-| Model | Category | Data Source | Key Mechanism |
-|---|---|---|---|
-| **Random Forest** | Price-based | Technical indicators | sklearn regressor predicts forward 126-trading-day ROI; ranks all assets identically for every user |
-| **LightGCN** | Transaction-based | User-asset bipartite graph | PyTorch Geometric `LGConv` (canonical symmetric `D^{-1/2}AD^{-1/2}`, no self-loops); BPR loss with L2 on initial embeddings |
-| **Profile-Coherent LightGCN** | Transaction + regulatory profile | Interaction graph + customer profiles + asset risk classes | LightGCN backbone with summed `(risk, segment, capacity)` profile embedding and a profile-coherence regulariser added to BPR |
-
-### Profile-Coherence Module
-
-`src/utils/profile_coherence.py` is the shared module that owns the measurement framework:
-
-- Asset risk classification: `build_asset_risk_classes` returns `dict[asset_id, ordinal_band]` from `asset_information.csv` and `close_prices.csv`. The current default uses a single (full-period) volatility-quartile mapping for stocks; per-time-point refitting is a planned sensitivity check. The annualised-volatility helper `compute_annualised_volatility` is exported for the dataset audit's volatility-distribution figure.
-- Customer profile parsing: `build_customer_profile_lookup` returns `dict[customer_id, CustomerProfile]` from `customer_information.csv`. Maps `Predicted_*` risk levels onto the same ordinal scale as declared ones, with a flag.
-- Discordance and coherence: `compute_pairwise_discordance` returns `d(b_u, b_i)`; `is_profile_coherent` is the `d <= 1` predicate (with a strict `d == 0` mode). Single-consumer extensions live with their consumer; the transaction-level annotator that the dataset audit uses sits in `src/pipeline/eda.py`.
+## Source Architecture
 
 ### Pipeline Orchestration
 
@@ -331,9 +267,7 @@ uv run poe eda                  # Step 1: dataset audit -> outputs/eda/
 uv run poe tune                 # Step 2: end-to-end pipeline (baseline grid + PC-LGCN sweep + 3-model decomposition + canonical panel regressions)
 ```
 
-`tune` is a single end-to-end driver: it runs the RF + LightGCN grid sweep, saves the baseline best-config JSON, runs the 7-trial PC-LGCN sweep at the winning LightGCN backbone, writes the 3-model decomposition and PC-LGCN ablation + lambda-sensitivity tables, and produces both canonical panel regressions (PC-LGCN pinned to the `L_PC`-only cell and to the full-method cell). Wall-time budget is roughly 22 hours on a single L40s.
-
-The post-evaluation analyses (`run_decomposition`, `run_profile_coherent_decomposition`, `run_panel_regression`) are module-private functions inside `src/pipeline/tune.py` and are invoked sequentially by `run_tune` after the two grid sweeps finish; they can also be called directly as Python imports against an existing run timestamp if a single artefact needs to be regenerated.
+`tune` is a single end-to-end driver: it runs the RF + LightGCN grid sweep, saves the baseline best-config JSON, runs the 7-trial PC-LGCN sweep at the winning LightGCN backbone, writes the 3-model decomposition and PC-LGCN ablation + lambda-sensitivity tables, and produces both canonical panel regressions (PC-LGCN pinned to the `L_PC`-only cell and to the full-method cell).
 
 ### Baseline Grid Sweep
 
@@ -341,10 +275,8 @@ The baseline grid stage of `src/pipeline/tune.py` (functions `run_baseline_grid_
 
 | Model | Grid axes | Trials | Primary metric |
 |---|---|---|---|
-| Random Forest | `number_of_estimators in {20, 30, 40, 50}` x `max_depth in {None, 15, 25}`; other axes pinned to paper | 12 | ROI@10 |
+| Random Forest | `number_of_estimators in {20, 30, 40, 50}` x `max_depth in {15, 25, 50}`; other axes pinned to paper | 12 | ROI@10 |
 | LightGCN | `embedding_dimension in {64, 128}` x `number_of_layers in {2, 3}` x `learning_rate in {1e-2, 1e-3}`; other axes pinned to paper | 8 | nDCG@10 |
-
-**Paper defaults are explicitly included** in both grids (`n_estimators=20, max_depth=None` for RF; `emb_dim=64, layers=3, lr=1e-2` for LightGCN), so benchmark replication is always one of the trial points. The RF grid was expanded after a first run showed `max_depth=None` consistently outperforming capped depths and `n_estimators=100` adding cost without ROI gain; the current grid drops `n=100`, fills in `n in {30, 40}`, and adds `max_depth in {15, 25}` as sensitivity rows. The LightGCN grid is kept tight (8 trials) because the Profile-Coherent LightGCN pipeline reuses its winning backbone rather than re-sweeping every axis.
 
 Outputs after one run:
 
@@ -360,10 +292,11 @@ Outputs after one run:
 
 #### Resource model
 
-The cluster job (`scripts/tune.sh`) requests the SMU studentqos envelope: 1 L40s GPU, 4 CPUs, 16 GB RAM, 1-day cap. Ray distributes:
+The cluster job (`scripts/tune.sh`) requests 1 L40s GPU, 4 CPUs, 16 GB RAM, with a 2-day wall-clock cap (`studentqos`). Each `GridSpec` declares its own `max_concurrent_trials` in `src/pipeline/tune.py`, currently set to 1 for every model so each trial runs serially:
 
-- RF: 4 concurrent CPU trials (1 CPU each, sklearn single-threaded), so the 12 trials run as three waves of 4.
-- LightGCN: 4 concurrent GPU trials with `gpu = 1 / max_concurrent_trials = 0.25` fractional sharing on the single L40s, so the 8 trials run as two waves of 4.
+- RF: `max_concurrent_trials=1`, all 12 trials run sequentially. Each trial saturates all 4 CPU cores via `RandomForestRegressor(n_jobs=-1)`, so the work is parallelised inside the trial rather than across trials. This was the fix for the OOM at 16 GB: 4 concurrent forks each materialised a private copy of the 69-split `EvaluationContext`, totalling roughly 5 GB per worker, which the cgroup killed.
+- LightGCN: `max_concurrent_trials=1`, all 8 trials run sequentially with `gpu=1.0` per trial. Same memory rationale.
+- PC-LGCN: `max_concurrent_trials=1`, all 7 trials run sequentially with `gpu=1.0` per trial.
 
 #### Validation/Evaluation Window Overlap (Known Caveat)
 
@@ -390,8 +323,6 @@ Outputs after one run:
     - `lambda_sensitivity.csv`: 4 rows (the ablation's both-on cell + 3 sensitivity points) ordered by lambda.
     - `summary.json`: machine-readable headline numbers.
 
-Resource model: the combined SLURM job (`scripts/tune.sh`) runs the SMU studentqos envelope (1xL40s, 4 CPUs, 16 GB RAM, 1-day cap) across all stages. Ray distributes 4 concurrent GPU trials at 0.25 GPU each during the LightGCN and PC-LGCN stages, so the 8 LightGCN trials run as two waves and the 7 PC-LGCN trials run as roughly two waves.
-
 ### Panel Regression
 
 The panel-regression analysis (function `run_panel_regression` inside `src/pipeline/tune.py`) tests RQ2/RQ3 jointly: does the per-band coherence gap close or widen between models? Each model's best-trial recommendations parquet is reduced to one row per (customer, split) carrying the customer's coherent share for that split. The model fits
@@ -402,7 +333,12 @@ coherent_share ~ C(declared_band) * C(model) + C(split_index)
 
 with cluster-robust standard errors on `customer_id`. The interaction terms are the headline coefficients: each one quantifies how a given model shifts a given band's coherence relative to the reference cell (Conservative band, alphabetically-first model).
 
-Outputs under `outputs/analysis/panel_regression/{timestamp}/`:
+The pipeline runs the panel regression twice with the same RF and LightGCN best-trial recommendations but two different PC-LGCN cells pinned in, so each ablation lands in its own output directory:
+
+- `outputs/analysis/panel_regression_three_models/{timestamp}/`: PC-LGCN pinned to the L_PC-only cell (`profile_embedding=False, profile_coherence=True, lambda=0.5`).
+- `outputs/analysis/panel_regression_three_models_full_method/{timestamp}/`: PC-LGCN pinned to the full-method cell (`profile_embedding=True, profile_coherence=True, lambda=1.0`).
+
+Each directory contains the same files:
 
 - `coefficients.csv`: every coefficient with point estimate, SE, t, p, and 95% CI.
 - `predicted_pc_by_band_model.csv`: model-implied PC@10 per (band, model) cell at the median split, with 95% CIs.
@@ -427,15 +363,6 @@ Outputs under `outputs/analysis/panel_regression/{timestamp}/`:
 5. **Figure 5**: (nDCG@10, PC@10) scatter and (PC@10, ROI@10) scatter, with one point per baseline.
 6. **Figure 6**: `lambda_pc` sweep on Profile-Coherent LightGCN: Pareto curve over (nDCG, ROI, PC).
 
-## Risks and Mitigations
-
-| Risk | Likelihood | Impact | Mitigation |
-|---|---|---|---|
-| Volatility-quartile risk-class binning is sensitive to window length | Medium | Could weaken claim | Window fixed at 252 trading days before looking at headline numbers; Audit Finding 5 shows hierarchical mapping vs pure volatility agree within 1-2 pp of cross-band assignment |
-| Profile-Coherent LightGCN has worse PC@10 than expected | Medium | Could weaken claim | The 2x2 component ablation (profile-embedding x `L_PC`) isolates each component independently; if either component fails to improve PC@k, the negative result itself is publishable as evidence on the role of profile signals in BPR-trained recommenders |
-| Mutual-fund subcategory mapping is too coarse (e.g., "Other" / "Structured" categories) | Medium | Adds noise to risk-class | Volatility tiebreaker for "Other"/"Structured" rows; the residual noise is absorbed by the sample size (806 assets, 1.37M recommendations evaluated) |
-| `Predicted_*` risk levels behave differently from declared | Medium | Could bias PC@10 | Both declared and `Predicted_*` bands are pooled into the customer profile lookup with an explicit `is_predicted` flag, so a strict-declared-only sensitivity check is one boolean filter away |
-
 ## Working with this Repository
 
 ### Prerequisites
@@ -445,73 +372,20 @@ Outputs under `outputs/analysis/panel_regression/{timestamp}/`:
 ### Setup
 
 ```sh
-uv sync                               # install dependencies
-uv run poe setup                      # install lefthook git hooks
-source .venv/bin/activate
+uv sync                               # Install dependencies
+uv run poe setup                      # Install lefthook git hooks
+source .venv/bin/activate             # Activate the virtual environment
 pip install graphifyy                 # optional: knowledge-graph integration
 graphify claude install               # optional: Claude Code integration
 ```
 
-### Running the Full Pipeline
-
-A complete reproduction of the thesis paper's tables and figures runs in three commands.
-
-**Step 1: Preprocess (local, one-off).** Loads raw FAR-Trans CSVs and emits the 69 monthly temporal splits and preprocessed close prices to `data/splits/`.
-
-```sh
-uv run poe preprocess
-```
-
-**Step 2: Dataset audit (local).** Produces the discordance histograms, per-customer self-discordance distributions, and segment / year breakdowns under `outputs/eda/`. Backs the [Dataset Audit Findings](#dataset-audit-findings) section.
-
-```sh
-uv run poe eda
-```
-
-**Step 3: End-to-end evaluation pipeline (cluster).** A single GPU job that runs the baseline grid (RF + LightGCN), the PC-LGCN ablation and lambda sweep, the 3-model decomposition, and the two canonical panel regressions in one invocation.
-
-```sh
-sbatch scripts/tune.sh
-```
-
-The script runs `uv run poe tune` under SLURM. Wall-clock budget is ~22 hours on a single L40s, dominated by the LightGCN grid (~16 h for 8 trials at 60 min each) and the PC-LGCN sweep (~7 trials at the same backbone). For a local CPU smoke test on a few splits:
-
-```sh
-uv run poe tune --splits-limit 2 --max-concurrent-trials 1 --device cpu
-```
-
-After step 3, all artefacts the thesis paper cites are on disk:
-
-| Artefact | Location |
-|---|---|
-| Dataset audit figures | `outputs/eda/` |
-| Per-trial metrics + recommendations | `outputs/results/evaluation/{model}/<ts>/<trial>/` |
-| Tuning summaries | `outputs/results/tuning/{model}/<ts>.csv` |
-| Best baseline configs | `outputs/configs/<ts>/best_hyperparameters.json` |
-| Three-model main results + decomposition | `outputs/analysis/baseline_decomposition/<ts>/` |
-| PC-LGCN ablation + lambda sensitivity | `outputs/analysis/profile_coherent_decomposition/<ts>/` |
-| Three-model panel (`L_PC`-only canonical cell) | `outputs/analysis/panel_regression_three_models/<ts>/` |
-| Three-model panel (full-method canonical cell) | `outputs/analysis/panel_regression_three_models_full_method/<ts>/` |
-
-#### Re-running individual analysis steps
-
-The post-evaluation analyses (`run_decomposition`, `run_profile_coherent_decomposition`, `run_panel_regression`) are module-private functions inside `src/pipeline/tune.py`. To recompute a single artefact from existing per-trial outputs without retraining, import the function directly and pass the relevant `run_timestamp`:
-
-```python
-from src.pipeline.tune import run_decomposition, run_panel_regression
-run_decomposition(evaluation_directory=Path("outputs/results/evaluation"), run_timestamp="<ts>")
-```
-
-For a partial GPU re-run (e.g., reproducing only the PC-LGCN sweep against an existing baseline best-config JSON), call `run_profile_coherent_grid` from `src.pipeline.tune` programmatically.
-
 ### Common Tasks
 
 ```sh
-uv run poe lint                                                  # ruff
-uv run poe type                                                  # ty
-uv run poe format                                                # ruff format
-
-uv run poe tune --splits-limit 2 --max-concurrent-trials 1 --device cpu             # end-to-end smoke test
+uv run poe lint                                                               # ruff linting
+uv run poe type                                                               # ty type checks
+uv run poe format                                                             # ruff format
+uv run poe tune --splits-limit 2 --device cpu                                 # end-to-end smoke test using cpu and small subset of data
 ```
 
 ### Git Hooks
@@ -523,19 +397,15 @@ uv run poe tune --splits-limit 2 --max-concurrent-trials 1 --device cpu         
 
 ## GPU Cluster
 
-The SMU `msc` partition (1 L40s GPU, 4 CPUs, 32 GB RAM, 5-day max job time, `studentqos`) is the standard target for the grid sweep. SSH via `samuel.sim.2024@origami.smu.edu.sg` (GlobalVPN required).
+The SMU `msc` partition under `studentqos` is the standard target for the grid sweep. The current `scripts/tune.sh` requests 1 L40s GPU, 4 CPUs, 16 GB RAM, and a 2-day wall-clock cap. SSH via my personal email: `samuel.sim.2024@origami.smu.edu.sg` (GlobalVPN set-up required).
 
 ### Submitting the Pipeline
 
-A single SBATCH job runs the full thesis pipeline end-to-end:
-
 ```bash
-sbatch scripts/tune.sh    # ~22h on 1xL40s; produces every artefact the thesis paper cites
+sbatch scripts/tune.sh    # produces every artefact the thesis paper cites
 ```
 
 `scripts/tune.sh` loads the cluster Python and CUDA modules, activates the venv, and runs `uv run poe tune --device cuda`. That command sequentially: (i) runs the RF + LightGCN grid sweep, (ii) saves the baseline best-config JSON, (iii) runs the 7-trial PC-LGCN sweep using that backbone, (iv) writes the 3-model decomposition and the PC-LGCN ablation + lambda-sensitivity tables, and (v) runs both canonical panel regressions (PC-LGCN pinned to the `L_PC`-only cell and to the full-method cell).
-
-For a partial GPU re-run (e.g., recomputing only the PC-LGCN sweep against an existing baseline best-config), invoke `run_profile_coherent_grid` from `src.pipeline.tune` programmatically; for analysis-only re-runs, see [Re-running individual analysis steps](#re-running-individual-analysis-steps) above.
 
 Job email notifications go to the addresses listed in the `#SBATCH --mail-user` line. Live job output streams to `outputs/{user}.{jobid}.out` on the cluster filesystem.
 
