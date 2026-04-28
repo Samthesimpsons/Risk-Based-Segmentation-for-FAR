@@ -1,0 +1,17 @@
+{
+  "random_forest": {
+    "number_of_estimators": 40,
+    "max_depth": 50,
+    "random_state": 42,
+    "prediction_horizon_months": 6
+  },
+  "light_gcn": {
+    "embedding_dimension": 64,
+    "number_of_layers": 3,
+    "learning_rate": 0.001,
+    "weight_decay": 1e-05,
+    "keep_probability": 0.6,
+    "number_of_epochs": 50,
+    "batch_size": 1024
+  }
+}
