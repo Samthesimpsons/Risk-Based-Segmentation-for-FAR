@@ -1,6 +1,6 @@
 # SMU Capstone: Profile Coherence as a Diagnostic and Design Lens for Financial Asset Recommendation
 
-A measurement framework for profile-aware financial asset recommendation on the FAR-Trans dataset. The thesis introduces **Profile Coherence at k (PC@k)** as a new evaluation axis and audits how profile-coherent existing FAR baselines (Random Forest, LightGCN) actually are. This README is the single source of truth for the project. RQ4 (the method axis) is being redefined; the implementation that previously sat against an earlier RQ4 has been removed pending the new question.
+A measurement framework for profile-aware financial asset recommendation on the FAR-Trans dataset. The thesis introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines (Random Forest, LightGCN) actually are (RQ1-RQ3), and proposes a stratified profile-coherent LightGCN extension as a prescriptive intervention (RQ4). This README is the single source of truth for the project.
 
 ## Table of Contents
 
@@ -137,7 +137,7 @@ This thesis treats the gap as the load-bearing problem. It introduces **Profile 
 | **RQ1** *(Diagnostic)* | What is the distribution of profile-discordance in the FAR-Trans transaction record, broken down by `customerType`, `riskLevel`, and market regime? | Dataset audit (`uv run poe eda`, source in `src/pipeline/eda.py`, full numerics in `outputs/eda/summary.json`); written up in [thesis.md, section 3.1](thesis.md#31-rq1-profile-discordance-is-prevalent-and-structural). |
 | **RQ2** *(Quasi-causal)* | Do profile-discordant transactions earn lower realised 6-month return than profile-coherent ones? | Transaction-level OLS on the FAR-Trans Buy record with asset volatility, customer segment, and year as controls and standard errors clustered on `customerID`; written up in [thesis.md, section 3.2](thesis.md#32-rq2-profile-coherent-transactions-earn-higher-realised-return). |
 | **RQ3** *(Audit)* | Where do the FAR-Trans baselines (Random Forest, LightGCN) sit on the Profile Coherence (PC@10) axis relative to the band-conditional random baseline π (the per-band PC@10 a uniformly-random recommender would achieve, computed as the share of the asset menu within ±1 band of the customer's risk band)? | Baseline grid sweep across 69 time-based splits + a band-conditional model panel regression; written up in [thesis.md, section 3.3](thesis.md#33-rq3-both-far-trans-baselines-under-serve-declared-band-coherence). |
-| **RQ4** *(Method)* | *To be redefined. The previous RQ4 ("does profile conditioning + a coherence regulariser improve PC@10 and ROI@10?") was retired with the supervisor's feedback; the replacement question and its corresponding test method will be added once finalised.* | TBD |
+| **RQ4** *(Method)* | Can a stratified, profile-coherent LightGCN extension (one sub-model per MiFID risk band, trained with a profile-coherent margin loss) improve PC@10 over the global LightGCN baseline, and at what cost to nDCG@10, Recall@10, and ROI@10? Does the gain vary by declared risk segment? | Two stratified configurations (λ=0 ablation, λ=1 treatment) evaluated on the same 69 evaluation splits as RQ1-RQ3 via `uv run poe stratify`; comparison against the RQ1 LightGCN baseline reuses the existing `outputs/results/evaluation/light_gcn/` artefacts. Source in `src/pipeline/stratified_training.py` and `src/models/profile_coherent_light_gcn.py`. |
 
 ## Working with this Repository
 
@@ -160,7 +160,8 @@ graphify claude install               # optional: Claude Code integration
 ```sh
 uv run poe preprocess                                                         # generate temporal evaluation splits to data/splits/
 uv run poe eda                                                                # dataset audit -> outputs/eda/
-uv run poe tune --splits-limit 2 --device cpu                                 # end-to-end smoke test using cpu and small subset of data
+uv run poe tune --splits-limit 2 --device cpu                                 # RQ1-RQ3 smoke test using cpu and small subset of data
+uv run poe stratify --splits-limit 2 --device cpu                             # RQ4 stratified PC-LightGCN smoke test
 uv run poe lint                                                               # ruff linting
 uv run poe type                                                               # ty type checks
 uv run poe format                                                             # ruff format
@@ -179,6 +180,11 @@ A full pipeline run (`preprocess` + `eda` + `tune`) produces:
 - `outputs/analysis/baseline_decomposition/{timestamp}/`: `main_results.csv`, `decomposition.csv`, scatter plots, `summary.json`.
 - `outputs/analysis/transaction_return_regression/{timestamp}/` (RQ2): `coefficients.csv`, `panel.csv`, `regression_summary.txt`, `summary.json`.
 - `outputs/analysis/panel_regression/{timestamp}/` (RQ3): `coefficients.csv`, `predicted_pc_by_band_model.csv`, `forest_predicted_pc.png`, `panel.csv`, `regression_summary.txt`.
+
+A separate RQ4 run (`stratify`) produces, alongside the same `evaluation/{model}/{timestamp}/{trial_id}/` and `tuning/{model}/{timestamp}.csv` shape:
+
+- `outputs/results/evaluation/pc_lgcn/{timestamp}/{trial_id}/`: per-split metrics and recommendations for the two stratified configurations (`stratified_lambda_0.0`, `stratified_lambda_1.0`).
+- `outputs/results/tuning/pc_lgcn/{timestamp}.csv`: per-configuration roll-up of averaged metrics.
 
 ### Git Hooks
 
@@ -205,10 +211,11 @@ The legacy validation-split tuning had a known overlap issue between validation 
 ### Submitting the Pipeline
 
 ```bash
-sbatch scripts/tune.sh    # produces every artefact the thesis paper cites
+sbatch scripts/tune.sh         # RQ1-RQ3: baseline grid + decomposition + RQ2 + RQ3
+sbatch scripts/stratify.sh     # RQ4: stratified profile-coherent LightGCN
 ```
 
-`scripts/tune.sh` loads the cluster Python and CUDA modules, activates the venv, and runs `uv run poe tune --device cuda`.
+Both scripts load the cluster Python and CUDA modules, activate the venv, and invoke the matching `poe` task (`tune` or `stratify`).
 
 Job email notifications go to the addresses listed in the `#SBATCH --mail-user` line. Live job output streams to `outputs/{user}.{jobid}.out` on the cluster filesystem.
 

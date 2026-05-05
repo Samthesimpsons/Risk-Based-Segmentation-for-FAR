@@ -81,6 +81,40 @@ shell = "uv run python -m src.pipeline.orchestrator --device $device --splits-di
   default = ""
   help = "Run only the first N splits (smoke test). Default: all 69 splits."
 
+[tool.poe.tasks.stratify]
+help = "RQ4 stratified profile-coherent LightGCN: lambda=0 ablation and lambda=1 treatment, evaluated on the same 69 splits."
+shell = "uv run python -m src.pipeline.stratified_training --device $device --splits-dir $splits_dir --results-dir $results_dir --configs-dir $configs_dir ${splits_limit:+--splits-limit $splits_limit}"
+
+  [[tool.poe.tasks.stratify.args]]
+  name = "device"
+  options = ["--device"]
+  default = "cuda"
+  help = "Compute device: cuda or cpu"
+
+  [[tool.poe.tasks.stratify.args]]
+  name = "splits_dir"
+  options = ["--splits-dir"]
+  default = "data/splits"
+  help = "Directory containing preprocessed splits"
+
+  [[tool.poe.tasks.stratify.args]]
+  name = "results_dir"
+  options = ["--results-dir"]
+  default = "outputs/results"
+  help = "Directory to save evaluation result CSVs"
+
+  [[tool.poe.tasks.stratify.args]]
+  name = "configs_dir"
+  options = ["--configs-dir"]
+  default = "outputs/configs"
+  help = "Directory of timestamped baseline configs to inherit LightGCN hyperparameters from."
+
+  [[tool.poe.tasks.stratify.args]]
+  name = "splits_limit"
+  options = ["--splits-limit"]
+  default = ""
+  help = "Run only the first N splits (smoke test). Default: all 69 splits."
+
 
 [tool.pytest.ini_options]
 filterwarnings = [

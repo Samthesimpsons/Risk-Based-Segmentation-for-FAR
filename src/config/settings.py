@@ -36,6 +36,19 @@ class LightGCNConfig(BaseSettings):
     batch_size: int = 1024
 
 
+class ProfileCoherentLightGCNConfig(BaseSettings):
+    """Hyperparameters for the stratified profile-coherent LightGCN."""
+
+    embedding_dimension: int = 64
+    number_of_layers: int = 3
+    learning_rate: float = 0.01
+    weight_decay: float = 1e-5
+    keep_probability: float = 0.6
+    number_of_epochs: int = 50
+    batch_size: int = 1024
+    coherence_loss_weight: float = 1.0
+
+
 class ExperimentConfig(BaseSettings):
     """Top-level experiment settings: device, seed, and evaluation k."""
 
@@ -44,4 +57,4 @@ class ExperimentConfig(BaseSettings):
     seed: int = 42
 
 
-ModelConfig = RandomForestConfig | LightGCNConfig
+ModelConfig = RandomForestConfig | LightGCNConfig | ProfileCoherentLightGCNConfig
