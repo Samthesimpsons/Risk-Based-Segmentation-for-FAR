@@ -44,6 +44,7 @@ lint = { cmd = "uv run ruff check src/", help = "Lint source files with ruff" }
 format = { cmd = "uv run ruff format src/", help = "Format source files with ruff" }
 type = { cmd = "uv run ty check src/", help = "Type-check source files with ty" }
 setup = { cmd = "uv run lefthook install", help = "Install git hooks via lefthook" }
+jlab = { cmd = "uv run --with jupyter jupyter lab", help = "Run Jupyter Lab IDE" }
 
 [tool.poe.tasks.preprocess]
 help = "Preprocess FAR-Trans data: load, split, and save to disk"
