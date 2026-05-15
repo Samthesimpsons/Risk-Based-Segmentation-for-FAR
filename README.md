@@ -20,8 +20,6 @@ The full writeup (Abstract, Introduction, Methodology, Findings for RQ1/RQ2/RQ3,
 
 This section summarises the FAR-Trans paper that forms the foundation of this project.
 
-I have also taken the liberty of converting the original paper from `TeX` into `markdown` format so that LLM-based tooling can ingest it as grounding context. The markdown copy lives under `papers/FAR-Trans An Investment Dataset for Financial Asset Recommendation/paper.md`.
-
 ### What is FAR?
 
 Financial Asset Recommendation (FAR) identifies and ranks financial securities for investors based on their suitability.
@@ -43,11 +41,9 @@ FAR systems analyse multiple data sources:
 
 Most existing FAR models are developed over **proprietary or simulated datasets**, making fair comparison across methods impossible. The only prior public dataset (ObjectWay, Musto et al. 2014) has 1,172 users but **lacks pricing data and asset identifiers**, which prevents price-based approaches from being tested.
 
-**FAR-Trans fills this gap**: the first public dataset for FAR that contains both real asset pricing information and real retail investor transactions. The paper also provides a **benchmark comparison of 11 FAR algorithms** as baselines for future research.
+**[FAR-Trans](https://doi.org/10.5525/gla.researchdata.1658) (Sanz-Cruzado et al., 2024) fills this gap**: the first public dataset for FAR that contains both real asset pricing information and real retail investor transactions, collected from a large European financial institution (the National Bank of Greece) and covering January 2018 to November 2022. The paper also provides a **benchmark comparison of 11 FAR algorithms** as baselines for future research.
 
 ### Dataset
-
-[FAR-Trans](https://doi.org/10.5525/gla.researchdata.1658) (Sanz-Cruzado et al., 2024): the first public dataset for financial asset recommendation containing both pricing information and retail investor transactions, collected from a large European financial institution (the National Bank of Greece) and covering January 2018 to November 2022.
 
 #### What the Dataset Contains
 
@@ -84,7 +80,7 @@ The two regulatory signals that this thesis treats as load-bearing:
 - **Investment capacity** (`investmentCapacity`): four tiers (`CAP_LT30K`, `CAP_30K_80K`, `CAP_80K_300K`, `CAP_GT300K`).
 - **Customer segment** (`customerType`): five segments (`Mass`, `Premium`, `Professional`, `Legal Entity`, `Inactive`).
 
-These three categorical signals form the **profile vector** that conditioning and PC@k rely on.
+These three categorical signals form the **profile vector** that our profile coherence will rely on.
 
 #### Cleaning and Pre-processing
 
@@ -98,11 +94,7 @@ The FAR-Trans paper benchmarks three families:
 2. **Transaction-based** (Popularity, Matrix Factorisation, LightGCN, ARM, UB-kNN): predict the next purchase from interaction history. Best at nDCG@10 (LightGCN reaches 0.3404), worst at ROI@10 (near-zero realised return).
 3. **Hybrid** (Hybrid-nDCG, Hybrid-regression): two-stage pipelines combining the above. Neither dominates either axis.
 
-The headline finding is the **negative correlation between nDCG@10 and ROI@10**: methods that win one objective lose the other.
-
-A second observation, which motivates this thesis: none of these baselines take the customer's MiFID risk profile or the suitability of the assets they buy as a signal. Price-based models fit returns, transaction-based models fit buy history, hybrids combine the two, but none read `riskLevel` or measure how aligned a recommendation is with the customer's profile. Any mismatch between profile and actual buying behaviour passes straight through into the recommendations, and standard metrics (nDCG, ROI) don't penalise it, so the model has no reason to correct it.
-
-### Benchmark Results (Paper Table 2)
+#### Benchmark Results
 
 | Data Source | Algorithm | nDCG@10 | ROI@10 |
 |---|---|---|---|
@@ -120,6 +112,12 @@ A second observation, which motivates this thesis: none of these baselines take 
 | - | Market average | - | 0.0079 |
 | - | Customer average | - | 0.0018 |
 
+The headline finding is the **negative correlation between nDCG@10 and ROI@10**: methods that win one objective lose the other.
+
+A second observation, which motivates this thesis: none of these baselines take the customer's MiFID risk profile or the suitability of the assets they buy as a signal.
+
+Price-based models fit returns, transaction-based models fit buy history, hybrids combine the two, but none read `riskLevel` or measure how aligned a recommendation is with the customer's profile. Any mismatch between profile and actual buying behaviour passes straight through into the recommendations, and standard metrics (nDCG, ROI) don't penalise it, so the model has no reason to correct it.
+
 ## Problem Statement
 
 The FAR-Trans benchmark exposes a sharp tradeoff between two evaluation axes. Transaction-based methods (LightGCN, Matrix Factorisation) achieve high nDCG@10 by fitting customer buy history but earn near-zero ROI@10. Price-based methods (Random Forest, LightGBM) achieve the highest ROI@10 by predicting asset profitability but score near-random on nDCG@10. No baseline simultaneously wins both axes, and the field has typically framed this as a fundamental "preference versus profit" tension to be balanced via hybrid objectives.
@@ -132,12 +130,16 @@ This thesis treats the gap as the load-bearing problem. It introduces **Profile 
 
 ## Research Questions
 
-| # | Question | Test method |
-|---|---|---|
-| **RQ1** *(Diagnostic)* | What is the distribution of profile-discordance in the FAR-Trans transaction record, broken down by `customerType`, `riskLevel`, and market regime? | Dataset audit (`uv run poe eda`, source in `src/pipeline/eda.py`, full numerics in `outputs/eda/summary.json`); written up in [thesis.md, section 3.1](thesis.md#31-rq1-profile-discordance-is-prevalent-and-structural). |
-| **RQ2** *(Quasi-causal)* | Do profile-discordant transactions earn lower realised 6-month return than profile-coherent ones? | Transaction-level OLS on the FAR-Trans Buy record with asset volatility, customer segment, and year as controls and standard errors clustered on `customerID`; written up in [thesis.md, section 3.2](thesis.md#32-rq2-profile-coherent-transactions-earn-higher-realised-return). |
-| **RQ3** *(Audit)* | Where do the FAR-Trans baselines (Random Forest, LightGCN) sit on the Profile Coherence (PC@10) axis relative to the band-conditional random baseline π (the per-band PC@10 a uniformly-random recommender would achieve, computed as the share of the asset menu within ±1 band of the customer's risk band)? | Baseline grid sweep across 69 time-based splits + a band-conditional model panel regression; written up in [thesis.md, section 3.3](thesis.md#33-rq3-both-far-trans-baselines-under-serve-declared-band-coherence). |
-| **RQ4** *(Method)* | Can a stratified, profile-coherent LightGCN extension (one sub-model per MiFID risk band, trained with a profile-coherent margin loss) improve PC@10 over the global LightGCN baseline, and at what cost to nDCG@10, Recall@10, and ROI@10? Does the gain vary by declared risk segment? | Two stratified configurations (λ=0 ablation, λ=1 treatment) evaluated on the same 69 evaluation splits as RQ1-RQ3 via `uv run poe stratify`; comparison against the RQ1 LightGCN baseline reuses the existing `outputs/results/evaluation/light_gcn/` artefacts. Source in `src/pipeline/stratified_training.py` and `src/models/profile_coherent_light_gcn.py`. |
+| # | Question |
+|---|---|
+| **RQ1** *(Diagnostic)* | What is the distribution of profile-discordance in the FAR-Trans transaction record, broken down by `customerType`, `riskLevel`, and market regime? |
+| **RQ2** *(Quasi-causal)* | Do profile-discordant transactions earn lower realised 6-month return than profile-coherent ones? |
+| **RQ3** *(Audit)* | Where do the FAR-Trans baselines (Random Forest, LightGCN) sit on the Profile Coherence (PC@10) axis relative to the band-conditional random baseline π (the per-band PC@10 a uniformly-random recommender would achieve, computed as the share of the asset menu within ±1 band of the customer's risk band)? |
+| **RQ4** *(Method)* | Can a stratified, profile-coherent LightGCN extension (one sub-model per MiFID risk band, trained with a profile-coherent margin loss) improve PC@10 over the global LightGCN baseline, and at what cost to nDCG@10, Recall@10, and ROI@10? Does the gain vary by declared risk segment? |
+
+### Validation/Evaluation Window Overlap (Known Caveat)
+
+The legacy validation-split tuning had a known overlap issue between validation and early evaluation splits. The new design eliminates this entirely: every trial is a full 69-split evaluation, so there is no separate validation set whose splits could overlap with the benchmark.
 
 ## Working with this Repository
 
@@ -149,11 +151,15 @@ This thesis treats the gap as the load-bearing problem. It introduces **Profile 
 
 ```sh
 uv sync                               # Install dependencies
-uv run poe setup                      # Install lefthook git hooks
+uv run poe setup                      # Install lefthook git hooks that runs the precommit and postcommit checks
 source .venv/bin/activate             # Activate the virtual environment
 pip install graphifyy                 # optional: knowledge-graph integration
 graphify claude install               # optional: Claude Code integration
 ```
+
+Here is a summary of what the lefthook git hooks does:
+- **Pre-commit**: lint, format, typecheck.
+- **Post-commit / post-checkout**: rebuild the graphify knowledge graph for changed code files.
 
 ### Common Tasks
 
@@ -186,27 +192,9 @@ A separate RQ4 run (`stratify`) produces, alongside the same `evaluation/{model}
 - `outputs/results/evaluation/pc_lgcn/{timestamp}/{trial_id}/`: per-split metrics and recommendations for the two stratified configurations (`stratified_lambda_0.0`, `stratified_lambda_1.0`).
 - `outputs/results/tuning/pc_lgcn/{timestamp}.csv`: per-configuration roll-up of averaged metrics.
 
-### Git Hooks
-
-[Lefthook](https://github.com/evilmartians/lefthook) manages the hooks:
-
-- **Pre-commit**: lint, format, typecheck.
-- **Post-commit / post-checkout**: rebuild the graphify knowledge graph for changed code files.
-
 ## GPU Cluster
 
 The SMU `msc` partition under `studentqos` is the standard target for the grid sweep. SSH via my personal email: `samuel.sim.2024@origami.smu.edu.sg` (GlobalVPN set-up required).
-
-### Resource Model
-
-The cluster job (`scripts/tune.sh`) requests 1 L40s GPU, 4 CPUs, 16 GB RAM, with a 2-day wall-clock cap. Each `GridSpec` in `src/config/registry.py` declares its own `max_concurrent_trials`, currently set to 1 for every model so each trial runs serially:
-
-- Random Forest: 12 trials run sequentially. Each trial saturates all 4 CPU cores via `RandomForestRegressor(n_jobs=-1)`, so the work is parallelised inside the trial rather than across trials. This was the fix for the OOM at 16 GB: 4 concurrent forks each materialised a private copy of the 69-split `EvaluationContext`, totalling roughly 5 GB per worker, which the cgroup killed.
-- LightGCN: 8 trials run sequentially with `gpu=1.0` per trial. Same memory rationale.
-
-### Validation/Evaluation Window Overlap (Known Caveat)
-
-The legacy validation-split tuning had a known overlap issue between validation and early evaluation splits. The new design eliminates this entirely: every trial is a full 69-split evaluation, so there is no separate validation set whose splits could overlap with the benchmark.
 
 ### Submitting the Pipeline
 
@@ -218,19 +206,6 @@ sbatch scripts/stratify.sh     # RQ4: stratified profile-coherent LightGCN
 Both scripts load the cluster Python and CUDA modules, activate the venv, and invoke the matching `poe` task (`tune` or `stratify`).
 
 Job email notifications go to the addresses listed in the `#SBATCH --mail-user` line. Live job output streams to `outputs/{user}.{jobid}.out` on the cluster filesystem.
-
-### File Transfers
-
-```bash
-# Local file -> cluster
-scp /path/to/file samuel.sim.2024@origami.smu.edu.sg:~/path/to/destination
-
-# Local folder -> cluster
-scp -r /path/to/folder samuel.sim.2024@origami.smu.edu.sg:~/path/to/destination
-
-# Pull artefacts back from cluster -> local for analysis
-scp -r samuel.sim.2024@origami.smu.edu.sg:~/SMU-Capstone/outputs ./outputs
-```
 
 ### Useful Commands
 
