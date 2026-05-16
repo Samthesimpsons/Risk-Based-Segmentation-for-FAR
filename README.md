@@ -173,24 +173,19 @@ uv run poe type                                                               # 
 uv run poe format                                                             # ruff format
 ```
 
-### Outputs
+### Reproducing the Work
 
-A full pipeline run (`preprocess` + `eda` + `tune`) produces:
+Run the following `poe` tasks in order from the project root:
 
-- `outputs/eda/`: dataset audit (`summary.json` plus seven figures).
-- `outputs/results/evaluation/{model}/{timestamp}/{trial_id}/`:
-    - `per_split_metrics.csv`: per-split scalar metrics for one trial.
-    - `recommendations.parquet`: flat per-recommendation rows with `monthly_return` and `is_relevant` precomputed.
-- `outputs/results/tuning/{model}/{timestamp}.csv`: per-trial roll-up (averaged nDCG@10, ROI@10, Recall@10, PC@10, and PC-lift@10).
-- `outputs/configs/{timestamp}/best_hyperparameters.json`: best trial per model, by primary metric.
-- `outputs/analysis/baseline_decomposition/{timestamp}/`: `main_results.csv`, `decomposition.csv`, scatter plots, `summary.json`.
-- `outputs/analysis/transaction_return_regression/{timestamp}/` (RQ2): `coefficients.csv`, `panel.csv`, `regression_summary.txt`, `summary.json`.
-- `outputs/analysis/panel_regression/{timestamp}/` (RQ3): `coefficients.csv`, `predicted_pc_by_band_model.csv`, `forest_predicted_pc.png`, `panel.csv`, `regression_summary.txt`.
+```sh
+uv run poe setup        # install lefthook git hooks (precommit/postcommit checks)
+uv run poe preprocess   # generate temporal evaluation splits to data/splits/
+uv run poe eda          # dataset audit -> outputs/eda/
+uv run poe tune         # RQ1-RQ3: baseline grid + decomposition + RQ2 + RQ3
+uv run poe stratify     # RQ4: stratified profile-coherent LightGCN
+```
 
-A separate RQ4 run (`stratify`) produces, alongside the same `evaluation/{model}/{timestamp}/{trial_id}/` and `tuning/{model}/{timestamp}.csv` shape:
-
-- `outputs/results/evaluation/pc_lgcn/{timestamp}/{trial_id}/`: per-split metrics and recommendations for the two stratified configurations (`stratified_lambda_0.0`, `stratified_lambda_1.0`).
-- `outputs/results/tuning/pc_lgcn/{timestamp}.csv`: per-configuration roll-up of averaged metrics.
+> **Note**: the SLURM batch scripts described in [GPU Cluster](#gpu-cluster) are only relevant if you have access to the SMU GPU cluster. In that case, `sbatch scripts/tune.sh` and `sbatch scripts/stratify.sh` replace the last two `poe` tasks (`tune` and `stratify`).
 
 ## GPU Cluster
 
