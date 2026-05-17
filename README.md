@@ -1,21 +1,20 @@
 # Profile Coherence at k: A Suitability Axis for Financial Asset Recommendation
 
-A measurement framework for profile-aware financial asset recommendation on the FAR-Trans dataset. The thesis introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines (Random Forest, LightGCN) actually are (RQ1-RQ3), and proposes a stratified profile-coherent LightGCN extension as a prescriptive intervention (RQ4).
+A measurement framework for profile-aware financial asset recommendation on the FAR-Trans dataset. The thesis introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines (Random Forest, LightGCN) actually are, and proposes a stratified profile-coherent LightGCN extension as a prescriptive intervention.
 
 ## Table of Contents
 
 1. [Thesis](#thesis) (full writeup in [thesis.md](thesis.md))
 2. [Paper Summary: FAR-Trans](#paper-summary-far-trans)
-3. [Problem Statement](#problem-statement)
-4. [Working with this Repository](#working-with-this-repository)
-5. [GPU Cluster](#gpu-cluster)
-6. [References](#references)
+3. [Working with this Repository](#working-with-this-repository)
+4. [GPU Cluster](#gpu-cluster)
+5. [References](#references)
 
 ## Thesis
 
 The full writeup lives in [thesis.md](thesis.md). This README is the engineering counterpart: project context, code architecture, reproduction instructions.
 
-## Paper Summary: FAR-Trans
+## Paper Context: FAR-Trans
 
 This section summarises the FAR-Trans paper that forms the foundation of this project.
 
@@ -117,16 +116,6 @@ A second observation, which motivates this thesis: none of these baselines take 
 
 Price-based models fit returns, transaction-based models fit buy history, hybrids combine the two, but none read `riskLevel` or measure how aligned a recommendation is with the customer's profile. Any mismatch between profile and actual buying behaviour passes straight through into the recommendations, and standard metrics (nDCG, ROI) don't penalise it, so the model has no reason to correct it.
 
-## Problem Statement
-
-The FAR-Trans benchmark exposes a sharp tradeoff between two evaluation axes. Transaction-based methods (LightGCN, Matrix Factorisation) achieve high nDCG@10 by fitting customer buy history but earn near-zero ROI@10. Price-based methods (Random Forest, LightGBM) achieve the highest ROI@10 by predicting asset profitability but score near-random on nDCG@10. No baseline simultaneously wins both axes, and the field has typically framed this as a fundamental "preference versus profit" tension to be balanced via hybrid objectives.
-
-FAR-Trans contains a third signal that every existing baseline ignores: the customer's MiFID II risk profile. None of the FAR-Trans baselines read this signal as input, optimise against it during training, or are evaluated on whether their top-k satisfies it.
-
-The consequence is a measurement gap and a method gap. The measurement gap: nDCG and ROI cannot tell whether a recommendation is suitable, so a model that produces failing recommendations can still score well on the established benchmark. Any mismatch between a customer's profile and their actual buying behaviour passes straight through into the model's output.
-
-This thesis treats the gap as the load-bearing problem. It introduces **Profile Coherence at k (PC@k)** as an evaluation axis and uses it both to audit the FAR-Trans transaction record and to relocate existing baselines on a third axis. The reframing positions FAR not as preference-versus-profit, but as profit-within-the-suitable-universe.
-
 ## Working with this Repository
 
 ### Prerequisites
@@ -180,7 +169,7 @@ The SMU `msc` partition under `studentqos` is the standard target for the grid s
 ### Submitting the Pipeline
 
 ```bash
-sbatch scripts/tune.sh         # RQ1-RQ3: baseline grid + decomposition + RQ2 + RQ3
+sbatch scripts/tune.sh         # RQ1-RQ3: baseline grid + decomposition + Regression Studies
 sbatch scripts/stratify.sh     # RQ4: stratified profile-coherent LightGCN
 ```
 
