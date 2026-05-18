@@ -1,15 +1,12 @@
-"""2-model (RF + LightGCN) ROI / coherence decomposition."""
+"""2-model (RF + LightGCN) best-trial headline table."""
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
-import matplotlib.pyplot as plt
 import pandas as pd
 
-from src.analysis.annotate import annotate_recommendations
 from src.analysis.run_artefacts import (
     average_per_trial,
     discover_run_directories,
@@ -22,11 +19,6 @@ from src.config.registry import (
     PRIMARY_METRIC_TO_KEY,
 )
 from src.config.settings import DataPaths
-from src.data.loading import load_assets, load_close_prices, load_customers
-from src.utils.profile_coherence import (
-    build_asset_risk_classes,
-    build_customer_profile_lookup,
-)
 
 DEFAULT_EVALUATION_DIRECTORY = Path("outputs/results/evaluation")
 DEFAULT_OUTPUT_ROOT = Path("outputs/analysis/baseline_decomposition")
@@ -65,75 +57,6 @@ def _build_main_results_row(
     return row
 
 
-def _decomposition_row(model_name: str, annotated: pd.DataFrame) -> dict[str, Any]:
-    """ROI breakdown by coherence flag for one model's best trial."""
-    total_recommendations = len(annotated)
-    coherent = annotated[annotated["is_coherent"].fillna(False)]
-    discordant = annotated[~annotated["is_coherent"].fillna(False)]
-    strict_coherent = annotated[annotated["is_strictly_coherent"].fillna(False)]
-    strict_discordant = annotated[~annotated["is_strictly_coherent"].fillna(False)]
-
-    return {
-        "model": model_name,
-        "display_name": DISPLAY_MODEL_NAMES.get(model_name, model_name),
-        "total_recommendations": total_recommendations,
-        "coherent_recommendations": int(len(coherent)),
-        "discordant_recommendations": int(len(discordant)),
-        "coherent_share": float(len(coherent) / total_recommendations)
-        if total_recommendations
-        else 0.0,
-        "mean_monthly_return_overall": float(annotated["monthly_return"].mean())
-        if total_recommendations
-        else 0.0,
-        "mean_monthly_return_coherent": float(coherent["monthly_return"].mean())
-        if len(coherent)
-        else 0.0,
-        "mean_monthly_return_discordant": float(discordant["monthly_return"].mean())
-        if len(discordant)
-        else 0.0,
-        "strict_coherent_recommendations": int(len(strict_coherent)),
-        "mean_monthly_return_strict_coherent": float(
-            strict_coherent["monthly_return"].mean()
-        )
-        if len(strict_coherent)
-        else 0.0,
-        "mean_monthly_return_strict_discordant": float(
-            strict_discordant["monthly_return"].mean()
-        )
-        if len(strict_discordant)
-        else 0.0,
-    }
-
-
-def _save_scatter(
-    main_results: pd.DataFrame,
-    x_column: str,
-    y_column: str,
-    x_label: str,
-    y_label: str,
-    title: str,
-    output_path: Path,
-) -> None:
-    """Render a single labelled scatter, one point per baseline."""
-    figure, axis = plt.subplots(figsize=(6.5, 5))
-    for _, row in main_results.iterrows():
-        axis.scatter(row[x_column], row[y_column], s=120)
-        axis.annotate(
-            row["display_name"],
-            (row[x_column], row[y_column]),
-            textcoords="offset points",
-            xytext=(8, 6),
-            fontsize=10,
-        )
-    axis.set_xlabel(x_label)
-    axis.set_ylabel(y_label)
-    axis.set_title(title)
-    axis.grid(True, linestyle="--", alpha=0.4)
-    figure.tight_layout()
-    figure.savefig(output_path, dpi=120)
-    plt.close(figure)
-
-
 def _print_main_results_table(main_results: pd.DataFrame, top_k: int) -> None:
     """Pretty-print the headline results table to stdout."""
     if main_results.empty:
@@ -164,30 +87,6 @@ def _print_main_results_table(main_results: pd.DataFrame, top_k: int) -> None:
     print(f"{'=' * width}")
 
 
-def _print_decomposition_table(decomposition: pd.DataFrame) -> None:
-    """Pretty-print the decomposition table to stdout."""
-    if decomposition.empty:
-        print("(no decomposition rows to display)")
-        return
-    header = (
-        f"{'Model':<28} {'Coherent share':<16}"
-        f" {'ROI overall':<14} {'ROI coherent':<14} {'ROI discordant':<14}"
-    )
-    width = len(header)
-    print(f"\n{'=' * width}")
-    print(header)
-    print(f"{'-' * width}")
-    for _, row in decomposition.iterrows():
-        print(
-            f"{row['display_name']:<28}"
-            f" {row['coherent_share']:<16.4f}"
-            f" {row['mean_monthly_return_overall']:<14.6f}"
-            f" {row['mean_monthly_return_coherent']:<14.6f}"
-            f" {row['mean_monthly_return_discordant']:<14.6f}"
-        )
-    print(f"{'=' * width}")
-
-
 def run_decomposition(
     evaluation_directory: Path = DEFAULT_EVALUATION_DIRECTORY,
     output_root: Path = DEFAULT_OUTPUT_ROOT,
@@ -195,19 +94,8 @@ def run_decomposition(
     data_paths: DataPaths | None = None,
     top_k: int = 10,
 ) -> dict[str, Any]:
-    """Run the 2-model decomposition and return the headline summary."""
-    data_paths = data_paths or DataPaths()
-    print("Loading customer profiles and asset risk classes...")
-    customers = load_customers(
-        data_paths.data_directory / data_paths.customer_information_file
-    )
-    customer_profiles = build_customer_profile_lookup(customers)
-    assets = load_assets(data_paths.data_directory / data_paths.asset_information_file)
-    close_prices = load_close_prices(
-        data_paths.data_directory / data_paths.close_prices_file
-    )
-    asset_risk_classes = build_asset_risk_classes(assets, close_prices)
-
+    """Build the best-trial main_results.csv table consumed by findings.ipynb."""
+    del data_paths
     print(f"Discovering evaluation runs in {evaluation_directory} ...")
     runs = discover_run_directories(evaluation_directory, run_timestamp)
     if not runs:
@@ -217,7 +105,6 @@ def run_decomposition(
         )
 
     main_rows: list[dict[str, Any]] = []
-    decomposition_rows: list[dict[str, Any]] = []
     chosen_run_timestamp = run_timestamp
 
     for model_name, run_directory in runs.items():
@@ -252,59 +139,18 @@ def run_decomposition(
             )
         )
 
-        parquet_path = run_directory / best_trial_id / "recommendations.parquet"
-        if not parquet_path.exists():
-            print(
-                f"  Missing recommendations parquet at {parquet_path}; "
-                "skipping decomposition."
-            )
-            continue
-        recommendations = pd.read_parquet(parquet_path)
-        annotated = annotate_recommendations(
-            recommendations, customer_profiles, asset_risk_classes
-        )
-        decomposition_rows.append(_decomposition_row(model_name, annotated))
-
     main_results = pd.DataFrame(main_rows)
-    decomposition = pd.DataFrame(decomposition_rows)
 
     output_directory = output_root / (chosen_run_timestamp or "latest")
     output_directory.mkdir(parents=True, exist_ok=True)
-
     main_results.to_csv(output_directory / "main_results.csv", index=False)
-    decomposition.to_csv(output_directory / "decomposition.csv", index=False)
 
-    if not main_results.empty:
-        _save_scatter(
-            main_results,
-            x_column="ndcg_at_k_mean",
-            y_column="profile_coherence_at_k_mean",
-            x_label=f"nDCG@{top_k}",
-            y_label=f"PC@{top_k}",
-            title="Preference accuracy vs profile coherence",
-            output_path=output_directory / "scatter_ndcg_vs_pc.png",
-        )
-        _save_scatter(
-            main_results,
-            x_column="profile_coherence_at_k_mean",
-            y_column="roi_at_k_mean",
-            x_label=f"PC@{top_k}",
-            y_label=f"ROI@{top_k} (monthly)",
-            title="Profile coherence vs realised ROI",
-            output_path=output_directory / "scatter_pc_vs_roi.png",
-        )
-
-    summary = {
+    _print_main_results_table(main_results, top_k=top_k)
+    print(f"\nDecomposition outputs saved to {output_directory}")
+    return {
         "run_timestamp": chosen_run_timestamp,
         "evaluation_directory": str(evaluation_directory),
         "output_directory": str(output_directory),
         "models": [row["model"] for row in main_rows],
         "main_results": main_rows,
-        "decomposition": decomposition_rows,
     }
-    (output_directory / "summary.json").write_text(json.dumps(summary, indent=2))
-
-    _print_main_results_table(main_results, top_k=top_k)
-    _print_decomposition_table(decomposition)
-    print(f"\nDecomposition outputs saved to {output_directory}")
-    return summary

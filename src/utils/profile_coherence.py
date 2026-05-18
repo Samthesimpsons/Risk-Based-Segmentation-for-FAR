@@ -215,22 +215,15 @@ def build_customer_profile_lookup(
 def compute_pairwise_discordance(
     customer_band: int | None,
     asset_band: int | None,
-    *,
-    squared: bool = False,
 ) -> int | None:
-    """Return |customer_band - asset_band| (or its square), or None if either is missing."""
+    """Return |customer_band - asset_band|, or None if either band is missing."""
     if customer_band is None or asset_band is None:
         return None
-    distance = abs(customer_band - asset_band)
-    return distance * distance if squared else distance
+    return abs(customer_band - asset_band)
 
 
-def is_profile_coherent(
-    discordance: int | None,
-    *,
-    strict: bool = False,
-) -> bool:
-    """Return True when discordance is within tolerance (<=1, or ==0 in strict mode)."""
+def is_profile_coherent(discordance: int | None) -> bool:
+    """Return True when discordance is within the default tolerance (<=1)."""
     if discordance is None:
         return False
-    return discordance == 0 if strict else discordance <= 1
+    return discordance <= 1

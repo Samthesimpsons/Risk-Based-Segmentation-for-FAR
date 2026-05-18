@@ -88,8 +88,6 @@ def compute_profile_coherence_at_k(
     customer_band: int | None,
     asset_risk_classes: dict[str, int],
     k: int = 10,
-    *,
-    strict: bool = False,
 ) -> float:
     """Share of top-k recommendations within band tolerance; 0 when the user has no band."""
     if customer_band is None:
@@ -103,7 +101,7 @@ def compute_profile_coherence_at_k(
     for asset_id in top_k:
         asset_band = asset_risk_classes.get(asset_id)
         discordance = compute_pairwise_discordance(customer_band, asset_band)
-        if is_profile_coherent(discordance, strict=strict):
+        if is_profile_coherent(discordance):
             coherent_count += 1
 
     return coherent_count / len(top_k)
@@ -111,18 +109,15 @@ def compute_profile_coherence_at_k(
 
 def compute_random_baseline_per_band(
     asset_risk_classes: dict[str, int],
-    *,
-    strict: bool = False,
 ) -> dict[int, float]:
     """Per-band random PC: share of assets within tolerance of each band."""
     if not asset_risk_classes:
         return {}
-    tolerance = 0 if strict else 1
     asset_bands = list(asset_risk_classes.values())
     total_assets = len(asset_bands)
     distinct_bands = sorted(set(asset_bands))
     return {
-        band: sum(1 for a in asset_bands if abs(band - a) <= tolerance) / total_assets
+        band: sum(1 for a in asset_bands if abs(band - a) <= 1) / total_assets
         for band in distinct_bands
     }
 
@@ -133,8 +128,6 @@ def compute_pc_lift_at_k(
     asset_risk_classes: dict[str, int],
     random_baselines: dict[int, float],
     k: int = 10,
-    *,
-    strict: bool = False,
 ) -> float:
     """PC@k divided by the customer band's random baseline; 0 when undefined."""
     if customer_band is None:
@@ -143,7 +136,7 @@ def compute_pc_lift_at_k(
     if baseline is None or baseline <= 0.0:
         return 0.0
     pc = compute_profile_coherence_at_k(
-        ranked_recommendations, customer_band, asset_risk_classes, k, strict=strict
+        ranked_recommendations, customer_band, asset_risk_classes, k
     )
     return pc / baseline
 

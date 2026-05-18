@@ -1,168 +1,133 @@
 {
-    "populations": {
-        "total_customers": 29090,
-        "customers_with_band": 28770,
-        "customers_with_predicted_band": 7141,
-        "total_assets": 806,
-        "total_buy_transactions": 228913,
-        "transactions_with_both_bands": 228241
+  "populations": {
+    "total_customers": 29090,
+    "customers_with_band": 28770,
+    "customers_with_predicted_band": 7141,
+    "total_assets": 806,
+    "total_buy_transactions": 228913,
+    "transactions_with_both_bands": 228241
+  },
+  "asset_band_distribution_by_category": {
+    "Bond": {
+      "Conservative": 55,
+      "Income": 154,
+      "Balanced": 0,
+      "Aggressive": 0
     },
-    "asset_band_distribution_by_category": {
-        "Bond": {
-            "Conservative": 55,
-            "Income": 154,
-            "Balanced": 0,
-            "Aggressive": 0
-        },
-        "MTF": {
-            "Conservative": 66,
-            "Income": 110,
-            "Balanced": 28,
-            "Aggressive": 109
-        },
-        "Stock": {
-            "Conservative": 69,
-            "Income": 69,
-            "Balanced": 77,
-            "Aggressive": 69
-        }
+    "MTF": {
+      "Conservative": 66,
+      "Income": 110,
+      "Balanced": 28,
+      "Aggressive": 109
     },
-    "customer_band_distribution": {
-        "declared": {
-            "Conservative": 2857,
-            "Income": 9179,
-            "Balanced": 7194,
-            "Aggressive": 2399
-        },
-        "predicted": {
-            "Conservative": 2815,
-            "Income": 2659,
-            "Balanced": 1388,
-            "Aggressive": 279
-        },
-        "none_count": 320
-    },
-    "transaction_discordance_summary": {
-        "total_transactions": 228913,
-        "transactions_with_both_bands": 228241,
-        "discordance_counts": {
-            "0": 77925,
-            "1": 107899,
-            "2": 35581,
-            "3": 6836
-        },
-        "fraction_coherent_default": 0.8141569656634873,
-        "fraction_coherent_strict": 0.34141543368632277,
-        "mean_discordance": 0.8743783982720019
-    },
-    "customer_self_discordance_summary": {
-        "mean_discordant_share": 0.23641188765159432,
-        "fraction_fully_coherent": 0.6442822384428224,
-        "fraction_fully_discordant": 0.17208898157803268,
-        "discordant_share_histogram_edges": [
-            0.0,
-            0.1,
-            0.2,
-            0.3,
-            0.4,
-            0.5,
-            0.6,
-            0.7,
-            0.8,
-            0.9,
-            1.0
-        ],
-        "discordant_share_histogram_counts": [
-            19365,
-            951,
-            584,
-            676,
-            245,
-            1234,
-            407,
-            176,
-            137,
-            4995
-        ]
-    },
-    "buy_coverage_by_year": {
-        "2018": {
-            "count": 49489,
-            "first_date": "2018-01-02",
-            "last_date": "2018-12-31"
-        },
-        "2019": {
-            "count": 10624,
-            "first_date": "2019-01-02",
-            "last_date": "2019-12-31"
-        },
-        "2020": {
-            "count": 66345,
-            "first_date": "2020-01-02",
-            "last_date": "2020-12-31"
-        },
-        "2021": {
-            "count": 58194,
-            "first_date": "2021-01-04",
-            "last_date": "2021-12-31"
-        },
-        "2022": {
-            "count": 44261,
-            "first_date": "2022-01-03",
-            "last_date": "2022-11-30"
-        }
-    },
-    "mean_discordance_by_segment": {
-        "Inactive": 1.0329411764705883,
-        "Legal Entity": 1.5167652859960552,
-        "Mass": 0.849159814983648,
-        "Premium": 0.9080445110480503,
-        "Professional": 0.8081483733657646
-    },
-    "mean_discordance_by_year": {
-        "2018": 0.9826007139214686,
-        "2019": 0.8439442456206442,
-        "2020": 0.8494339622641509,
-        "2021": 0.850065368471754,
-        "2022": 0.8310340148362584
-    },
-    "transaction_discordance_by_risk_level": {
-        "Aggressive": {
-            "0": 3216,
-            "1": 19637,
-            "2": 13281,
-            "3": 4545
-        },
-        "Balanced": {
-            "0": 50242,
-            "1": 39568,
-            "2": 10091,
-            "3": 0
-        },
-        "Conservative": {
-            "0": 1682,
-            "1": 4723,
-            "2": 5497,
-            "3": 2291
-        },
-        "Income": {
-            "0": 22785,
-            "1": 43971,
-            "2": 6712,
-            "3": 0
-        }
-    },
-    "sensitivity_volatility_only_summary": {
-        "total_transactions": 228913,
-        "transactions_with_both_bands": 228241,
-        "discordance_counts": {
-            "0": 61155,
-            "1": 105896,
-            "2": 54589,
-            "3": 6601
-        },
-        "fraction_coherent_default": 0.7319061868814104,
-        "fraction_coherent_strict": 0.2679404664367927,
-        "mean_discordance": 1.029074530868687
+    "Stock": {
+      "Conservative": 69,
+      "Income": 69,
+      "Balanced": 77,
+      "Aggressive": 69
     }
+  },
+  "transaction_discordance_summary": {
+    "total_transactions": 228913,
+    "transactions_with_both_bands": 228241,
+    "discordance_counts": {
+      "0": 77925,
+      "1": 107899,
+      "2": 35581,
+      "3": 6836
+    },
+    "fraction_coherent_default": 0.8141569656634873,
+    "fraction_coherent_strict": 0.34141543368632277,
+    "mean_discordance": 0.8743783982720019
+  },
+  "customer_self_discordance_summary": {
+    "mean_discordant_share": 0.23641188765159432,
+    "fraction_fully_coherent": 0.6442822384428224,
+    "fraction_fully_discordant": 0.17208898157803268,
+    "discordant_share_histogram_edges": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      1.0
+    ],
+    "discordant_share_histogram_counts": [
+      19365,
+      951,
+      584,
+      676,
+      245,
+      1234,
+      407,
+      176,
+      137,
+      4995
+    ]
+  },
+  "buy_coverage_by_year": {
+    "2018": {
+      "count": 49489,
+      "first_date": "2018-01-02",
+      "last_date": "2018-12-31"
+    },
+    "2019": {
+      "count": 10624,
+      "first_date": "2019-01-02",
+      "last_date": "2019-12-31"
+    },
+    "2020": {
+      "count": 66345,
+      "first_date": "2020-01-02",
+      "last_date": "2020-12-31"
+    },
+    "2021": {
+      "count": 58194,
+      "first_date": "2021-01-04",
+      "last_date": "2021-12-31"
+    },
+    "2022": {
+      "count": 44261,
+      "first_date": "2022-01-03",
+      "last_date": "2022-11-30"
+    }
+  },
+  "mean_discordance_by_year": {
+    "2018": 0.9826007139214686,
+    "2019": 0.8439442456206442,
+    "2020": 0.8494339622641509,
+    "2021": 0.850065368471754,
+    "2022": 0.8310340148362584
+  },
+  "transaction_discordance_by_risk_level": {
+    "Aggressive": {
+      "0": 3216,
+      "1": 19637,
+      "2": 13281,
+      "3": 4545
+    },
+    "Balanced": {
+      "0": 50242,
+      "1": 39568,
+      "2": 10091,
+      "3": 0
+    },
+    "Conservative": {
+      "0": 1682,
+      "1": 4723,
+      "2": 5497,
+      "3": 2291
+    },
+    "Income": {
+      "0": 22785,
+      "1": 43971,
+      "2": 6712,
+      "3": 0
+    }
+  }
 }

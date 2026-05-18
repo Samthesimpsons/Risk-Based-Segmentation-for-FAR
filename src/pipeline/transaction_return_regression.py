@@ -249,24 +249,6 @@ def run_transaction_return_regression(
     output_directory.mkdir(parents=True, exist_ok=True)
 
     coefficients.to_csv(output_directory / "coefficients.csv", index=False)
-    panel_columns = [
-        "customerID",
-        "ISIN",
-        "timestamp",
-        "target_date",
-        "start_price",
-        "end_price",
-        "realised_return",
-        "customer_band",
-        "asset_band",
-        "discordance",
-        "is_coherent",
-        "customer_type",
-        "asset_volatility",
-        "year",
-    ]
-    panel[panel_columns].to_csv(output_directory / "panel.csv", index=False)
-    (output_directory / "regression_summary.txt").write_text(str(model_fit.summary()))
 
     summary = _build_summary(
         panel=panel,
