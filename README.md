@@ -128,13 +128,10 @@ Price-based models fit returns, transaction-based models fit buy history, hybrid
 uv sync                               # Install dependencies
 uv run poe setup                      # Install lefthook git hooks that runs the precommit and postcommit checks
 source .venv/bin/activate             # Activate the virtual environment
-pip install graphifyy                 # optional: knowledge-graph integration
-graphify claude install               # optional: Claude Code integration
 ```
 
 Here is a summary of what the lefthook git hooks does:
 - **Pre-commit**: lint, format, typecheck.
-- **Post-commit / post-checkout**: rebuild the graphify knowledge graph for changed code files.
 
 ### Common Tasks
 

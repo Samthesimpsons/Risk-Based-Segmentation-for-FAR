@@ -8,15 +8,3 @@ pre-commit:
       run: uv run poe type
     # test:
     #   run: uv run poe test
-
-post-commit:
-  commands:
-    graphify:
-      run: uv run python -c "from graphify.watch import _rebuild_code; from pathlib import Path; _rebuild_code(Path('.'))"
-      skip_on_unmodified: true
-
-post-checkout:
-  commands:
-    graphify:
-      run: uv run python -c "from graphify.watch import _rebuild_code; from pathlib import Path; import sys; _rebuild_code(Path('.'))"
-      skip_on_unmodified: true

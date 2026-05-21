@@ -59,9 +59,6 @@ outputs/*
 # Tool caches
 .ruff_cache/
 
-# Graphify
-graphify-out/
-
 # OS
 .DS_Store
 Thumbs.db
