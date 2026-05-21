@@ -1,0 +1,59 @@
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Profile Coherence}
+\label{sec:method:pck}
+
+\subsubsection{Ordinal band scale}
+Customers and assets share the same 4-point ordinal scale, running from Conservative (0) through Income (1) and Balanced (2) to Aggressive (3). The customer band $b_u$ is taken from FAR-Trans's \texttt{riskLevel} field, with a flag distinguishing declared values from regression-imputed \texttt{Predicted\_*} ones. Customers whose entry is \texttt{Not\_Available} or missing are excluded. The asset band $b_i$ follows the hierarchical rule in Section~\ref{sec:setup:bandassignment}.
+
+\subsubsection{Pairwise discordance}
+\begin{equation}
+d(u, i) = |b_u - b_i| \in \{0, 1, 2, 3\}.
+\end{equation}
+A recommendation is \emph{profile-coherent} iff $d \leq 1$. The strict variant $d = 0$ appears only as a sensitivity row.
+
+\subsubsection{Aggregation}
+\begin{equation}
+\text{PC@}k(u) = \frac{1}{k} \left|\{ i \in \text{top}_k(u) : d(u, i) \leq 1 \}\right|.
+\end{equation}
+Two implementation rules close the definition. First, recommenders returning fewer than $k$ items are scored on what they returned. Second, customers with $b_u = \emptyset$ are dropped from the aggregate. Per-split PC@$k$ is the unweighted mean across eligible customers and the headline numerics average over all splits.
+
+\subsubsection{Band-conditional random baseline}
+The closed-form expectation of PC@$k$ under a uniformly random recommender for band $b$ is given by
+\begin{equation}
+\pi(b) = \frac{|\{ i \in A : |b - b_i| \leq 1 \}|}{|A|},
+\end{equation}
+where $A$ is the asset universe. Section~\ref{sec:setup:bandassignment} reports the FAR-Trans asset-band distribution and the resulting $\pi(b)$ values.
+
+\subsubsection{PC-lift@$k$}
+Per-user PC@$k$ is normalised against the random reference at the customer's own band:
+\begin{equation}
+\text{PC-lift@}k(u) = \frac{\text{PC@}k(u)}{\pi(b_u)}.
+\end{equation}
+Lift $> 1$ beats the band-conditional random rate, while lift $= 1$ matches it. Because 77.9\% of FAR-Trans assets sit in the Conservative, Income, and Balanced bands, a recommender that pushes Income assets at everyone would score well on raw PC@$k$ for any user whose tolerance set includes Income. Dividing by $\pi(b_u)$ strips the band-specific easiness of the asset universe and makes per-band values commensurate.
+
+\subsection{Stratified, Profile-Coherent LightGCN}
+\label{sec:method:pclgcn}
+
+\subsubsection{Backbone}
+LightGCN is the backbone: a differentiable loss with per-customer embeddings lets us attach the coherence margin to the BPR objective. Random Forest is not extended as its objective uses asset-level technical indicators only and carries no customer signal.
+
+\subsubsection{Stratified architecture}
+We train four band-stratified sub-models, one per declared MiFID risk band. At inference, each customer is routed to the sub-model for their declared band.
+
+\subsubsection{Profile-coherent margin loss}
+BPR samples a positive item from observed Buys and a negative item uniformly. We add a margin term pushing the score of a discordant draw below that of a coherent draw:
+\begin{equation}
+\mathcal{L}_{\text{coh}}(u) = \text{softplus}\!\left(s(u, i_d) - s(u, i_c)\right),
+\end{equation}
+Here $s(u, i)$ is the LightGCN inner-product score between customer $u$ and asset $i$. A coherent draw $i_c$ satisfies $d(u, i_c) \leq 1$ and a discordant draw $i_d$ satisfies $d(u, i_d) > 1$.
+
+\subsubsection{Total loss}
+\begin{equation}
+\mathcal{L} = \mathcal{L}_{\text{BPR}} + \omega \|\Theta\|_2^2 + \lambda \cdot \mathcal{L}_{\text{coh}},
+\end{equation}
+with $\omega$ the L2 weight decay on embedding parameters $\Theta$ and mixing weight $\lambda \geq 0$. BPR remains the primary ranking signal and only the treatment trial activates the coherence term.
+
+\subsubsection{Ablation Setup}
+$\lambda = 0$ leaves stratified BPR alone, isolating the architecture's contribution, while $\lambda = 1$ adds the coherence margin. The two trials decompose the full intervention into stratification and PC-loss pieces.

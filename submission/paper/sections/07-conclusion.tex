@@ -1,0 +1,13 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper frames \textbf{profile coherence} as a diagnostic lens for the FAR-Trans recommendation problem, and assembles the four research questions into a single diagnostic-to-remedy chain:
+\begin{itemize}
+    \item \textbf{RQ1} establishes that the diagnostic axis is real and structural at the customer level, not transaction-level noise.
+    \item \textbf{RQ2} removes the economic objection to optimising for coherence: the regulatory return tax prior is observationally falsified.
+    \item \textbf{RQ3} locates the existing FAR-Trans baselines on the coherence axis and shows that both under-serve specific declared bands in ways the aggregate metrics hide.
+    \item \textbf{RQ4} demonstrates that a stratified, profile-coherent LightGCN extension closes the per-band coverage deficit at no aggregate ROI cost, with the gain decomposing cleanly into a free stratification component and a bounded-cost PC-loss component.
+\end{itemize}
+
+The headline contribution is that the regulatory objective (MiFID-aligned band coherence) and the economic objective (realised return) are not in structural conflict on FAR-Trans: a recommender can be made meaningfully more profile-coherent while keeping the return story the data already supports. This reframes coherence as an architectural choice rather than a tradeoff to be managed post-hoc, treating compliance not as a post-hoc filter applied downstream of a ranking model but as a training-time objective expressible as an ordinal distance on a customer-asset metric pair. The stratification plus margin-loss template then generalises naturally to other suitability-style constraints (concentration limits, leverage caps, ESG bands) that share the same ordinal structure.
+

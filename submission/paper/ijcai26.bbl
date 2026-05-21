@@ -1,0 +1,23 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Ghiye \bgroup \em et al.\egroup }{2024}]{ghiye:rolling-forward}
+Ashraf Ghiye, Baptiste Barreau, Laurent Carlier, and Michalis Vazirgiannis.
+\newblock Rolling forward: Enhancing {LightGCN} with causal graph convolution for credit bond recommendation.
+\newblock In {\em Proceedings of the 5th ACM International Conference on AI in Finance (ICAIF '24)}, 2024.
+
+\bibitem[\protect\citeauthoryear{Sakurai \bgroup \em et al.\egroup }{2026}]{sakurai:risk-aware}
+Keigo Sakurai, Takahiro Ogawa, Miki Haseyama, Anjyu Anan, and Kei Nakagawa.
+\newblock Risk-aware utility re-ranking for financial asset recommendation.
+\newblock In {\em Proceedings of the 19th ACM International Conference on Web Search and Data Mining (WSDM '26)}, Boise, ID, USA, 2026.
+
+\bibitem[\protect\citeauthoryear{Sanz-Cruzado \bgroup \em et al.\egroup }{2024}]{sanzcruzado:fartrans}
+Javier Sanz-Cruzado, Nikolaos Droukas, and Richard McCreadie.
+\newblock {FAR-Trans}: An investment dataset for financial asset recommendation.
+\newblock In {\em Proceedings of the IJCAI Workshop on Recommender Systems in Finance (Fin-RecSys)}, Jeju, Republic of Korea, 2024.
+
+\bibitem[\protect\citeauthoryear{Sanz-Cruzado \bgroup \em et al.\egroup }{2026}]{sanzcruzado:investors}
+Javier Sanz-Cruzado, Richard McCreadie, Nikolaos Droukas, Craig Macdonald, and Iadh Ounis.
+\newblock Investors are (not) always right: A comparison of transaction-based and profitability-based metrics for financial asset recommendations.
+\newblock {\em ACM Transactions on Information Systems}, 44(2):Article 51, 2026.
+
+\end{thebibliography}

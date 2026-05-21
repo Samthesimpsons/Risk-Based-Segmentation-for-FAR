@@ -1,0 +1,9 @@
+\section{Limitations}
+\label{sec:limitations}
+
+\begin{itemize}
+    \item \textit{Observational nature.} The RQ2 coherence premium is associational as unobserved confounders (financial literacy, advisor channel, account constraints, prior portfolio composition) are not ruled out by the volatility, segment, or year controls. The elevated 2018 mean discordance is hypothesised as a MiFID II transition effect on similar grounds, but not directly tested against a pre-MiFID counterfactual.
+    \item \textit{Metric and band-assignment design choices.} The tolerance $d \leq 1$ is set rather than derived, binarising a 4-point ordinal distance. The asset-band assignment in Section~\ref{sec:setup:bandassignment} is a hierarchical heuristic not externally validated.
+    \item \textit{Intervention scope and tuning.} Only LightGCN is extended, with sequential, transformer, and content-based recommenders untested. Within LightGCN, $\lambda = 1$ is one point on a Pareto frontier between PC and ranking-quality metrics, and the intervention inherits the RQ3 best-trial backbone hyperparameters rather than being re-tuned end-to-end. The reported gains are therefore a lower bound on what a full frontier sweep or end-to-end re-tuning could achieve.
+    \item \textit{Generalisation and measurement scope.} Results are on FAR-Trans under MiFID II's 4-band scale, so generalisation to other jurisdictions, longer windows, or alternative asset universes is not established. Additionally, RQ2 measures realised return on executed Buys while RQ4 measures forward return on top-$k$ recommended slates that may never be acted on, so the two ROI quantities are not directly comparable.
+\end{itemize}

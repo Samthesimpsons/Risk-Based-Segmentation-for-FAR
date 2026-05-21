@@ -1,0 +1,17 @@
+\section{Introduction}
+\label{sec:intro}
+
+Financial asset recommendation (FAR) sits at the intersection of personalised ranking and regulatory obligation. The European Markets in Financial Instruments Directive (MiFID II) requires firms to assess suitability before recommending a product: alignment between the product's risk profile and the customer's declared risk tolerance, investment horizon, and loss capacity. A recommender that maximises predicted return without conditioning on the customer's risk band can be an excellent ranker on standard benchmarks but a regulatory liability.
+
+FAR-Trans~\cite{sanzcruzado:fartrans} is the first open FAR benchmark with both customer profile metadata and a multi-year transaction history: 228{,}913 Buys across 806 assets and 29{,}090 retail customers, with MiFID II risk bands per customer and metadata sufficient to derive each asset's risk class. The accompanying paper benchmarks LightGCN, Random Forest, and others on normalised Discounted Cumulative Gain (nDCG) and Return on Investment (ROI), each evaluated on the top-10 ranked items. We will additionally report Recall alongside these as a ranking sanity check. None of those metrics measures profile alignment, and none of the published baselines conditions on the declared risk band.
+
+This paper introduces a profile-alignment lens for FAR and applies it in four steps: \emph{diagnose} the prevalence of discordance, \emph{test} whether it carries an economic penalty, \emph{audit} where existing baselines sit on the new axis, and \emph{remedy} the gap with a profile-coherent training objective. These map onto four research questions:
+
+\begin{itemize}
+    \item \textbf{RQ1 (Diagnose)}: How prevalent is profile-discordance in observed FAR-Trans Buy transactions, and is it a stable customer trait or transaction-level noise?
+    \item \textbf{RQ2 (Test the economic objection)}: Do profile-discordant Buys earn lower realised six-month return than coherent ones, once asset volatility, customer segment, and year are controlled for?
+    \item \textbf{RQ3 (Audit existing baselines)}: At their best published settings, do the chosen FAR-Trans baseline models lift profile coherence above a naive band-aware reference (one that picks within the customer's declared band) for every band?
+    \item \textbf{RQ4 (Remedy)}: Can a stratified, profile-coherent LightGCN improve profile coherence over the global baseline, and at what cost to nDCG, Recall, and ROI?
+\end{itemize}
+
+\paragraph{Contributions.} This paper makes two contributions. First, we introduce Profile Coherence at top-$k$ ranked items (PC@$k$), a coherence metric with a band-conditional random baseline $\pi(b)$ and scale-invariant lift normalisation. Second, we propose a stratified, profile-coherent LightGCN with a margin loss atop Bayesian Personalised Ranking (BPR), together with an ablation that isolates the coherence-loss effect from the stratified architecture.
