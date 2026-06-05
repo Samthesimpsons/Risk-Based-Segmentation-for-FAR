@@ -1,0 +1,3 @@
+trial_id,embedding_dimension,number_of_layers,learning_rate,weight_decay,keep_probability,number_of_epochs,batch_size,coherence_loss_weight,average_ndcg,average_roi,average_recall,average_profile_coherence,average_profile_coherence_lift
+stratified_lambda_0.0,64,3,0.001,1e-05,0.6,50,1024,0.0,0.35208414065147203,-0.0055297117660042215,0.5221853039453828,0.9493173645614663,1.255140596745194
+stratified_lambda_1.0,64,3,0.001,1e-05,0.6,50,1024,1.0,0.3331785795999522,-0.005485090531416434,0.49296077703105146,0.9821739123976247,1.3014544811242925

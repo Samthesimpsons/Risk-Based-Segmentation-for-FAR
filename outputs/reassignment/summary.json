@@ -1,0 +1,28 @@
+{
+  "populations": {
+    "total_customers": 29090,
+    "banded_customers": 28770,
+    "banded_customers_with_scoreable_buys": 28770,
+    "customers_reassigned": 19431
+  },
+  "band_population_before": {
+    "Conservative": 5672,
+    "Income": 11838,
+    "Balanced": 8582,
+    "Aggressive": 2678
+  },
+  "band_population_after": {
+    "Conservative": 2267,
+    "Income": 12774,
+    "Balanced": 10407,
+    "Aggressive": 3322
+  },
+  "discordance_before": {
+    "mean_discordance": 0.8743783982720019,
+    "discordant_share": 0.18584303433651272
+  },
+  "discordance_after": {
+    "mean_discordance": 0.3889353797082908,
+    "discordant_share": 0.05004359427096797
+  }
+}

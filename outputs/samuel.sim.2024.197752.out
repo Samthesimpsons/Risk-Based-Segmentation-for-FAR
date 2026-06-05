@@ -1,0 +1,180 @@
+Installed 1 package in 81ms
+Poe => uv run python -m src.pipeline.customer_reassignment --output-dir $output_dir --data-dir $data_dir
+Loading raw data...
+Building original profiles and asset risk classes...
+Computing revealed bands from purchase history...
+Reassigning customer bands...
+Writing regrouped data copy to data/regrouped/...
+Computing reassignment summary...
+
+Reassignment complete. Regrouped data in: data/regrouped
+  Banded customers: 28770 (19431 reassigned)
+  Mean discordance: 0.8744 -> 0.3889
+  Discordant share (d>=2): 0.1858 -> 0.0500
+  Summary: outputs/reassignment/summary.json
+Poe => uv run python -m src.pipeline.stratified_training --device $device --splits-dir $splits_dir --results-dir $results_dir --data-dir $data_dir --configs-dir $configs_dir ${splits_limit:+--splits-limit $splits_limit}
+Loading evaluation splits...
+  Loaded 69 evaluation splits
+Loading close prices...
+Loading customer profiles and asset risk classes...
+Loading best LightGCN backbone hyperparameters...
+  Loaded best LightGCN hyperparameters from outputs/configs/20260427_122215/best_hyperparameters.json
+  Backbone: embedding_dimension=64 number_of_layers=3 learning_rate=0.001 weight_decay=1e-05 keep_probability=0.6 number_of_epochs=50 batch_size=1024
+
+=== Trial stratified_lambda_0.0 (coherence_loss_weight=0.0) ===
+  split 0 (2019-08-01 -> 2020-01-14)
+  split 1 (2019-08-14 -> 2020-01-27)
+  split 2 (2019-08-27 -> 2020-02-07)
+  split 3 (2019-09-09 -> 2020-02-20)
+  split 4 (2019-09-20 -> 2020-03-04)
+  split 5 (2019-10-03 -> 2020-03-17)
+  split 6 (2019-10-16 -> 2020-03-30)
+  split 7 (2019-10-29 -> 2020-04-10)
+  split 8 (2019-11-11 -> 2020-04-23)
+  split 9 (2019-11-22 -> 2020-05-06)
+  split 10 (2019-12-05 -> 2020-05-19)
+  split 11 (2019-12-18 -> 2020-06-01)
+  split 12 (2020-01-01 -> 2020-06-12)
+  split 13 (2020-01-14 -> 2020-06-25)
+  split 14 (2020-01-27 -> 2020-07-08)
+  split 15 (2020-02-07 -> 2020-07-21)
+  split 16 (2020-02-20 -> 2020-08-03)
+  split 17 (2020-03-04 -> 2020-08-14)
+  split 18 (2020-03-17 -> 2020-08-27)
+  split 19 (2020-03-30 -> 2020-09-09)
+  split 20 (2020-04-10 -> 2020-09-22)
+  split 21 (2020-04-23 -> 2020-10-05)
+  split 22 (2020-05-06 -> 2020-10-16)
+  split 23 (2020-05-19 -> 2020-10-29)
+  split 24 (2020-06-01 -> 2020-11-11)
+  split 25 (2020-06-12 -> 2020-11-24)
+  split 26 (2020-06-25 -> 2020-12-07)
+  split 27 (2020-07-08 -> 2020-12-18)
+  split 28 (2020-07-21 -> 2021-01-01)
+  split 29 (2020-08-03 -> 2021-01-14)
+  split 30 (2020-08-14 -> 2021-01-27)
+  split 31 (2020-08-27 -> 2021-02-09)
+  split 32 (2020-09-09 -> 2021-02-22)
+  split 33 (2020-09-22 -> 2021-03-05)
+  split 34 (2020-10-05 -> 2021-03-18)
+  split 35 (2020-10-16 -> 2021-03-31)
+  split 36 (2020-10-29 -> 2021-04-13)
+  split 37 (2020-11-11 -> 2021-04-26)
+  split 38 (2020-11-24 -> 2021-05-07)
+  split 39 (2020-12-07 -> 2021-05-20)
+  split 40 (2020-12-18 -> 2021-06-02)
+  split 41 (2021-01-01 -> 2021-06-15)
+  split 42 (2021-01-14 -> 2021-06-28)
+  split 43 (2021-01-27 -> 2021-07-09)
+  split 44 (2021-02-09 -> 2021-07-22)
+  split 45 (2021-02-22 -> 2021-08-04)
+  split 46 (2021-03-05 -> 2021-08-17)
+  split 47 (2021-03-18 -> 2021-08-30)
+  split 48 (2021-03-31 -> 2021-09-10)
+  split 49 (2021-04-13 -> 2021-09-23)
+  split 50 (2021-04-26 -> 2021-10-06)
+  split 51 (2021-05-07 -> 2021-10-19)
+  split 52 (2021-05-20 -> 2021-11-01)
+  split 53 (2021-06-02 -> 2021-11-12)
+  split 54 (2021-06-15 -> 2021-11-25)
+  split 55 (2021-06-28 -> 2021-12-08)
+  split 56 (2021-07-09 -> 2021-12-21)
+  split 57 (2021-07-22 -> 2022-01-03)
+  split 58 (2021-08-04 -> 2022-01-14)
+  split 59 (2021-08-17 -> 2022-01-27)
+  split 60 (2021-08-30 -> 2022-02-09)
+  split 61 (2021-09-10 -> 2022-02-22)
+  split 62 (2021-09-23 -> 2022-03-07)
+  split 63 (2021-10-06 -> 2022-03-18)
+  split 64 (2021-10-19 -> 2022-03-31)
+  split 65 (2021-11-01 -> 2022-04-13)
+  split 66 (2021-11-12 -> 2022-04-26)
+  split 67 (2021-11-25 -> 2022-05-09)
+  split 68 (2021-12-08 -> 2022-05-23)
+  averages: ndcg=0.3521 roi=-0.0055 recall=0.5222 pc=0.9493 pc_lift=1.2551
+
+=== Trial stratified_lambda_1.0 (coherence_loss_weight=1.0) ===
+  split 0 (2019-08-01 -> 2020-01-14)
+  split 1 (2019-08-14 -> 2020-01-27)
+  split 2 (2019-08-27 -> 2020-02-07)
+  split 3 (2019-09-09 -> 2020-02-20)
+  split 4 (2019-09-20 -> 2020-03-04)
+  split 5 (2019-10-03 -> 2020-03-17)
+  split 6 (2019-10-16 -> 2020-03-30)
+  split 7 (2019-10-29 -> 2020-04-10)
+  split 8 (2019-11-11 -> 2020-04-23)
+  split 9 (2019-11-22 -> 2020-05-06)
+  split 10 (2019-12-05 -> 2020-05-19)
+  split 11 (2019-12-18 -> 2020-06-01)
+  split 12 (2020-01-01 -> 2020-06-12)
+  split 13 (2020-01-14 -> 2020-06-25)
+  split 14 (2020-01-27 -> 2020-07-08)
+  split 15 (2020-02-07 -> 2020-07-21)
+  split 16 (2020-02-20 -> 2020-08-03)
+  split 17 (2020-03-04 -> 2020-08-14)
+  split 18 (2020-03-17 -> 2020-08-27)
+  split 19 (2020-03-30 -> 2020-09-09)
+  split 20 (2020-04-10 -> 2020-09-22)
+  split 21 (2020-04-23 -> 2020-10-05)
+  split 22 (2020-05-06 -> 2020-10-16)
+  split 23 (2020-05-19 -> 2020-10-29)
+  split 24 (2020-06-01 -> 2020-11-11)
+  split 25 (2020-06-12 -> 2020-11-24)
+  split 26 (2020-06-25 -> 2020-12-07)
+  split 27 (2020-07-08 -> 2020-12-18)
+  split 28 (2020-07-21 -> 2021-01-01)
+  split 29 (2020-08-03 -> 2021-01-14)
+  split 30 (2020-08-14 -> 2021-01-27)
+  split 31 (2020-08-27 -> 2021-02-09)
+  split 32 (2020-09-09 -> 2021-02-22)
+  split 33 (2020-09-22 -> 2021-03-05)
+  split 34 (2020-10-05 -> 2021-03-18)
+  split 35 (2020-10-16 -> 2021-03-31)
+  split 36 (2020-10-29 -> 2021-04-13)
+  split 37 (2020-11-11 -> 2021-04-26)
+  split 38 (2020-11-24 -> 2021-05-07)
+  split 39 (2020-12-07 -> 2021-05-20)
+  split 40 (2020-12-18 -> 2021-06-02)
+  split 41 (2021-01-01 -> 2021-06-15)
+  split 42 (2021-01-14 -> 2021-06-28)
+  split 43 (2021-01-27 -> 2021-07-09)
+  split 44 (2021-02-09 -> 2021-07-22)
+  split 45 (2021-02-22 -> 2021-08-04)
+  split 46 (2021-03-05 -> 2021-08-17)
+  split 47 (2021-03-18 -> 2021-08-30)
+  split 48 (2021-03-31 -> 2021-09-10)
+  split 49 (2021-04-13 -> 2021-09-23)
+  split 50 (2021-04-26 -> 2021-10-06)
+  split 51 (2021-05-07 -> 2021-10-19)
+  split 52 (2021-05-20 -> 2021-11-01)
+  split 53 (2021-06-02 -> 2021-11-12)
+  split 54 (2021-06-15 -> 2021-11-25)
+  split 55 (2021-06-28 -> 2021-12-08)
+  split 56 (2021-07-09 -> 2021-12-21)
+  split 57 (2021-07-22 -> 2022-01-03)
+  split 58 (2021-08-04 -> 2022-01-14)
+  split 59 (2021-08-17 -> 2022-01-27)
+  split 60 (2021-08-30 -> 2022-02-09)
+  split 61 (2021-09-10 -> 2022-02-22)
+  split 62 (2021-09-23 -> 2022-03-07)
+  split 63 (2021-10-06 -> 2022-03-18)
+  split 64 (2021-10-19 -> 2022-03-31)
+  split 65 (2021-11-01 -> 2022-04-13)
+  split 66 (2021-11-12 -> 2022-04-26)
+  split 67 (2021-11-25 -> 2022-05-09)
+  split 68 (2021-12-08 -> 2022-05-23)
+  averages: ndcg=0.3332 roi=-0.0055 recall=0.4930 pc=0.9822 pc_lift=1.3015
+
+Trial summary saved to outputs/results_regrouped/tuning/pc_lgcn/20260605_223513.csv
+Per-trial artefacts under outputs/results_regrouped/evaluation/pc_lgcn/20260605_223513
+Job ID: 197752
+Cluster: crimson
+User/Group: samuel.sim.2024/samuel.sim.2024
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 4
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 01:29:36 core-walltime
+Job Wall-clock time: 00:22:24
+Memory Utilized: 2.47 GB
+Memory Efficiency: 15.43% of 16.00 GB (16.00 GB/node)
