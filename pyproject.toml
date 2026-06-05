@@ -55,8 +55,24 @@ cmd = "uv run python -m src.pipeline.preprocessing"
 help = "Run the profile-coherence dataset audit and save figures to outputs/eda/"
 cmd = "uv run python -m src.pipeline.eda"
 
+[tool.poe.tasks.regroup]
+help = "Regroup customers onto their revealed band, writing a regrouped data copy to data/regrouped/."
+shell = "uv run python -m src.pipeline.customer_reassignment --output-dir $output_dir --data-dir $data_dir"
+
+  [[tool.poe.tasks.regroup.args]]
+  name = "output_dir"
+  options = ["--output-dir"]
+  default = "data/regrouped"
+  help = "Directory to write the regrouped data copy."
+
+  [[tool.poe.tasks.regroup.args]]
+  name = "data_dir"
+  options = ["--data-dir"]
+  default = "data/original"
+  help = "Directory of the original FAR-Trans CSV files."
+
 [tool.poe.tasks.tune]
-help = "End-to-end thesis pipeline: RF + LightGCN grid, 2-model decomposition, RQ2 transaction-return regression, and RQ3 model panel regression."
+help = "End-to-end pipeline: RF + LightGCN grid, 2-model decomposition, transaction-return regression, and model panel regression."
 shell = "uv run python -m src.pipeline.orchestrator --device $device --splits-dir $splits_dir --results-dir $results_dir ${splits_limit:+--splits-limit $splits_limit}"
 
   [[tool.poe.tasks.tune.args]]
@@ -84,7 +100,7 @@ shell = "uv run python -m src.pipeline.orchestrator --device $device --splits-di
   help = "Run only the first N splits (smoke test). Default: all 69 splits."
 
 [tool.poe.tasks.stratify]
-help = "RQ4 stratified profile-coherent LightGCN: lambda=0 ablation and lambda=1 treatment, evaluated on the same 69 splits."
+help = "Stratified profile-coherent LightGCN: lambda=0 ablation and lambda=1 treatment, evaluated on the same 69 splits."
 shell = "uv run python -m src.pipeline.stratified_training --device $device --splits-dir $splits_dir --results-dir $results_dir --configs-dir $configs_dir ${splits_limit:+--splits-limit $splits_limit}"
 
   [[tool.poe.tasks.stratify.args]]
@@ -112,6 +128,50 @@ shell = "uv run python -m src.pipeline.stratified_training --device $device --sp
   help = "Directory of timestamped baseline configs to inherit LightGCN hyperparameters from."
 
   [[tool.poe.tasks.stratify.args]]
+  name = "splits_limit"
+  options = ["--splits-limit"]
+  default = ""
+  help = "Run only the first N splits (smoke test). Default: all 69 splits."
+
+[tool.poe.tasks.regroup-stratify]
+help = "End-to-end: regroup customers onto their revealed band, then run stratified PC-LightGCN on the regrouped data."
+sequence = ["regroup", "stratify-regrouped"]
+
+[tool.poe.tasks.stratify-regrouped]
+help = "Stratified PC-LightGCN on the regrouped data (data/regrouped), results isolated under outputs/results_regrouped."
+shell = "uv run python -m src.pipeline.stratified_training --device $device --splits-dir $splits_dir --results-dir $results_dir --data-dir $data_dir --configs-dir $configs_dir ${splits_limit:+--splits-limit $splits_limit}"
+
+  [[tool.poe.tasks.stratify-regrouped.args]]
+  name = "device"
+  options = ["--device"]
+  default = "cuda"
+  help = "Compute device: cuda or cpu"
+
+  [[tool.poe.tasks.stratify-regrouped.args]]
+  name = "splits_dir"
+  options = ["--splits-dir"]
+  default = "data/splits"
+  help = "Directory containing preprocessed splits"
+
+  [[tool.poe.tasks.stratify-regrouped.args]]
+  name = "results_dir"
+  options = ["--results-dir"]
+  default = "outputs/results_regrouped"
+  help = "Directory to save evaluation result CSVs for the regrouped run."
+
+  [[tool.poe.tasks.stratify-regrouped.args]]
+  name = "data_dir"
+  options = ["--data-dir"]
+  default = "data/regrouped"
+  help = "Directory of regrouped customer and asset CSVs."
+
+  [[tool.poe.tasks.stratify-regrouped.args]]
+  name = "configs_dir"
+  options = ["--configs-dir"]
+  default = "outputs/configs"
+  help = "Directory of timestamped baseline configs to inherit LightGCN hyperparameters from."
+
+  [[tool.poe.tasks.stratify-regrouped.args]]
   name = "splits_limit"
   options = ["--splits-limit"]
   default = ""

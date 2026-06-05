@@ -366,6 +366,12 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--splits-limit", type=int, default=None)
     parser.add_argument(
+        "--data-dir",
+        type=str,
+        default=str(DataPaths().data_directory),
+        help="Directory of customer and asset CSVs (use data/regrouped for the regrouping extension).",
+    )
+    parser.add_argument(
         "--configs-dir",
         type=str,
         default=str(DEFAULT_CONFIGS_DIRECTORY),
@@ -377,6 +383,7 @@ if __name__ == "__main__":
         splits_directory=Path(arguments.splits_dir),
         results_directory=Path(arguments.results_dir),
         experiment_config=ExperimentConfig(device=arguments.device),
+        data_paths=DataPaths(data_directory=Path(arguments.data_dir)),
         splits_limit=arguments.splits_limit,
         configs_directory=Path(arguments.configs_dir),
     )

@@ -94,7 +94,7 @@ def run_decomposition(
     data_paths: DataPaths | None = None,
     top_k: int = 10,
 ) -> dict[str, Any]:
-    """Build the best-trial main_results.csv table consumed by findings.ipynb."""
+    """Build the best-trial main_results.csv table consumed by the findings renderers."""
     del data_paths
     print(f"Discovering evaluation runs in {evaluation_directory} ...")
     runs = discover_run_directories(evaluation_directory, run_timestamp)

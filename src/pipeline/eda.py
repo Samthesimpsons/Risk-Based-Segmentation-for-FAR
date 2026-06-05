@@ -1,4 +1,4 @@
-"""Profile-coherence dataset audit: writes summary.json consumed by findings.ipynb."""
+"""Profile-coherence dataset audit: writes summary.json consumed by the findings renderers."""
 
 from __future__ import annotations
 

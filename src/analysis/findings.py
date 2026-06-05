@@ -1,4 +1,4 @@
-"""Plot, table, and SVG-export renderers backing notebooks/findings.ipynb."""
+"""Plot, table, and figure-export renderers for the thesis, driven by the export_figures pipeline."""
 
 from __future__ import annotations
 
@@ -106,29 +106,29 @@ PLOT_RC: dict[str, Any] = {
 
 @dataclass(frozen=True)
 class NotebookPaths:
-    """Locations of every precomputed artefact rendered by findings.ipynb."""
+    """Locations of every precomputed artefact rendered into the thesis figures."""
 
     eda_directory: Path
-    rq2_directory: Path
-    rq3_decomp_directory: Path
-    rq3_panel_directory: Path
-    rq4_results_directory: Path
-    rq4_baseline_directory: Path
+    return_regression_directory: Path
+    baseline_decomposition_directory: Path
+    panel_regression_directory: Path
+    stratified_results_directory: Path
+    stratified_baseline_directory: Path
 
     @classmethod
     def from_root(cls, root: Path) -> NotebookPaths:
         """Resolve the default thesis-run paths under the project root."""
         return cls(
             eda_directory=root / "outputs/eda",
-            rq2_directory=root
+            return_regression_directory=root
             / "outputs/analysis/transaction_return_regression/20260504_004849",
-            rq3_decomp_directory=root
+            baseline_decomposition_directory=root
             / "outputs/analysis/baseline_decomposition/20260427_122215",
-            rq3_panel_directory=root
+            panel_regression_directory=root
             / "outputs/analysis/panel_regression/20260504_003145",
-            rq4_results_directory=root
+            stratified_results_directory=root
             / "outputs/results/evaluation/pc_lgcn/20260505_125105",
-            rq4_baseline_directory=root
+            stratified_baseline_directory=root
             / "outputs/results/evaluation/light_gcn/20260427_122215/eb788_00006",
         )
 
@@ -161,7 +161,7 @@ def _finalise(fig: plt.Figure, save_path: Path | None) -> None:
     plt.close(fig)
 
 
-def plot_rq1_discordance_distribution(
+def plot_discordance_distribution(
     eda_summary: dict[str, Any], save_path: Path | None = None
 ) -> None:
     """Bar chart of pairwise discordance d in {0,1,2,3} across all scoreable Buys."""
@@ -245,7 +245,7 @@ def _draw_coherence_bracket(
     )
 
 
-def plot_rq1_self_discordance(
+def plot_self_discordance(
     eda_summary: dict[str, Any], save_path: Path | None = None
 ) -> None:
     """Histogram of per-customer discordant share; demonstrates the bimodal customer trait."""
@@ -325,7 +325,7 @@ def plot_rq1_self_discordance(
     _finalise(fig, save_path)
 
 
-def plot_rq1_per_band_coherence(
+def plot_per_band_coherence(
     eda_summary: dict[str, Any], save_path: Path | None = None
 ) -> None:
     """Per-band coherent share showing the U-shape on Conservative and Aggressive extremes."""
@@ -373,7 +373,7 @@ def plot_rq1_per_band_coherence(
     _finalise(fig, save_path)
 
 
-def plot_rq1_yearly_discordance(
+def plot_yearly_discordance(
     eda_summary: dict[str, Any], save_path: Path | None = None
 ) -> None:
     """Per-year mean discordance line chart with the 2018 MiFID II elevation flagged."""
@@ -439,12 +439,14 @@ def _is_partial_year(coverage: dict[str, Any]) -> bool:
     return (last.month, last.day) != (12, 31)
 
 
-def load_rq2_artefacts(rq2_directory: Path) -> pd.DataFrame:
-    """Load the RQ2 coefficients dataframe."""
-    return pd.read_csv(rq2_directory / "coefficients.csv")
+def load_return_regression_coefficients(
+    return_regression_directory: Path,
+) -> pd.DataFrame:
+    """Load the transaction-return regression coefficients dataframe."""
+    return pd.read_csv(return_regression_directory / "coefficients.csv")
 
 
-_RQ2_DISPLAY_ORDER: list[str] = [
+_COEFFICIENT_DISPLAY_ORDER: list[str] = [
     "Intercept",
     "is_coherent",
     "asset_volatility",
@@ -457,7 +459,7 @@ _RQ2_DISPLAY_ORDER: list[str] = [
     "C(year)[T.2021]",
     "C(year)[T.2022]",
 ]
-_RQ2_TERM_EXPLANATIONS: dict[str, str] = {
+_COEFFICIENT_TERM_EXPLANATIONS: dict[str, str] = {
     "Intercept": "Baseline = Inactive customer, 2018, all numeric regressors = 0",
     "is_coherent": "Coherence premium after controlling for vol, segment, year",
     "asset_volatility": "Return penalty per 1.0 unit of annualised vol (negative = low-vol won)",
@@ -472,14 +474,16 @@ _RQ2_TERM_EXPLANATIONS: dict[str, str] = {
 }
 
 
-def _rq2_filtered_coefficients(coefficients: pd.DataFrame) -> pd.DataFrame:
-    filtered = coefficients[coefficients["term"].isin(_RQ2_DISPLAY_ORDER)].copy()
-    return filtered.set_index("term").reindex(_RQ2_DISPLAY_ORDER).reset_index()
+def _filtered_coefficients(coefficients: pd.DataFrame) -> pd.DataFrame:
+    filtered = coefficients[
+        coefficients["term"].isin(_COEFFICIENT_DISPLAY_ORDER)
+    ].copy()
+    return filtered.set_index("term").reindex(_COEFFICIENT_DISPLAY_ORDER).reset_index()
 
 
-def style_rq2_coefficient_table(coefficients: pd.DataFrame) -> pd.DataFrame:
-    """Return the human-readable display table for the RQ2 regression coefficients."""
-    filtered = _rq2_filtered_coefficients(coefficients)
+def style_coefficient_table(coefficients: pd.DataFrame) -> pd.DataFrame:
+    """Return the human-readable display table for the transaction-return regression coefficients."""
+    filtered = _filtered_coefficients(coefficients)
     display_df = filtered.assign(
         estimate=lambda d: d["estimate"].map("{:+.4f}".format),
         std_error=lambda d: d["std_error"].map("{:.4f}".format),
@@ -487,17 +491,17 @@ def style_rq2_coefficient_table(coefficients: pd.DataFrame) -> pd.DataFrame:
             lambda r: f"[{r['ci_lower']:+.4f}, {r['ci_upper']:+.4f}]", axis=1
         ),
         p_value=lambda d: d["p_value"].map(_format_p_value),
-        meaning=lambda d: d["term"].map(_RQ2_TERM_EXPLANATIONS),
+        meaning=lambda d: d["term"].map(_COEFFICIENT_TERM_EXPLANATIONS),
     )
     return display_df[["term", "estimate", "std_error", "ci", "p_value", "meaning"]]
 
 
-def plot_rq2_forest(
+def plot_coefficient_forest(
     coefficients: pd.DataFrame,
     save_path: Path | None = None,
 ) -> None:
-    """Forest plot of every RQ2 regression coefficient with 95% CIs in pp."""
-    filtered = _rq2_filtered_coefficients(coefficients)
+    """Forest plot of every transaction-return regression coefficient with 95% CIs in pp."""
+    filtered = _filtered_coefficients(coefficients)
     plot_df = filtered.copy()
     plot_df["significant"] = plot_df["p_value"] < SIGNIFICANCE_ALPHA
     plot_df["estimate_pp"] = plot_df["estimate"] * 100
@@ -573,9 +577,9 @@ def plot_rq2_forest(
     _finalise(fig, save_path)
 
 
-def style_rq3_main_results(rq3_decomp_directory: Path) -> Any:
+def style_baseline_main_results(baseline_decomposition_directory: Path) -> Any:
     """Headline metrics table for the two FAR-Trans baselines at their primary-metric optima."""
-    main_results = pd.read_csv(rq3_decomp_directory / "main_results.csv")
+    main_results = pd.read_csv(baseline_decomposition_directory / "main_results.csv")
     display_columns = [
         "display_name",
         "best_trial_id",
@@ -609,11 +613,11 @@ def style_rq3_main_results(rq3_decomp_directory: Path) -> Any:
     )
 
 
-def build_rq3_per_band_summary(
-    rq3_panel_directory: Path, eda_summary: dict[str, Any]
+def build_per_band_summary(
+    panel_regression_directory: Path, eda_summary: dict[str, Any]
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Per-(band, model) mean PC@10 plus the band-conditional random baseline pi(b)."""
-    panel = pd.read_csv(rq3_panel_directory / "panel.csv")
+    panel = pd.read_csv(panel_regression_directory / "panel.csv")
     pi_series = _compute_pi_series(eda_summary)
 
     summary = panel.groupby(["model", "band_label"], as_index=False)[
@@ -649,14 +653,14 @@ def _compute_pi_series(eda_summary: dict[str, Any]) -> pd.Series:
     return pd.Series(pi).reindex(BANDS_ORDER)
 
 
-def style_rq3_per_band_summary(summary: pd.DataFrame) -> pd.DataFrame:
+def style_per_band_summary(summary: pd.DataFrame) -> pd.DataFrame:
     """Return the band/model PC@10 summary in the column order shown in the notebook."""
     return summary[
         ["band_label", "model_display", "n_observations", "mean_pc", "pi_b", "lift"]
     ]
 
 
-def plot_rq3_per_band(
+def plot_per_band_pc(
     summary: pd.DataFrame,
     pi_series: pd.Series,
     save_path: Path | None = None,
@@ -733,20 +737,22 @@ def plot_rq3_per_band(
     _finalise(fig, save_path)
 
 
-def load_rq4_per_split(
-    rq4_baseline_directory: Path, rq4_results_directory: Path
+def load_stratified_per_split(
+    stratified_baseline_directory: Path, stratified_results_directory: Path
 ) -> dict[str, pd.DataFrame]:
     """Per-split metric tables for the LightGCN baseline and the two stratified trials."""
     return {
         "baseline": _read_per_split(
-            rq4_baseline_directory / "per_split_metrics.csv", "baseline"
+            stratified_baseline_directory / "per_split_metrics.csv", "baseline"
         ),
         "lambda_0": _read_per_split(
-            rq4_results_directory / "stratified_lambda_0.0/per_split_metrics.csv",
+            stratified_results_directory
+            / "stratified_lambda_0.0/per_split_metrics.csv",
             "lambda_0",
         ),
         "lambda_1": _read_per_split(
-            rq4_results_directory / "stratified_lambda_1.0/per_split_metrics.csv",
+            stratified_results_directory
+            / "stratified_lambda_1.0/per_split_metrics.csv",
             "lambda_1",
         ),
     }
@@ -758,7 +764,7 @@ def _read_per_split(path: Path, label: str) -> pd.DataFrame:
     return df
 
 
-def style_rq4_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
+def style_stratified_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
     """Aggregate-mean metrics across 69 splits for baseline, λ=0, λ=1."""
     baseline = per_split["baseline"]
     lambda_0 = per_split["lambda_0"]
@@ -767,7 +773,7 @@ def style_rq4_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
     aggregate = pd.DataFrame(
         {
             "Configuration": [
-                "LightGCN baseline (RQ3)",
+                "LightGCN baseline",
                 "Stratified, λ=0 (ablation)",
                 "Stratified, λ=1 (treatment)",
             ],
@@ -811,7 +817,7 @@ def style_rq4_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
     )
 
 
-def compute_rq4_paired_table(per_split: dict[str, pd.DataFrame]) -> pd.DataFrame:
+def compute_paired_table(per_split: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Long-format mean Δ and win rate for each (contrast, metric) pair."""
     paired = pd.concat(
         [
@@ -848,8 +854,8 @@ def _paired_summary(
     return pd.DataFrame(rows)
 
 
-def style_rq4_paired_table(paired_table: pd.DataFrame) -> pd.DataFrame:
-    """Pivoted display of mean_delta and win_rate for the three RQ4 contrasts."""
+def style_paired_table(paired_table: pd.DataFrame) -> pd.DataFrame:
+    """Pivoted display of mean_delta and win_rate for the three stratified contrasts."""
     formatted = paired_table.assign(
         mean_delta=lambda d: d["mean_delta"].map("{:+.5f}".format),
         win_rate=lambda d: d["win_rate"].map("{:.0%}".format),
@@ -861,19 +867,19 @@ def style_rq4_paired_table(paired_table: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def build_rq4_per_band_summary(
-    rq4_baseline_directory: Path,
-    rq4_results_directory: Path,
+def build_stratified_per_band_summary(
+    stratified_baseline_directory: Path,
+    stratified_results_directory: Path,
     eda_summary: dict[str, Any],
     customer_profiles: dict[str, Any],
     asset_risk_classes: dict[str, int],
 ) -> pd.DataFrame:
-    """Per-band PC-lift@10 for all three RQ4 trials (baseline, lambda=0, lambda=1)."""
+    """Per-band PC-lift@10 for all three stratified trials (baseline, lambda=0, lambda=1)."""
     trial_paths = {
-        "Baseline": rq4_baseline_directory / "recommendations.parquet",
-        r"$\lambda{=}0$": rq4_results_directory
+        "Baseline": stratified_baseline_directory / "recommendations.parquet",
+        r"$\lambda{=}0$": stratified_results_directory
         / "stratified_lambda_0.0/recommendations.parquet",
-        r"$\lambda{=}1$": rq4_results_directory
+        r"$\lambda{=}1$": stratified_results_directory
         / "stratified_lambda_1.0/recommendations.parquet",
     }
     pi_series = _compute_pi_series(eda_summary)
@@ -936,8 +942,8 @@ def build_rq4_per_band_summary(
     return pd.DataFrame(rows)
 
 
-def style_rq4_per_band_summary(summary: pd.DataFrame) -> Any:
-    """Pivoted display of per-band PC-lift@10 across the three RQ4 trials."""
+def style_stratified_per_band_summary(summary: pd.DataFrame) -> Any:
+    """Pivoted display of per-band PC-lift@10 across the three stratified trials."""
     pivoted = summary.pivot(index="band", columns="trial", values="pc_lift_at_10")
     pivoted = pivoted.reindex(index=BANDS_ORDER)
     trial_order = ["Baseline", r"$\lambda{=}0$", r"$\lambda{=}1$"]
@@ -945,11 +951,11 @@ def style_rq4_per_band_summary(summary: pd.DataFrame) -> Any:
     return pivoted.style.format("{:.2f}\\times")
 
 
-def plot_rq4_paired_deltas(
+def plot_paired_deltas(
     paired_table: pd.DataFrame, save_path: Path | None = None
 ) -> None:
     """Per-metric horizontal bars of mean Delta across the three contrasts, stacked vertically."""
-    _plot_rq4_paired_grid(
+    _plot_paired_grid(
         paired_table=paired_table,
         value_column="mean_delta",
         formatter=lambda v: f"{v:+.4f}",
@@ -960,11 +966,11 @@ def plot_rq4_paired_deltas(
     )
 
 
-def plot_rq4_paired_win_rates(
+def plot_paired_win_rates(
     paired_table: pd.DataFrame, save_path: Path | None = None
 ) -> None:
     """Per-metric horizontal bars of win rate across the three contrasts, stacked vertically."""
-    _plot_rq4_paired_grid(
+    _plot_paired_grid(
         paired_table=paired_table,
         value_column="win_rate",
         formatter=lambda v: f"{v:.0%}",
@@ -977,7 +983,7 @@ def plot_rq4_paired_win_rates(
     )
 
 
-def _plot_rq4_paired_grid(
+def _plot_paired_grid(
     paired_table: pd.DataFrame,
     value_column: str,
     formatter: Any,
@@ -1077,47 +1083,49 @@ def export_figures_as_pdf(
 ) -> list[Path]:
     """Render every findings figure to PDF under `output_directory` and return the written paths."""
     output_directory.mkdir(parents=True, exist_ok=True)
-    coefficients = load_rq2_artefacts(paths.rq2_directory)
-    rq3_per_band_summary, pi_series = build_rq3_per_band_summary(
-        paths.rq3_panel_directory, eda_summary
+    coefficients = load_return_regression_coefficients(
+        paths.return_regression_directory
     )
-    rq4_per_split = load_rq4_per_split(
-        paths.rq4_baseline_directory, paths.rq4_results_directory
+    per_band_summary, pi_series = build_per_band_summary(
+        paths.panel_regression_directory, eda_summary
     )
-    rq4_paired = compute_rq4_paired_table(rq4_per_split)
+    stratified_per_split = load_stratified_per_split(
+        paths.stratified_baseline_directory, paths.stratified_results_directory
+    )
+    paired_table = compute_paired_table(stratified_per_split)
 
     figure_plan: list[tuple[str, Any]] = [
         (
-            "rq1_discordance_distribution.pdf",
-            lambda p: plot_rq1_discordance_distribution(eda_summary, save_path=p),
+            "discordance_distribution.pdf",
+            lambda p: plot_discordance_distribution(eda_summary, save_path=p),
         ),
         (
-            "rq1_self_discordance.pdf",
-            lambda p: plot_rq1_self_discordance(eda_summary, save_path=p),
+            "self_discordance.pdf",
+            lambda p: plot_self_discordance(eda_summary, save_path=p),
         ),
         (
-            "rq1_per_band_coherence.pdf",
-            lambda p: plot_rq1_per_band_coherence(eda_summary, save_path=p),
+            "per_band_coherence.pdf",
+            lambda p: plot_per_band_coherence(eda_summary, save_path=p),
         ),
         (
-            "rq1_yearly_discordance.pdf",
-            lambda p: plot_rq1_yearly_discordance(eda_summary, save_path=p),
+            "yearly_discordance.pdf",
+            lambda p: plot_yearly_discordance(eda_summary, save_path=p),
         ),
         (
-            "rq2_coefficient_forest.pdf",
-            lambda p: plot_rq2_forest(coefficients, save_path=p),
+            "coefficient_forest.pdf",
+            lambda p: plot_coefficient_forest(coefficients, save_path=p),
         ),
         (
-            "rq3_per_band_pc.pdf",
-            lambda p: plot_rq3_per_band(rq3_per_band_summary, pi_series, save_path=p),
+            "per_band_pc.pdf",
+            lambda p: plot_per_band_pc(per_band_summary, pi_series, save_path=p),
         ),
         (
-            "rq4_paired_deltas.pdf",
-            lambda p: plot_rq4_paired_deltas(rq4_paired, save_path=p),
+            "paired_deltas.pdf",
+            lambda p: plot_paired_deltas(paired_table, save_path=p),
         ),
         (
-            "rq4_paired_win_rates.pdf",
-            lambda p: plot_rq4_paired_win_rates(rq4_paired, save_path=p),
+            "paired_win_rates.pdf",
+            lambda p: plot_paired_win_rates(paired_table, save_path=p),
         ),
     ]
     written: list[Path] = []

@@ -92,7 +92,7 @@ def run_panel_regression(
     run_timestamp: str | None = None,
     data_paths: DataPaths | None = None,
 ) -> dict[str, Any]:
-    """Build the (customer, split, model) panel.csv consumed by findings.ipynb."""
+    """Build the (customer, split, model) panel.csv consumed by the findings renderers."""
     data_paths = data_paths or DataPaths()
     print("Loading customer profiles and asset risk classes...")
     customers = load_customers(

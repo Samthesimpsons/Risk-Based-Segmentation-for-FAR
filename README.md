@@ -12,7 +12,7 @@ A measurement framework for profile-aware financial asset recommendation on the 
 ## Paper and Findings
 
 - **Conference writeup**: LaTeX sources live in `thesis/`. `ijcai26.pdf` is the compiled output and `sections/` contains the per-section sources. Figures are loaded from `thesis/figures/`.
-- **Figure export**: `uv run poe figures` renders every findings figure (RQ1 to RQ4) as a single-column PDF into `thesis/figures/`. All renderers live in `src/analysis/findings.py`.
+- **Figure export**: `uv run poe figures` renders every findings figure as a single-column PDF into `thesis/figures/`. All renderers live in `src/analysis/findings.py`.
 
 This README is the engineering counterpart: project context, code architecture, reproduction instructions.
 
@@ -65,9 +65,11 @@ Here is a summary of what the lefthook git hooks does:
 ```sh
 uv run poe preprocess                                                         # generate temporal evaluation splits to data/splits/
 uv run poe eda                                                                # dataset audit -> outputs/eda/
-uv run poe tune --splits-limit 2 --device cpu                                 # RQ1-RQ3 smoke test using cpu and small subset of data
-uv run poe stratify --splits-limit 2 --device cpu                             # RQ4 stratified PC-LightGCN smoke test
-uv run poe jlab                                                               # launch Jupyter Lab to open notebooks/findings.ipynb
+uv run poe tune --splits-limit 2 --device cpu                                 # baseline pipeline smoke test using cpu and small subset of data
+uv run poe stratify --splits-limit 2 --device cpu                             # stratified PC-LightGCN smoke test
+uv run poe regroup                                                            # reassign customers to their revealed band -> data/regrouped/
+uv run poe stratify-regrouped --splits-limit 2 --device cpu                   # stratified PC-LightGCN on regrouped data, smoke test
+uv run poe jlab                                                               # launch Jupyter Lab for notebook exploration
 uv run poe figures                                                            # export all thesis figures as PDFs into thesis/figures/
 uv run poe lint                                                               # ruff linting
 uv run poe type                                                               # ty type checks
@@ -82,8 +84,9 @@ Run the following `poe` tasks in order from the project root:
 uv run poe setup        # install lefthook git hooks (precommit/postcommit checks)
 uv run poe preprocess   # generate temporal evaluation splits to data/splits/
 uv run poe eda          # dataset audit -> outputs/eda/
-uv run poe tune         # RQ1-RQ3: baseline grid + decomposition + RQ2 + RQ3
-uv run poe stratify     # RQ4: stratified profile-coherent LightGCN
+uv run poe tune         # baseline grid + decomposition + transaction-return and panel regressions
+uv run poe stratify     # stratified profile-coherent LightGCN
+uv run poe regroup-stratify  # extension: reassign customers to their revealed band, then rerun stratified PC-LightGCN on data/regrouped/
 uv run poe figures      # export all thesis figures as single-column PDFs into thesis/figures/
 ```
 
@@ -93,7 +96,7 @@ After the figures export, rebuild the LaTeX paper to pick up the regenerated fig
 cd thesis && latexmk -pdf ijcai26.tex
 ```
 
-> **Note**: the SLURM batch scripts described in [GPU Cluster](#gpu-cluster) are only relevant if you have access to the SMU GPU cluster. In that case, `sbatch scripts/tune.sh` and `sbatch scripts/stratify.sh` replace the corresponding `poe` tasks (`tune` and `stratify`).
+> **Note**: the SLURM batch scripts described in [GPU Cluster](#gpu-cluster) are only relevant if you have access to the SMU GPU cluster. In that case, `sbatch scripts/tune.sh`, `sbatch scripts/stratify.sh`, and `sbatch scripts/regroup.sh` replace the corresponding `poe` tasks (`tune`, `stratify`, and `regroup-stratify`).
 
 ## GPU Cluster
 
@@ -102,11 +105,12 @@ The SMU `msc` partition under `studentqos` is the standard target for the grid s
 ### Submitting the Pipeline
 
 ```bash
-sbatch scripts/tune.sh         # RQ1-RQ3: baseline grid + decomposition + Regression Studies
-sbatch scripts/stratify.sh     # RQ4: stratified profile-coherent LightGCN
+sbatch scripts/tune.sh         # baseline grid + decomposition + regression studies
+sbatch scripts/stratify.sh     # stratified profile-coherent LightGCN
+sbatch scripts/regroup.sh      # extension: regroup customers + stratified PC-LightGCN on regrouped data
 ```
 
-Both scripts load the cluster Python and CUDA modules, activate the venv, and invoke the matching `poe` task (`tune` or `stratify`).
+Each script loads the cluster Python and CUDA modules, activates the venv, and invokes the matching `poe` task (`tune`, `stratify`, or `regroup-stratify`).
 
 Job email notifications go to the addresses listed in the `#SBATCH --mail-user` line. Live job output streams to `outputs/{user}.{jobid}.out` on the cluster filesystem.
 
