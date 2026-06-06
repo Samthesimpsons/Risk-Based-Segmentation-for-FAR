@@ -42,22 +42,25 @@ PRETTY_METRIC: dict[str, str] = {
     "profile_coherence_at_k": "PC@10",
     "profile_coherence_lift_at_k": "PC-lift@10",
 }
+# PC-lift@10 is omitted from the paired figures: regrouping changes each customer's
+# band and hence the denominator pi(b_u), so PC-lift is not comparable across the
+# declared and regrouped configurations shown side by side. The figures compare on
+# raw PC@10 instead.
 PC_METRIC_ORDER: list[str] = [
-    "PC-lift@10",
     "PC@10",
     "ROI@10 (mo.)",
     "Recall@10",
     "nDCG@10",
 ]
 CONTRAST_DESCRIPTIONS: dict[str, str] = {
-    "λ=0 vs baseline": "Stratification effect",
-    "λ=1 vs baseline": "Stratification + PC-loss effect",
-    "λ=1 vs λ=0 (PC-loss)": "PC-loss effect (matched architecture)",
+    "Stratify": "λ=0, declared bands",
+    "Stratify+PC-loss": "λ=1, declared bands",
+    "Stratify+Regroup": "λ=0, regrouped bands",
 }
 CONTRAST_COLOURS: dict[str, str] = {
-    "λ=0 vs baseline": "#4C72B0",
-    "λ=1 vs baseline": "#DD8452",
-    "λ=1 vs λ=0 (PC-loss)": "#55A868",
+    "Stratify": "#4C72B0",
+    "Stratify+PC-loss": "#DD8452",
+    "Stratify+Regroup": "#55A868",
 }
 CONTRAST_ORDER: list[str] = list(CONTRAST_DESCRIPTIONS.keys())
 SIGNIFICANCE_ALPHA: float = 0.05
@@ -114,6 +117,7 @@ class NotebookPaths:
     panel_regression_directory: Path
     stratified_results_directory: Path
     stratified_baseline_directory: Path
+    regrouped_results_directory: Path
 
     @classmethod
     def from_root(cls, root: Path) -> NotebookPaths:
@@ -130,6 +134,8 @@ class NotebookPaths:
             / "outputs/results/evaluation/pc_lgcn/20260505_125105",
             stratified_baseline_directory=root
             / "outputs/results/evaluation/light_gcn/20260427_122215/eb788_00006",
+            regrouped_results_directory=root
+            / "outputs/results_regrouped/evaluation/pc_lgcn/20260605_223513",
         )
 
 
@@ -318,7 +324,7 @@ def plot_self_discordance(
     ax.set_xticklabels(bin_labels, rotation=45, ha="right", fontsize=6)
     ax.set_ylim(0, max(shares) * 1.3)
     ax.set_ylabel("Share of customers")
-    ax.set_xlabel("Per-customer discordant share (\\%)")
+    ax.set_xlabel("Per-customer discordant share (%)")
     ax.grid(axis="x", visible=False)
 
     plt.tight_layout(pad=0.3)
@@ -426,7 +432,7 @@ def plot_yearly_discordance(
             0.01, -0.28, caption, transform=ax.transAxes, fontsize=6, color="#666666"
         )
 
-    ax.set_ylim(0.6, 1.15)
+    ax.set_ylim(0.0, 1.15)
     ax.set_ylabel("Mean discordance")
     ax.set_xlabel("Calendar year")
     ax.legend(loc="lower left", fontsize=6.5)
@@ -738,10 +744,13 @@ def plot_per_band_pc(
 
 
 def load_stratified_per_split(
-    stratified_baseline_directory: Path, stratified_results_directory: Path
+    stratified_baseline_directory: Path,
+    stratified_results_directory: Path,
+    regrouped_results_directory: Path | None = None,
 ) -> dict[str, pd.DataFrame]:
-    """Per-split metric tables for the LightGCN baseline and the two stratified trials."""
-    return {
+    """Per-split metric tables for the baseline, the declared-band trials, and (optionally)
+    the regrouped-band trials."""
+    per_split = {
         "baseline": _read_per_split(
             stratified_baseline_directory / "per_split_metrics.csv", "baseline"
         ),
@@ -756,6 +765,16 @@ def load_stratified_per_split(
             "lambda_1",
         ),
     }
+    if regrouped_results_directory is not None:
+        per_split["regroup_lambda_0"] = _read_per_split(
+            regrouped_results_directory / "stratified_lambda_0.0/per_split_metrics.csv",
+            "regroup_lambda_0",
+        )
+        per_split["regroup_lambda_1"] = _read_per_split(
+            regrouped_results_directory / "stratified_lambda_1.0/per_split_metrics.csv",
+            "regroup_lambda_1",
+        )
+    return per_split
 
 
 def _read_per_split(path: Path, label: str) -> pd.DataFrame:
@@ -765,42 +784,28 @@ def _read_per_split(path: Path, label: str) -> pd.DataFrame:
 
 
 def style_stratified_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
-    """Aggregate-mean metrics across 69 splits for baseline, λ=0, λ=1."""
-    baseline = per_split["baseline"]
-    lambda_0 = per_split["lambda_0"]
-    lambda_1 = per_split["lambda_1"]
+    """Aggregate-mean metrics across 69 splits for every available trial."""
+    trial_labels = {
+        "baseline": "LightGCN baseline",
+        "lambda_0": "Stratified, λ=0",
+        "lambda_1": "Stratified, λ=1",
+        "regroup_lambda_0": "Regrouped, λ=0",
+        "regroup_lambda_1": "Regrouped, λ=1",
+    }
+    available = [key for key in trial_labels if key in per_split]
 
     aggregate = pd.DataFrame(
         {
-            "Configuration": [
-                "LightGCN baseline",
-                "Stratified, λ=0 (ablation)",
-                "Stratified, λ=1 (treatment)",
-            ],
-            "nDCG@10": [
-                baseline["ndcg_at_k"].mean(),
-                lambda_0["ndcg_at_k"].mean(),
-                lambda_1["ndcg_at_k"].mean(),
-            ],
-            "ROI@10 (mo.)": [
-                baseline["roi_at_k"].mean(),
-                lambda_0["roi_at_k"].mean(),
-                lambda_1["roi_at_k"].mean(),
-            ],
-            "Recall@10": [
-                baseline["recall_at_k"].mean(),
-                lambda_0["recall_at_k"].mean(),
-                lambda_1["recall_at_k"].mean(),
-            ],
+            "Configuration": [trial_labels[key] for key in available],
+            "nDCG@10": [per_split[key]["ndcg_at_k"].mean() for key in available],
+            "ROI@10 (mo.)": [per_split[key]["roi_at_k"].mean() for key in available],
+            "Recall@10": [per_split[key]["recall_at_k"].mean() for key in available],
             "PC@10": [
-                baseline["profile_coherence_at_k"].mean(),
-                lambda_0["profile_coherence_at_k"].mean(),
-                lambda_1["profile_coherence_at_k"].mean(),
+                per_split[key]["profile_coherence_at_k"].mean() for key in available
             ],
             "PC-lift@10": [
-                baseline["profile_coherence_lift_at_k"].mean(),
-                lambda_0["profile_coherence_lift_at_k"].mean(),
-                lambda_1["profile_coherence_lift_at_k"].mean(),
+                per_split[key]["profile_coherence_lift_at_k"].mean()
+                for key in available
             ],
         }
     )
@@ -818,17 +823,15 @@ def style_stratified_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
 
 
 def compute_paired_table(per_split: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """Long-format mean Δ and win rate for each (contrast, metric) pair."""
+    """Long-format mean Δ and win rate against the baseline for each stratified trial."""
     paired = pd.concat(
         [
+            _paired_summary(per_split["lambda_0"], per_split["baseline"], "Stratify"),
             _paired_summary(
-                per_split["lambda_0"], per_split["baseline"], "λ=0 vs baseline"
+                per_split["lambda_1"], per_split["baseline"], "Stratify+PC-loss"
             ),
             _paired_summary(
-                per_split["lambda_1"], per_split["baseline"], "λ=1 vs baseline"
-            ),
-            _paired_summary(
-                per_split["lambda_1"], per_split["lambda_0"], "λ=1 vs λ=0 (PC-loss)"
+                per_split["regroup_lambda_0"], per_split["baseline"], "Stratify+Regroup"
             ),
         ],
         ignore_index=True,
@@ -954,7 +957,7 @@ def style_stratified_per_band_summary(summary: pd.DataFrame) -> Any:
 def plot_paired_deltas(
     paired_table: pd.DataFrame, save_path: Path | None = None
 ) -> None:
-    """Per-metric horizontal bars of mean Delta across the three contrasts, stacked vertically."""
+    """Per-metric horizontal bars of mean Delta across the configurations, stacked vertically."""
     _plot_paired_grid(
         paired_table=paired_table,
         value_column="mean_delta",
@@ -969,7 +972,7 @@ def plot_paired_deltas(
 def plot_paired_win_rates(
     paired_table: pd.DataFrame, save_path: Path | None = None
 ) -> None:
-    """Per-metric horizontal bars of win rate across the three contrasts, stacked vertically."""
+    """Per-metric horizontal bars of win rate across the configurations, stacked vertically."""
     _plot_paired_grid(
         paired_table=paired_table,
         value_column="win_rate",
@@ -979,7 +982,7 @@ def plot_paired_win_rates(
         reference_line=0.5,
         reference_style="dashed",
         x_ticks=[0.0, 0.25, 0.5, 0.75, 1.0],
-        x_tick_labels=["0\\%", "25\\%", "50\\%", "75\\%", "100\\%"],
+        x_tick_labels=["0%", "25%", "50%", "75%", "100%"],
     )
 
 
@@ -998,7 +1001,7 @@ def _plot_paired_grid(
     fig, axes = plt.subplots(
         len(metrics_top_to_bottom),
         1,
-        figsize=(SINGLE_COLUMN_WIDTH_INCHES, 6.0),
+        figsize=(SINGLE_COLUMN_WIDTH_INCHES, 1.2 * len(metrics_top_to_bottom)),
         sharex=(x_limits is not None),
     )
 
@@ -1051,15 +1054,15 @@ def _plot_paired_grid(
                 fontsize=5.5,
             )
 
+    fig.tight_layout(rect=(0, 0.16, 1, 1.0), pad=0.4, h_pad=0.6)
     fig.legend(
         handles=_contrast_legend_handles(),
         loc="lower center",
         ncol=1,
-        bbox_to_anchor=(0.5, -0.02),
+        bbox_to_anchor=(0.5, 0.0),
         frameon=False,
         fontsize=6,
     )
-    fig.tight_layout(rect=(0, 0.06, 1, 1.0), pad=0.4, h_pad=0.6)
     _finalise(fig, save_path)
 
 
@@ -1090,7 +1093,9 @@ def export_figures_as_pdf(
         paths.panel_regression_directory, eda_summary
     )
     stratified_per_split = load_stratified_per_split(
-        paths.stratified_baseline_directory, paths.stratified_results_directory
+        paths.stratified_baseline_directory,
+        paths.stratified_results_directory,
+        paths.regrouped_results_directory,
     )
     paired_table = compute_paired_table(stratified_per_split)
 

@@ -1,0 +1,15 @@
+\section{Related Work}
+\label{sec:relatedwork}
+
+Building on the FAR-Trans benchmark and its two-axis evaluation standard introduced in Section~\ref{sec:prelim}, we position our contribution against three strands of prior work: profile-aware FAR architectures, risk-aware re-ranking, and fairness-aware recommendation.
+
+\subsection{Profile-aware FAR architectures}
+\citeauthor{Ghiye_2024}~[\citeyear{Ghiye_2024}] extend LightGCN with a causal graph convolution and a sliding-window training scheme for credit-bond recommendation, capturing temporal drift in user interests via embedding updates restricted to recent interactions. Their result supports the broader point that LightGCN can be modified to carry domain-specific structure beyond plain Bayesian Personalised Ranking (BPR), and motivates the choice of LightGCN as the backbone for our extension.
+
+\subsection{Risk-aware FAR via post-hoc re-ranking}
+\citeauthor{10.1145/3773966.3779383}~[\citeyear{10.1145/3773966.3779383}] propose a risk-aware utility re-ranking (RURA) procedure on FAR-Trans: a mean-variance re-ranking objective conditioned on the customer's MiFID II risk tolerance is applied to a base ranker's top list, lifting ROI@10 well above the base ranker while keeping nDCG@10 only on par with other risk-aware re-rankers, far below the base ranker's own nDCG@10. RURA optimises a risk-tolerance utility but does not quantify how aligned the resulting list is with the declared band in terms of ordinal distance. PC@$k$ is complementary: it is a metric for that alignment, and is computable on any ranker (with or without re-ranking).
+
+\subsection{Fairness-aware recommendation}
+Fairness-constrained recommender systems enforce group-level quality guarantees such as equalised performance across demographic groups or item providers~\cite{zhao2024fairnessdiversityrecommendersystems}. PC@$k$ can be viewed through a similar lens: it measures per-group recommendation quality where groups are defined by declared MiFID II risk bands, and PC-lift@$k$ adjusts for how easy each band is to satisfy by chance, so bands can be compared on equal footing. The key difference is that PC@$k$ targets a regulatory suitability constraint rather than a social fairness objective.
+
+All in all, existing FAR work optimises profitability or ranking, with risk-tolerance entering only as a post-hoc utility weight. We bring suitability inside the loop: PC@$k$ scores coherence on the same top-$k$ lists the benchmarks already use, and a profile-coherent objective optimises for it during training instead of filtering for it afterwards.

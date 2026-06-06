@@ -1,0 +1,114 @@
+\section{RQ2: Coherence Weaknesses of FAR-Trans Baselines}
+\label{sec:rq2}
+
+With a confirmed return premium for coherent Buys from our regression analysis (Section~\ref{sec:rq1}), we now audit whether the two FAR-Trans baselines actually deliver profile-coherent recommendations across all four risk bands. We choose these two because, in the original FAR-Trans benchmark of 11 algorithms, LightGCN is the strongest ranking model (highest nDCG@10) and Random Forest the strongest profitability model (highest ROI@10), with the authors noting that each leads only on its own objective.
+
+RQ2 asks: at their best published settings, do the chosen FAR-Trans baseline models lift profile coherence above the band-conditional random baseline $\pi(b)$ for every declared band? We first describe the temporal evaluation protocol and the baseline grids, then present the per-band audit.
+
+\subsection{Temporal Split Protocol}
+\label{sec:setup:splits}
+
+Evaluation uses 69 temporal splits with approximately biweekly split points on an evenly spaced trading-day grid running from August 2019 to December 2021, with per-split test windows extending evaluation coverage to May 2022. The two-week split cadence follows the original FAR-Trans benchmark~\cite{sanzcruzado2024fartransinvestmentdatasetfinancial}.
+
+For each split, the training set contains all Buys in $[0, \texttt{time\_point}]$ and the test set contains all Buys in $[\texttt{time\_point}, \texttt{test\_end}]$, deduplicated against training and filtered to the training-asset universe. Eligible customers have at least one interaction in both training and test, while eligible assets have prices on both endpoints.
+
+\subsection{Baselines and Hyperparameter Grids}
+\label{sec:setup:baselines}
+
+Table~\ref{tab:baseline-grids} reports the search grids, fixed values, and best-trial selections for the two FAR-Trans baselines. Both grids are swept with Ray Tune, with LightGCN tuned on average nDCG@10 and Random Forest on average ROI@10 across the 69 splits.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+Parameter & Search space & Best & Role \\
+\midrule
+\multicolumn{4}{l}{\textbf{LightGCN} (tuned on average nDCG@10)} \\
+\texttt{embedding\_dim}    & $\{64, 128\}$          & $64$      & grid \\
+\texttt{num\_layers}       & $\{2, 3\}$             & $3$       & grid \\
+\texttt{learning\_rate}    & $\{10^{-2}, 10^{-3}\}$ & $10^{-3}$ & grid \\
+\texttt{weight\_decay}     & $10^{-5}$              & n/a       & fixed \\
+\texttt{keep\_prob}        & $0.6$                  & n/a       & fixed \\
+\texttt{num\_epochs}       & $50$                   & n/a       & fixed \\
+\texttt{batch\_size}       & $1024$                 & n/a       & fixed \\
+\midrule
+\multicolumn{4}{l}{\textbf{Random Forest} (tuned on average ROI@10)} \\
+\texttt{num\_estimators}   & $\{20, 30, 40, 50\}$   & $40$      & grid \\
+\texttt{max\_depth}        & $\{15, 25, 50\}$        & $50$      & grid \\
+horizon                    & 6 months               & n/a       & fixed \\
+\texttt{random\_state}     & $42$                   & n/a       & fixed \\
+\bottomrule
+\end{tabular}
+\caption{Baseline hyperparameter grids and best-trial values. ``grid'' rows are searched, ``fixed'' rows are held constant.}
+\label{tab:baseline-grids}
+\end{table}
+
+\subsection{Per-Band Audit Method}
+\label{sec:rq2:method}
+
+For each (declared band, model) cell, we average per-customer PC@10 unweighted over all (customer, split) pairs. Per-band lift is then the ratio of that cell mean to the random baseline $\pi(b)$, which adjusts for how easy each band is to satisfy by chance, as defined in Section~\ref{sec:method:pck}.
+
+\subsection{Results}
+\label{sec:rq2:results}
+
+We begin by comparing the aggregate performance of the two baselines at their primary-metric optima, summarised in Table~\ref{tab:rq3-aggregate}:
+\begin{itemize}
+    \item \textbf{LightGCN} wins on ranking quality (nDCG@10 of 0.330, Recall@10 of 0.495, PC@10 of 0.794) but loses on ROI@10 at $-0.5$\%/mo.
+    \item \textbf{Random Forest} wins on ROI@10 at $+1.4$\%/mo but ranks near random (nDCG@10 of 0.019, Recall@10 of 0.036).
+    \item \textbf{Aggregate PC@10} looks adequate for both (LightGCN $1.17\times$ lift, Random Forest $1.06\times$).
+\end{itemize}
+
+\begin{table*}[!t]
+\centering
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Model & nDCG@10 & ROI@10 & Recall@10 & PC@10 & PC-lift@10 \\
+\midrule
+LightGCN      & $0.330$ & $-0.005$ & $0.495$ & $0.794$ & $1.17\times$ \\
+RF            & $0.019$ & $+0.014$ & $0.036$ & $0.667$ & $1.06\times$ \\
+\bottomrule
+\end{tabular}
+\caption{RQ2 aggregate metrics at primary-metric optima, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 is PC@10 divided by the band-conditional random baseline $\pi(b)$.}
+\label{tab:rq3-aggregate}
+\end{table*}
+
+However, aggregate PC@10 averages across customer bands whose random baselines $\pi(b)$ vary from 0.35 to 0.78, so a single number can mask which bands are actually being served. Table~\ref{tab:per-band-rq3} decomposes PC@10 by declared band to expose these differences:
+\begin{itemize}
+    \item \textbf{Lift by band.} Across Conservative, Income, Balanced, and Aggressive, per-band lift rises from 0.75 to 1.13, 1.17, and 1.35 for LightGCN, and from 0.52 to 0.70, 1.03, and 1.88 for Random Forest.
+    \item \textbf{Monotonic skew.} For both, lift rises monotonically with the declared band: recommendations skew towards higher-risk assets.
+    \item \textbf{Flatter LightGCN.} LightGCN's range is flatter, which we attribute to its per-user embeddings shifting each customer's top-$k$ partly toward their tolerance window, whereas Random Forest carries no customer signal.
+\end{itemize}
+
+Aggressive's high lift is partly mechanical: $\pi(\text{Aggressive}) = 0.35$ is the lowest band, so any model skewing higher-volatility clears that bar easily. Neither baseline has band labels or a band-aware loss, so per-band coherence is a passive byproduct of training rather than a controlled output.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrrr}
+\toprule
+Model & Band & N & $\pi(b)$ & PC@10 & PC-lift@10 \\
+\midrule
+RF       & Conservative & 5{,}348  & $0.65$ & $0.34$ & $0.52$ \\
+RF       & Income       & 45{,}142 & $0.78$ & $0.54$ & $0.70$ \\
+RF       & Balanced     & 61{,}181 & $0.76$ & $0.79$ & $1.03$ \\
+RF       & Aggressive   & 25{,}367 & $0.35$ & $0.66$ & $1.88$ \\
+\midrule
+LightGCN & Conservative & 5{,}348  & $0.65$ & $0.48$ & $0.75$ \\
+LightGCN & Income       & 45{,}142 & $0.78$ & $0.88$ & $1.13$ \\
+LightGCN & Balanced     & 61{,}181 & $0.76$ & $0.89$ & $1.17$ \\
+LightGCN & Aggressive   & 25{,}367 & $0.35$ & $0.47$ & $1.35$ \\
+\bottomrule
+\end{tabular}
+\caption{Per-band PC@10 and PC-lift@10 versus the band-conditional random baseline $\pi(b)$ for the two FAR-Trans baselines at their primary-metric optima, aggregated over 69 splits. PC-lift@10 = PC@10 / $\pi(b)$.}
+\label{tab:per-band-rq3}
+\end{table}
+
+\subsection{Limitations}
+\label{sec:rq2:limitations}
+
+First, the audit evaluates each baseline only at its primary-metric optimum (nDCG@10 for LightGCN, ROI@10 for Random Forest), so the per-band picture is conditioned on those operating points rather than swept across the full grid.
+
+Second, per-band lift should be read alongside its $\pi(b)$ reference rather than in isolation, since low-$\pi(b)$ bands such as Aggressive clear the bar more easily.

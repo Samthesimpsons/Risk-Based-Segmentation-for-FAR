@@ -1,0 +1,11 @@
+\section{Future Work}
+\label{sec:futurework}
+
+Beyond the per-RQ caveats noted above, several cross-cutting directions would strengthen and extend the framework.
+
+\begin{itemize}
+    \item \textit{Causal identification.} The RQ1 coherence premium is associational. A natural next step would be to apply causal inference techniques such as instrumental variables or difference-in-differences on datasets that span a regulatory boundary, which would also let the elevated 2018 mean discordance be tested directly against a pre-MiFID II counterfactual rather than left as a hypothesised transition effect.
+    \item \textit{Data-driven metric calibration.} The tolerance $d \leq 1$ and the hierarchical asset-band assignment are set rather than derived. Future work could explore data-driven tolerance calibration and validate the band assignment against external MiFID II classifications from fund providers.
+    \item \textit{Broader interventions and a full frontier.} The stratification and coherence-margin treatment could be applied to sequential, transformer, and content-based recommenders, and the single $\lambda = 1$ operating point could be expanded into a full Pareto sweep with end-to-end re-tuning.
+    \item \textit{Generalisation and online evaluation.} Results are demonstrated on FAR-Trans under MiFID II's 4-band scale. Extending to other jurisdictions, longer horizons, or alternative asset universes would strengthen the generalisability of PC@$k$. Additionally, RQ1 measures realised return on executed Buys while RQ3 measures forward return on top-$k$ recommended slates that may never be acted on. Bridging this gap through online evaluation or counterfactual off-policy estimation is a promising direction.
+\end{itemize}

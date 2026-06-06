@@ -1,0 +1,13 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+The central finding of this paper is that the regulatory objective (MiFID II-aligned band coherence) and the economic objective (realised return) are not in structural conflict on FAR-Trans: a recommender can be made meaningfully more profile-coherent while keeping the return story the data already supports. This reframes coherence as an architectural choice rather than a tradeoff to be managed post-hoc, treating compliance as a training-time objective expressible as an ordinal distance on a customer-asset metric pair.
+
+The three research questions assemble a diagnostic-to-remedy chain that supports this conclusion:
+\begin{itemize}
+    \item \textbf{RQ1} establishes that the diagnostic axis is real and structural at the customer level rather than transaction-level noise, and removes the economic objection to optimising for coherence: coherent Buys earn a statistically significant return premium over discordant ones, providing evidence against the hypothesis that regulatory alignment imposes a return tax.
+    \item \textbf{RQ2} locates the existing FAR-Trans baselines on the coherence axis and shows that both under-serve specific declared bands in ways the aggregate metrics hide.
+    \item \textbf{RQ3} demonstrates that a profile-coherent LightGCN extension closes the per-band coverage deficit at no aggregate ROI cost. Decomposing its three components shows that regrouping customers onto their revealed band is the dominant and cost-free lever, lifting raw PC@10 to 0.949 while \emph{also} improving nDCG and Recall, the first intervention to raise coherence and ranking together. The coherence-margin loss adds little once the bands are corrected, making stratification with regrouping the recommended configuration.
+\end{itemize}
+
+More broadly, the approach illustrates that regulatory suitability constraints can be encoded as training-time objectives rather than handled through post-hoc filtering, opening a path for recommender systems in other regulated domains (e.g., insurance product suitability, credit risk appetite matching) to embed compliance directly into their optimisation loop.

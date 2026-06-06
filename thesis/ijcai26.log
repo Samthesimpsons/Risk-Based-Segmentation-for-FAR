@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.22)  28 MAY 2026 00:27
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.22)  7 JUN 2026 23:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -670,108 +670,103 @@ Package microtype Info: Loading generic protrusion settings for font family
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 11.
  (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-)
-Underfull \hbox (badness 1354) in paragraph at lines 12--13
-[]\OT1/ptm/b/n/10 (+20) RQ2 (Test the eco-nomic ob-jec-tion)\OT1/ptm/m/n/10 (+20) : Do profile-
- []
-
-) (./sections/02-related-work.tex [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}
+)) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
 
-]) (./sections/03-method.tex
+] (./sections/02-preliminary.tex) (./sections/03-related-work.tex) (./sections/04-rq1-statistical-analysis.tex [2]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 29.
+(hyperref)                removing `math shift' on input line 42.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 29.
+(hyperref)                removing `math shift' on input line 42.
 
-[2]) (./sections/04-experimental-setup.tex [3]
-Underfull \hbox (badness 1107) in paragraph at lines 67--68
-\OT1/ptm/m/n/10 (+20) priced Buys with cluster-robust stan-dard er-rors on
- []
-
-) (./sections/05-results.tex
-<figures/rq1_discordance_distribution.pdf, id=227, 236.16669pt x 170.603pt>
-File: figures/rq1_discordance_distribution.pdf Graphic file (type pdf)
-<use figures/rq1_discordance_distribution.pdf>
-Package pdftex.def Info: figures/rq1_discordance_distribution.pdf  used on input line 18.
+<figures/discordance_distribution.pdf, id=235, 236.16669pt x 170.603pt>
+File: figures/discordance_distribution.pdf Graphic file (type pdf)
+<use figures/discordance_distribution.pdf>
+Package pdftex.def Info: figures/discordance_distribution.pdf  used on input line 66.
 (pdftex.def)             Requested size: 243.91125pt x 176.20462pt.
- [4 <./figures/rq1_discordance_distribution.pdf>]
-<figures/rq1_self_discordance.pdf, id=271, 236.05692pt x 185.24121pt>
-File: figures/rq1_self_discordance.pdf Graphic file (type pdf)
-<use figures/rq1_self_discordance.pdf>
-Package pdftex.def Info: figures/rq1_self_discordance.pdf  used on input line 27.
+
+Underfull \vbox (badness 7344) has occurred while \output is active []
+
+ [3]
+<figures/self_discordance.pdf, id=251, 236.05692pt x 185.24121pt>
+File: figures/self_discordance.pdf Graphic file (type pdf)
+<use figures/self_discordance.pdf>
+Package pdftex.def Info: figures/self_discordance.pdf  used on input line 77.
 (pdftex.def)             Requested size: 243.91125pt x 191.41109pt.
-<figures/rq1_per_band_coherence.pdf, id=273, 236.22754pt x 164.3396pt>
-File: figures/rq1_per_band_coherence.pdf Graphic file (type pdf)
-<use figures/rq1_per_band_coherence.pdf>
-Package pdftex.def Info: figures/rq1_per_band_coherence.pdf  used on input line 36.
+<figures/per_band_coherence.pdf, id=253, 236.22754pt x 164.3396pt>
+File: figures/per_band_coherence.pdf Graphic file (type pdf)
+<use figures/per_band_coherence.pdf>
+Package pdftex.def Info: figures/per_band_coherence.pdf  used on input line 86.
 (pdftex.def)             Requested size: 243.91125pt x 169.69043pt.
+<figures/yearly_discordance.pdf, id=257, 235.51488pt x 170.3541pt>
+File: figures/yearly_discordance.pdf Graphic file (type pdf)
+<use figures/yearly_discordance.pdf>
+Package pdftex.def Info: figures/yearly_discordance.pdf  used on input line 95.
+(pdftex.def)             Requested size: 243.91125pt x 176.43623pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-<figures/rq1_yearly_discordance.pdf, id=277, 235.51488pt x 170.3541pt>
-File: figures/rq1_yearly_discordance.pdf Graphic file (type pdf)
-<use figures/rq1_yearly_discordance.pdf>
-Package pdftex.def Info: figures/rq1_yearly_discordance.pdf  used on input line 45.
-(pdftex.def)             Requested size: 243.91125pt x 176.43623pt.
- [5 <./figures/rq1_self_discordance.pdf> <./figures/rq1_per_band_coherence.pdf> <./figures/rq1_yearly_discordance.pdf>]
-Overfull \hbox (1.11452pt too wide) in paragraph at lines 124--138
+ [4 <./figures/discordance_distribution.pdf> <./figures/self_discordance.pdf> <./figures/per_band_coherence.pdf> <./figures/yearly_discordance.pdf>]) (./sections/05-rq2-baseline-weaknesses.tex [5]
+Underfull \hbox (badness 1005) in paragraph at lines 13--14
+[]\OT1/ptm/m/n/10 (+20) For each split, the train-ing set con-tains all Buys in
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 84--85
+[]\OT1/ptm/m/n/10 (+20) Aggressive's high lift is partly me-chan-i-cal:
+ []
+
+[6]
+Overfull \hbox (1.11452pt too wide) in paragraph at lines 90--105
  [][] 
  []
 
 
-Underfull \hbox (badness 1052) in paragraph at lines 138--138
+Underfull \hbox (badness 1052) in paragraph at lines 105--105
 []\OT1/ptm/m/n/9 (+20) Table 4: |Per-band PC@10 and PC-lift@10 ver-sus the band-
  []
 
-[6]
-<figures/rq4_paired_win_rates.pdf, id=355, 232.13756pt x 438.95996pt>
-File: figures/rq4_paired_win_rates.pdf Graphic file (type pdf)
-<use figures/rq4_paired_win_rates.pdf>
-Package pdftex.def Info: figures/rq4_paired_win_rates.pdf  used on input line 200.
-(pdftex.def)             Requested size: 243.91125pt x 461.24306pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [7]
-<figures/rq4_paired_deltas.pdf, id=365, 235.7813pt x 438.95996pt>
-File: figures/rq4_paired_deltas.pdf Graphic file (type pdf)
-<use figures/rq4_paired_deltas.pdf>
-Package pdftex.def Info: figures/rq4_paired_deltas.pdf  used on input line 207.
-(pdftex.def)             Requested size: 243.91125pt x 454.1231pt.
-)
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- (./sections/06-limitations.tex [8 <./figures/rq4_paired_win_rates.pdf> <./figures/rq4_paired_deltas.pdf>]) (./sections/07-conclusion.tex) (./sections/08-reproducibility.tex) (./ijcai26.bbl
-Underfull \hbox (badness 1838) in paragraph at lines 13--15
+) (./sections/06-rq3-improvement.tex [7]
+<figures/paired_win_rates.pdf, id=396, 232.4324pt x 343.56355pt>
+File: figures/paired_win_rates.pdf Graphic file (type pdf)
+<use figures/paired_win_rates.pdf>
+Package pdftex.def Info: figures/paired_win_rates.pdf  used on input line 188.
+(pdftex.def)             Requested size: 243.91125pt x 360.54266pt.
+<figures/paired_deltas.pdf, id=397, 233.12701pt x 343.56355pt>
+File: figures/paired_deltas.pdf Graphic file (type pdf)
+<use figures/paired_deltas.pdf>
+Package pdftex.def Info: figures/paired_deltas.pdf  used on input line 195.
+(pdftex.def)             Requested size: 243.91125pt x 359.4575pt.
+ [8]) (./sections/07-future-work.tex [9]) (./sections/08-conclusion.tex [10 <./figures/paired_win_rates.pdf> <./figures/paired_deltas.pdf>]) (./sections/09-reproducibility.tex) (./ijcai26.bbl
+Underfull \hbox (badness 1838) in paragraph at lines 19--21
 []\OT1/ptm/m/n/10 (+20) Steffen Ren-dle, Christoph Freuden-
  []
 
-) [9] (./ijcai26.aux)
+) [11] (./ijcai26.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `ijcai26.out' has not changed.
-(rerunfilecheck)             Checksum: C5F5C455B9AF2714C6D32987FF3DC459;6800.
+(rerunfilecheck)             Checksum: 9BAA384AED1D3B2F96BB38DE018B66FA;7630.
  ) 
 Here is how much of TeX's memory you used:
- 25317 strings out of 474222
- 470364 string characters out of 5748733
- 1967975 words of memory out of 5000000
- 46725 multiletter control sequences out of 15000+600000
- 600348 words of font info for 281 fonts, out of 8000000 for 9000
+ 25374 strings out of 474222
+ 471283 string characters out of 5748733
+ 1969975 words of memory out of 5000000
+ 46753 multiletter control sequences out of 15000+600000
+ 601161 words of font info for 292 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 89i,19n,96p,1455b,1019s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on ijcai26.pdf (9 pages, 357485 bytes).
+ 89i,19n,96p,1669b,1019s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on ijcai26.pdf (11 pages, 378747 bytes).
 PDF statistics:
- 496 PDF objects out of 1000 (max. 8388607)
- 399 compressed objects within 4 object streams
- 83 named destinations out of 1000 (max. 500000)
- 67403 words of extra memory for PDF output out of 74296 (max. 10000000)
+ 549 PDF objects out of 1000 (max. 8388607)
+ 446 compressed objects within 5 object streams
+ 93 named destinations out of 1000 (max. 500000)
+ 67475 words of extra memory for PDF output out of 74296 (max. 10000000)
 
