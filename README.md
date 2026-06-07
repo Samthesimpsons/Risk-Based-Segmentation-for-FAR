@@ -1,4 +1,4 @@
-# Aligning Financial Asset Recommendations with Investor Risk Profiles via Profile Coherence
+# Stratification and Regrouping for Profile-Coherent Financial Asset Recommendation
 
 A measurement framework for profile-aware financial asset recommendation on the FAR-Trans dataset. The work introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines (Random Forest, LightGCN) actually are, and proposes a stratified profile-coherent LightGCN extension as a prescriptive intervention.
 
