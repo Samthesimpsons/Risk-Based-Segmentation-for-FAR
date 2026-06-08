@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex ijcai26"] 1780847330.431 "ijcai26.aux" "ijcai26.bbl" "ijcai26" 1780847618.89866 0
+["bibtex ijcai26"] 1780880617.20599 "ijcai26.aux" "ijcai26.bbl" "ijcai26" 1780880708.86873 0
   "./ijcai26.bib" 1780847579.75497 6415 0d5367654afc4e7d2700574773456acd ""
   "./named.bst" 1779349861.76044 22941 5de9ab1d83bc8b693f08ecd1b7942647 ""
-  "ijcai26.aux" 1780847618.24912 26900 0fa81c4340604f0ac4607b1c976584c4 "pdflatex"
+  "ijcai26.aux" 1780880708.5471 27043 fcd8910c1cf8fe1123742b5628642302 "pdflatex"
   (generated)
   "ijcai26.bbl"
   "ijcai26.blg"
   (rewritten before read)
-["pdflatex"] 1780847616.01357 "/home/ssim/projects/smu_capstone/thesis/ijcai26.tex" "ijcai26.pdf" "ijcai26" 1780847618.89907 0
+["pdflatex"] 1780880707.6032 "/home/ssim/projects/smu_capstone/thesis/ijcai26.tex" "ijcai26.pdf" "ijcai26" 1780880708.86894 0
   "/etc/texmf/web2c/texmf.cnf" 1779431673.17226 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/ssim/projects/smu_capstone/thesis/ijcai26.tex" 1780669998.61028 780 1013cbab04c6a5c2852625f389abbf2c ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
@@ -217,20 +217,20 @@
   "figures/per_band_coherence.pdf" 1780847579.74572 16521 f973f65720f580e21e52369968c8a591 ""
   "figures/self_discordance.pdf" 1780847579.75497 20010 2f6128fb14c65bd4d24efe6a7de0ce17 ""
   "figures/yearly_discordance.pdf" 1780847579.75497 12947 cb4b48ca3f8d2c580bf2184e6715b9ea ""
-  "ijcai26.aux" 1780847618.24912 26900 0fa81c4340604f0ac4607b1c976584c4 "pdflatex"
-  "ijcai26.bbl" 1780847579.75497 2445 2af534abcdbd18302c11b02445ad8dea "bibtex ijcai26"
-  "ijcai26.out" 1780847618.24912 7630 9baa384aed1d3b2f96bb38de018b66fa "pdflatex"
+  "ijcai26.aux" 1780880708.5471 27043 fcd8910c1cf8fe1123742b5628642302 "pdflatex"
+  "ijcai26.bbl" 1780880617.28711 2445 2af534abcdbd18302c11b02445ad8dea "bibtex ijcai26"
+  "ijcai26.out" 1780880708.5471 7630 ec47fb664c1ba90c5c288f328d03fca9 "pdflatex"
   "ijcai26.sty" 1779349861.76044 13104 84bec3e8c5b2704555e1798f5ec868f8 ""
   "ijcai26.tex" 1780669998.61028 780 1013cbab04c6a5c2852625f389abbf2c ""
   "metadata.tex" 1780725049.08388 272 ce51d3af9803a335ae27dc77cd228625 ""
   "preamble.tex" 1779763665.0894 760 437cac975eff653f023c680856b78f4c ""
-  "sections/00-abstract.tex" 1780847579.76421 1595 68897c9d13d64756d986d47145083def ""
-  "sections/01-introduction.tex" 1780847579.76421 3764 53686ef24d379da008e33854b989bc01 ""
-  "sections/02-preliminary.tex" 1780727841.26825 2627 46de5039ea930ff67443601f689e330d ""
-  "sections/03-related-work.tex" 1780847579.76421 2592 fbf32d3833c2338795b07c5bfc7db944 ""
-  "sections/04-rq1-statistical-analysis.tex" 1780847579.76421 15639 fdb8eec77f306e87aeb1cfef538f0583 ""
-  "sections/05-rq2-baseline-weaknesses.tex" 1780847579.76421 7412 1733ff8e5c1eab67c19bc8d7563327d9 ""
-  "sections/06-rq3-improvement.tex" 1780847579.76421 17457 758bf5f9a02c8b336afb8dfe69ff3192 ""
+  "sections/00-abstract.tex" 1780875788.07705 1641 22fd21c620f4691ebf1507551d4604da ""
+  "sections/01-introduction.tex" 1780876928.03733 3822 78c95b5a3dc234b59314915201b3ce94 ""
+  "sections/02-preliminary.tex" 1780877229.74731 2627 04c460ed2a1c58492228a069565ab73a ""
+  "sections/03-related-work.tex" 1780877215.59731 2592 9d066b1daafb62b18199c0de703e5146 ""
+  "sections/04-rq1-statistical-analysis.tex" 1780879148.66718 15875 5da434a360e47aedcbbfa9842037583a ""
+  "sections/05-rq2-baseline-weaknesses.tex" 1780880093.55716 7654 fc5326a699555ec68c878c4df1d7765c ""
+  "sections/06-rq3-improvement.tex" 1780880707.3271 17733 08f85f1eb7f5e065b4e948a977c0f2a3 ""
   "sections/07-future-work.tex" 1780847579.7827 1743 db42d4cb395b3e8783bdfa8cdededc76 ""
   "sections/08-conclusion.tex" 1780847579.7827 2164 1c2e7b2663bee133f8a557c27aa1ec1e ""
   "sections/09-reproducibility.tex" 1780501041.22922 208 747314e057e52cfa9c989b5daa65e1f6 ""

@@ -61,6 +61,8 @@ We characterise discordance in four slices, starting from the pooled transaction
     \item Mean discordance is 0.874 bands across all scoreable Buys, indicating that when mismatches occur they are usually around a single band step.
 \end{enumerate}
 
+All in all, nearly one in five scoreable Buys lands two or more bands away from the customer's declared tolerance. That violation rate is too large to dismiss as sampling noise, and it is the empirical motivation for treating profile coherence as a measurable evaluation axis rather than a property the baselines can be assumed to satisfy.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/discordance_distribution.pdf}
@@ -70,14 +72,14 @@ We characterise discordance in four slices, starting from the pooled transaction
 
 The pooled rate cannot tell us whether these violations are i.i.d.\ transaction-level slips spread thinly across the customer base or a structural trait concentrated in a subset. Slicing by customer settles the question. The per-customer discordant share (Figure~\ref{fig:rq1-self}) is sharply bimodal, concentrating in the lowest and highest bins rather than clustering near the 18.6\% population mean. More explicitly, 64.4\% of banded customers are fully coherent across every Buy and 17.2\% are fully discordant.
 
-Hartigan's dip test on the 28{,}770 per-customer values rejects unimodality ($D = 0.086$, $p < 10^{-15}$), confirming that discordance is a persistent customer-level trait rather than i.i.d.\ transaction-level noise.
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/self_discordance.pdf}
     \caption{Per-customer share of discordant Buys is sharply bimodal, concentrating in the lowest and highest bins and ruling out i.i.d.\ transaction-level noise.}
     \label{fig:rq1-self}
 \end{figure}
+
+Hartigan's dip test on the 28{,}770 per-customer values rejects unimodality ($D = 0.086$, $p < 10^{-15}$), confirming that discordance is a persistent customer-level trait rather than i.i.d.\ transaction-level noise.
 
 Since the trait is customer-level, the next question is which customers carry it. Coherence per declared band is U-shaped (Figure~\ref{fig:rq1-per-band}). The two centre bands sit around 90\%, while Conservative drops to 45.1\% (possibly reflecting a ``reach for yield'' tendency) and Aggressive to 56.2\% (possibly reflecting a regression toward safer assets). This concentration of mismatch at the ordinal extremes corroborates the bimodality finding from the customer slice.
 
@@ -96,29 +98,6 @@ A final slice rules out a regime-driven artefact. Mean discordance is flat acros
     \caption{Mean discordance by calendar year. The 2019 to 2022 cluster sits within 0.02 bands, with 2018 elevated (transition-effect hypothesis).}
     \label{fig:rq1-yearly}
 \end{figure}
-
-\subsection{Conditional Return Premium}
-\label{sec:rq1:return}
-
-We have shown that discordance is a persistent customer-level trait concentrated at the ordinal extremes. The next question is whether it carries an economic cost: do discordant Buys earn lower returns than coherent ones?
-
-\subsubsection{Regression specification}
-We test whether profile-coherent Buys earn different realised returns from discordant ones via a transaction-level Ordinary Least Squares (OLS) regression on 208{,}029 priced Buys with cluster-robust standard errors on \texttt{customerID} and a two-sided Wald test at $\alpha = 0.05$. Clustering is warranted because each customer contributes roughly 8 Buys on average, so within-customer residuals share unobserved shocks. The specification is:
-\begin{equation}
-\label{eq:rq2-ols}
-\begin{split}
-r ={}& \beta_0 + \beta_1 \cdot \text{is\_coherent} \\
-    &{}+ \beta_2 \cdot \text{asset\_volatility} \\
-    &{}+ \mathbf{C}(\text{type})\boldsymbol{\gamma} \\
-    &{}+ \mathbf{C}(\text{year})\boldsymbol{\delta} \\
-    &{}+ \varepsilon,
-\end{split}
-\end{equation}
-where $r = (p_{\text{end}} - p_{\text{start}})/p_{\text{start}}$ is the 6-month realised return as a decimal fraction (e.g., $r = 0.03$ means a 3 percentage-point gain) and \texttt{is\_coherent} is binary ($d \leq 1$).
-
-Prices are matched via a backward-nearest join: the start price is the most recent close on or before the trade date, and the end price is the most recent close on or before the date six months later. Transactions without a price match within 7 days at either endpoint are dropped. The coefficient of interest is $\beta_1$ on \texttt{is\_coherent}, and the null hypothesis $H_0\colon \beta_1 = 0$ states that coherence has no conditional effect on 6-month returns.
-
-\subsubsection{Results}
 
 \begin{table*}[!t]
 \centering
@@ -144,16 +123,37 @@ Intercept                                & $-0.0471$ & $0.0141$ & $[-0.0746,\, -
 \label{tab:rq2-full}
 \end{table*}
 
+\subsection{Conditional Return Premium}
+\label{sec:rq1:return}
+
+We have shown that discordance is a persistent customer-level trait concentrated at the ordinal extremes. The next question is whether it carries an economic cost: do discordant Buys earn lower returns than coherent ones?
+
+\subsubsection{Regression specification}
+We test whether profile-coherent Buys earn different realised returns from discordant ones via a transaction-level Ordinary Least Squares (OLS) regression on 208{,}029 priced Buys with cluster-robust standard errors on \texttt{customerID} and a two-sided Wald test at $\alpha = 0.05$. Clustering is warranted because each customer contributes roughly 8 Buys on average, so within-customer residuals share unobserved shocks. The specification is:
+\begin{equation}
+\label{eq:rq2-ols}
+\begin{split}
+r ={}& \beta_0 + \beta_1 \cdot \text{is\_coherent} \\
+    &{}+ \beta_2 \cdot \text{asset\_volatility} \\
+    &{}+ \mathbf{C}(\text{type})\boldsymbol{\gamma} \\
+    &{}+ \mathbf{C}(\text{year})\boldsymbol{\delta} \\
+    &{}+ \varepsilon,
+\end{split}
+\end{equation}
+where $r = (p_{\text{end}} - p_{\text{start}})/p_{\text{start}}$ is the 6-month realised return as a decimal fraction (e.g., $r = 0.03$ means a 3 percentage-point gain) and \texttt{is\_coherent} is binary ($d \leq 1$).
+
+Prices are matched via a backward-nearest join: the start price is the most recent close on or before the trade date, and the end price is the most recent close on or before the date six months later. Transactions without a price match within 7 days at either endpoint are dropped. The coefficient of interest is $\beta_1$ on \texttt{is\_coherent}, and the null hypothesis $H_0\colon \beta_1 = 0$ states that coherence has no conditional effect on 6-month returns.
+
+\subsubsection{Results}
+
 Table~\ref{tab:rq2-full} reports the full coefficient table. The key results on the coherence premium are:
 \begin{itemize}
     \item \textbf{Conditional premium.} Coherent Buys earn $+2.94$ percentage points (pp) higher 6-month realised return than discordant ones, conditional on volatility, segment, and year.
     \item \textbf{Significance.} The positive sign with $p = 2.3 \times 10^{-13}$ provides strong evidence against the prior that regulatory coherence imposes a return tax.
 \end{itemize}
-That said, this premium is an observational association rather than a causal effect, a caveat we return to in Section~\ref{sec:rq1:limitations}.
+We note that the adjusted $R^2$ is 0.051 which implies that the covariates explain little of the variation in individual returns. This is expected when idiosyncratic price movements dominate which concerns prediction but does not affect our hypothesis test. The coherence premium is an average difference in return between coherent and discordant Buys, and even with a low $R^2$ it is estimated precisely. We cluster the standard errors by \texttt{customerID} so that repeated Buys from the same customer are not counted as independent evidence.
 
-The adjusted $R^2$ is 0.051: the covariates explain little of the variation in individual returns, as expected when idiosyncratic price movements dominate. This concerns prediction and does not affect our hypothesis test. The coherence premium is an average difference in return between coherent and discordant Buys, and even with a low $R^2$ it is estimated precisely. We cluster the standard errors by \texttt{customerID} so that repeated Buys from the same customer are not counted as independent evidence.
-
-The volatility coefficient is $-10.25$ pp per unit, consistent with low-volatility outperformance over 2019 to 2022 and the 2022 rate shock that hit high-beta names. All four year dummies reject $H_0$, reflecting distinct market regimes relative to the 2018 reference year:
+Moving on, the volatility coefficient is $-10.25$ pp per unit, consistent with low-volatility outperformance over 2019 to 2022 and the 2022 rate shock that hit high-beta names. All four year dummies reject $H_0$, reflecting distinct market regimes relative to the 2018 reference year:
 
 \begin{enumerate}
     \item 2019 coefficient captures the equity recovery from the late-2018 selloff.
@@ -162,9 +162,9 @@ The volatility coefficient is $-10.25$ pp per unit, consistent with low-volatili
     \item 2022 coefficient turns negative at $-1.95$ pp as aggressive Fed hikes triggered a broad fixed-income drawdown.
 \end{enumerate}
 
-All four \texttt{customerType} dummies fail to reject $H_0$, indicating that segmentation contributes no detectable return signal. Together with the bimodality found above, this suggests that customer type does not capture the persistent discordance trait either.
+Lastly, all four \texttt{customerType} dummies fail to reject $H_0$, indicating that segmentation contributes no detectable return signal. Together with the bimodality found above, this suggests that customer type does not capture the persistent discordance trait either.
 
-Taken together, these controls barely move the premium: the raw slice gap is $+3.31$ pp (unconditional mean 6-month return: 4.23\% coherent vs 0.92\% discordant), whereas the \texttt{is\_coherent} coefficient, which already conditions on volatility, segment, and year, is $+2.94$ pp. Adding the controls therefore absorbs only $3.31 - 2.94 = 0.37$ pp ($\sim$11\% of the unconditional gap), so coherence is not a volatility, segment, or year confound. The coherence premium therefore survives all controls we can measure, motivating the question of whether existing recommenders produce coherent lists at all.
+Taken together, these controls barely move the premium: the raw slice gap is $+3.31$ pp (unconditional mean 6-month return: 4.23\% coherent vs 0.92\% discordant), whereas the \texttt{is\_coherent} coefficient, which already conditions on volatility, segment, and year, is $+2.94$ pp. Adding the controls therefore absorbs only $0.37$ pp ($\sim$11\% of the unconditional gap), so coherence is not a volatility, segment, or year confound. The coherence premium therefore survives all controls we can measure, motivating the question of whether existing recommenders produce coherent lists at all.
 
 \subsection{Limitations}
 \label{sec:rq1:limitations}

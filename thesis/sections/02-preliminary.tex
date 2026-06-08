@@ -3,11 +3,11 @@
 
 This section provides the background needed to read the rest of the paper: the financial asset recommendation problem, the FAR-Trans dataset and benchmark that ground our study, then the two-axis evaluation standard whose blind spot motivates our contribution.
 
-\subsection{The financial asset recommendation problem}
+\subsection{The Financial Asset Recommendation Problem}
 Financial asset recommendation (FAR) identifies and ranks financial securities (stocks, bonds, mutual funds) for an investor according to their suitability. Suitability depends on investor-side signals such as past transactions, declared risk tolerance, investment capacity, and personal goals, and on market-side signals such as asset returns, currency value, and inflation. A FAR system therefore draws on heterogeneous data sources: time-series pricing data, customer profile data, and historical investment transactions.
 
-\subsection{The FAR-Trans dataset}
+\subsection{The FAR-Trans Dataset}
 Most prior FAR models were developed over proprietary or simulated data, which prevents fair cross-method comparison. The only earlier public dataset lacked pricing data and asset identifiers, ruling out price-based approaches. FAR-Trans~\cite{sanzcruzado2024fartransinvestmentdatasetfinancial} closes this gap: it is the first public FAR dataset that pairs real asset pricing with real retail-investor transactions, collected from a large European financial institution and spanning January 2018 to November 2022. It provides daily closing prices, Buy and Sell transactions, and customer profile metadata including a declared MiFID II risk band per customer. Together these make both price-based and profile-based recommendation measurable on a single dataset.
 
-\subsection{The two-axis benchmark and its blind spot}
+\subsection{The Two-Axis Benchmark and Its Blind Spot}
 Alongside the data, FAR-Trans establishes the field's evaluation standard by benchmarking 11 FAR algorithms, among them LightGCN and Random Forest. The benchmark reports two axes: normalised Discounted Cumulative Gain (nDCG@10) for next-purchase ranking quality and Return on Investment (ROI@10) for realised profitability, each over the top-10 ranked items. A subsequent study~\cite{10.1145/3780097} shows that these two axes are not aligned on FAR-Trans: transaction-based and profitability-based metrics are negatively correlated, so a model that wins on one tends to lose on the other, and the authors conclude that ranking quality and realised return capture genuinely different objectives. Crucially, neither axis measures whether a recommendation aligns with the customer's declared MiFID II risk band. That regulatory suitability dimension is the blind spot this paper targets.

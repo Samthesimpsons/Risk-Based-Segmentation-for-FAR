@@ -17,7 +17,7 @@ For each split, the training set contains all Buys in $[0, \texttt{time\_point}]
 
 Table~\ref{tab:baseline-grids} reports the search grids, fixed values, and best-trial selections for the two FAR-Trans baselines. Both grids are swept with Ray Tune, with LightGCN tuned on average nDCG@10 and Random Forest on average ROI@10 across the 69 splits.
 
-\begin{table}[t]
+\begin{table}[!t]
 \centering
 \small
 \begin{tabular}{llll}
@@ -59,20 +59,31 @@ We begin by comparing the aggregate performance of the two baselines at their pr
     \item \textbf{Aggregate PC@10} looks adequate for both (LightGCN $1.17\times$ lift, Random Forest $1.06\times$).
 \end{itemize}
 
-\begin{table*}[!t]
+\begin{table}[!t]
 \centering
 \small
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrr}
 \toprule
-Model & nDCG@10 & ROI@10 & Recall@10 & PC@10 & PC-lift@10 \\
+Model & nDCG@10 & Recall@10 \\
 \midrule
-LightGCN      & $0.330$ & $-0.005$ & $0.495$ & $0.794$ & $1.17\times$ \\
-RF            & $0.019$ & $+0.014$ & $0.036$ & $0.667$ & $1.06\times$ \\
+LightGCN & $0.330$ & $0.495$ \\
+RF       & $0.019$ & $0.036$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.6em}
+
+\begin{tabular}{lrrr}
+\toprule
+Model & ROI@10 & PC@10 & PC-lift@10 \\
+\midrule
+LightGCN & $-0.005$ & $0.794$ & $1.17\times$ \\
+RF       & $+0.014$ & $0.667$ & $1.06\times$ \\
 \bottomrule
 \end{tabular}
 \caption{RQ2 aggregate metrics at primary-metric optima, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 is PC@10 divided by the band-conditional random baseline $\pi(b)$.}
 \label{tab:rq3-aggregate}
-\end{table*}
+\end{table}
 
 However, aggregate PC@10 averages across customer bands whose random baselines $\pi(b)$ vary from 0.35 to 0.78, so a single number can mask which bands are actually being served. Table~\ref{tab:per-band-rq3} decomposes PC@10 by declared band to expose these differences:
 \begin{itemize}
@@ -81,7 +92,7 @@ However, aggregate PC@10 averages across customer bands whose random baselines $
     \item \textbf{Flatter LightGCN.} LightGCN's range is flatter, which we attribute to its per-user embeddings shifting each customer's top-$k$ partly toward their tolerance window, whereas Random Forest carries no customer signal.
 \end{itemize}
 
-Aggressive's high lift is partly mechanical: $\pi(\text{Aggressive}) = 0.35$ is the lowest band, so any model skewing higher-volatility clears that bar easily. Neither baseline has band labels or a band-aware loss, so per-band coherence is a passive byproduct of training rather than a controlled output.
+Aggressive's high lift is partly mechanical as $\pi(\text{Aggressive})$ is the lowest band of 0.35, so any model skewing higher-volatility clears that bar easily. Neither baseline has band labels or a band-aware loss, so per-band coherence is a passive byproduct of training rather than a controlled output.
 
 \begin{table}[H]
 \centering
@@ -109,6 +120,9 @@ LightGCN & Aggressive   & 25{,}367 & $0.35$ & $0.47$ & $1.35$ \\
 \subsection{Limitations}
 \label{sec:rq2:limitations}
 
-First, the audit evaluates each baseline only at its primary-metric optimum (nDCG@10 for LightGCN, ROI@10 for Random Forest), so the per-band picture is conditioned on those operating points rather than swept across the full grid.
+Two caveats bound the RQ2 audit.
 
-Second, per-band lift should be read alongside its $\pi(b)$ reference rather than in isolation, since low-$\pi(b)$ bands such as Aggressive clear the bar more easily.
+\begin{itemize}
+    \item \textit{Single operating point.} The audit evaluates each baseline only at its primary-metric optimum (nDCG@10 for LightGCN, ROI@10 for Random Forest), so the per-band picture is conditioned on those operating points rather than swept across the full grid.
+    \item \textit{Baseline-relative reading.} Per-band lift should be read alongside its $\pi(b)$ reference rather than in isolation, since low-$\pi(b)$ bands such as Aggressive clear the bar more easily.
+\end{itemize}
