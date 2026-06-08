@@ -52,7 +52,7 @@ For each (declared band, model) cell, we average per-customer PC@10 unweighted o
 \subsection{Results}
 \label{sec:rq2:results}
 
-We begin by comparing the aggregate performance of the two baselines at their primary-metric optima, summarised in Table~\ref{tab:rq3-aggregate}:
+We begin by comparing the aggregate performance of the two baselines at their primary-metric optima, summarised in Table~\ref{tab:baseline-aggregate}:
 \begin{itemize}
     \item \textbf{LightGCN} wins on ranking quality (nDCG@10 of 0.330, Recall@10 of 0.495, PC@10 of 0.794) but loses on ROI@10 at $-0.5$\%/mo.
     \item \textbf{Random Forest} wins on ROI@10 at $+1.4$\%/mo but ranks near random (nDCG@10 of 0.019, Recall@10 of 0.036).
@@ -82,10 +82,10 @@ RF       & $+0.014$ & $0.667$ & $1.06\times$ \\
 \bottomrule
 \end{tabular}
 \caption{RQ2 aggregate metrics at primary-metric optima, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 is PC@10 divided by the band-conditional random baseline $\pi(b)$.}
-\label{tab:rq3-aggregate}
+\label{tab:baseline-aggregate}
 \end{table}
 
-However, aggregate PC@10 averages across customer bands whose random baselines $\pi(b)$ vary from 0.35 to 0.78, so a single number can mask which bands are actually being served. Table~\ref{tab:per-band-rq3} decomposes PC@10 by declared band to expose these differences:
+However, aggregate PC@10 averages across customer bands whose random baselines $\pi(b)$ vary from 0.35 to 0.78, so a single number can mask which bands are actually being served. Table~\ref{tab:baseline-per-band} decomposes PC@10 by declared band to expose these differences:
 \begin{itemize}
     \item \textbf{Lift by band.} Across Conservative, Income, Balanced, and Aggressive, per-band lift rises from 0.75 to 1.13, 1.17, and 1.35 for LightGCN, and from 0.52 to 0.70, 1.03, and 1.88 for Random Forest.
     \item \textbf{Monotonic skew.} For both, lift rises monotonically with the declared band: recommendations skew towards higher-risk assets.
@@ -114,7 +114,7 @@ LightGCN & Aggressive   & 25{,}367 & $0.35$ & $0.47$ & $1.35$ \\
 \bottomrule
 \end{tabular}
 \caption{Per-band PC@10 and PC-lift@10 versus the band-conditional random baseline $\pi(b)$ for the two FAR-Trans baselines at their primary-metric optima, aggregated over 69 splits. PC-lift@10 = PC@10 / $\pi(b)$.}
-\label{tab:per-band-rq3}
+\label{tab:baseline-per-band}
 \end{table}
 
 \subsection{Limitations}

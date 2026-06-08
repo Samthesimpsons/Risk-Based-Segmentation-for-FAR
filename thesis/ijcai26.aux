@@ -336,7 +336,7 @@
 \@LN@col{1}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Distribution of pairwise discordance $d$ over 228{,}241 scoreable Buys. Most mass sits at $d \leq 1$ (coherent), with non-negligible density at $d \geq 2$ (discordant).}}{4}{figure.caption.10}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:rq1-dist}{{1}{4}{Distribution of pairwise discordance $d$ over 228{,}241 scoreable Buys. Most mass sits at $d \leq 1$ (coherent), with non-negligible density at $d \geq 2$ (discordant)}{figure.caption.10}{}}
+\newlabel{fig:discordance-distribution}{{1}{4}{Distribution of pairwise discordance $d$ over 228{,}241 scoreable Buys. Most mass sits at $d \leq 1$ (coherent), with non-negligible density at $d \geq 2$ (discordant)}{figure.caption.10}{}}
 \@LN{282}{3}
 \@LN{283}{3}
 \@LN{284}{3}
@@ -347,7 +347,7 @@
 \@LN{289}{3}
 \@LN{290}{3}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Per-customer share of discordant Buys is sharply bimodal, concentrating in the lowest and highest bins and ruling out i.i.d.\ transaction-level noise.}}{4}{figure.caption.11}\protected@file@percent }
-\newlabel{fig:rq1-self}{{2}{4}{Per-customer share of discordant Buys is sharply bimodal, concentrating in the lowest and highest bins and ruling out i.i.d.\ transaction-level noise}{figure.caption.11}{}}
+\newlabel{fig:self-discordance}{{2}{4}{Per-customer share of discordant Buys is sharply bimodal, concentrating in the lowest and highest bins and ruling out i.i.d.\ transaction-level noise}{figure.caption.11}{}}
 \@LN{291}{3}
 \@LN{292}{3}
 \@LN{293}{3}
@@ -361,8 +361,8 @@
 \@LN{300}{3}
 \@LN{301}{3}
 \@LN{302}{3}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Coherence share by declared band. The U-shape supports the bimodality result of Figure~\ref {fig:rq1-self}: discordance concentrates on the ordinal extremes.}}{4}{figure.caption.12}\protected@file@percent }
-\newlabel{fig:rq1-per-band}{{3}{4}{Coherence share by declared band. The U-shape supports the bimodality result of Figure~\ref {fig:rq1-self}: discordance concentrates on the ordinal extremes}{figure.caption.12}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Coherence share by declared band. The U-shape supports the bimodality result of Figure~\ref {fig:self-discordance}: discordance concentrates on the ordinal extremes.}}{4}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:per-band-coherence}{{3}{4}{Coherence share by declared band. The U-shape supports the bimodality result of Figure~\ref {fig:self-discordance}: discordance concentrates on the ordinal extremes}{figure.caption.12}{}}
 \@LN{303}{3}
 \@LN{304}{3}
 \@LN{305}{3}
@@ -372,9 +372,13 @@
 \@LN{309}{3}
 \@LN{310}{3}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Mean discordance by calendar year. The 2019 to 2022 cluster sits within 0.02 bands, with 2018 elevated (transition-effect hypothesis).}}{4}{figure.caption.13}\protected@file@percent }
-\newlabel{fig:rq1-yearly}{{4}{4}{Mean discordance by calendar year. The 2019 to 2022 cluster sits within 0.02 bands, with 2018 elevated (transition-effect hypothesis)}{figure.caption.13}{}}
+\newlabel{fig:yearly-discordance}{{4}{4}{Mean discordance by calendar year. The 2019 to 2022 cluster sits within 0.02 bands, with 2018 elevated (transition-effect hypothesis)}{figure.caption.13}{}}
+\citation{cnbc2019stockmarket}
+\citation{reuters2020sp500recovery}
+\citation{reuters2021fedtaper}
+\citation{reuters2022marketwrap}
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Full RQ1 OLS coefficient table on 208{,}029 priced Buys, cluster-robust SE on \texttt  {customerID}. Reference cell: Inactive \texttt  {customerType} (the alphabetically first segment in FAR-Trans), year 2018, $\texttt  {asset\_volatility} = 0$, $\texttt  {is\_coherent} = 0$.}}{5}{table.caption.14}\protected@file@percent }
-\newlabel{tab:rq2-full}{{1}{5}{Full RQ1 OLS coefficient table on 208{,}029 priced Buys, cluster-robust SE on \texttt {customerID}. Reference cell: Inactive \texttt {customerType} (the alphabetically first segment in FAR-Trans), year 2018, $\texttt {asset\_volatility} = 0$, $\texttt {is\_coherent} = 0$}{table.caption.14}{}}
+\newlabel{tab:return-premium-ols}{{1}{5}{Full RQ1 OLS coefficient table on 208{,}029 priced Buys, cluster-robust SE on \texttt {customerID}. Reference cell: Inactive \texttt {customerType} (the alphabetically first segment in FAR-Trans), year 2018, $\texttt {asset\_volatility} = 0$, $\texttt {is\_coherent} = 0$}{table.caption.14}{}}
 \@LN@col{1}
 \@LN{311}{4}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Conditional Return Premium}{5}{subsection.4.5}\protected@file@percent }
@@ -393,7 +397,7 @@
 \@LN{322}{4}
 \@LN{323}{4}
 \@LN{324}{4}
-\newlabel{eq:rq2-ols}{{5}{5}{Regression specification}{equation.4.5}{}}
+\newlabel{eq:return-premium-ols}{{5}{5}{Regression specification}{equation.4.5}{}}
 \@LN{325}{4}
 \@LN{326}{4}
 \@LN{327}{4}
@@ -454,17 +458,17 @@
 \@LN{380}{4}
 \@LN{381}{4}
 \@LN{382}{4}
-\@LN{383}{4}
 \citation{sanzcruzado2024fartransinvestmentdatasetfinancial}
 \@LN@col{1}
+\@LN{383}{5}
 \@LN{384}{5}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Limitations}{6}{subsection.4.6}\protected@file@percent }
-\newlabel{sec:rq1:limitations}{{4.6}{6}{Limitations}{subsection.4.6}{}}
 \@LN{385}{5}
 \@LN{386}{5}
 \@LN{387}{5}
 \@LN{388}{5}
 \@LN{389}{5}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Limitations}{6}{subsection.4.6}\protected@file@percent }
+\newlabel{sec:rq1:limitations}{{4.6}{6}{Limitations}{subsection.4.6}{}}
 \@LN{390}{5}
 \@LN{391}{5}
 \@LN{392}{5}
@@ -477,13 +481,13 @@
 \@LN{399}{5}
 \@LN{400}{5}
 \@LN{401}{5}
-\@writefile{toc}{\contentsline {section}{\numberline {5}RQ2: Coherence Weaknesses of FAR-Trans Baselines}{6}{section.5}\protected@file@percent }
-\newlabel{sec:rq2}{{5}{6}{RQ2: Coherence Weaknesses of FAR-Trans Baselines}{section.5}{}}
 \@LN{402}{5}
 \@LN{403}{5}
 \@LN{404}{5}
 \@LN{405}{5}
 \@LN{406}{5}
+\@writefile{toc}{\contentsline {section}{\numberline {5}RQ2: Coherence Weaknesses of FAR-Trans Baselines}{6}{section.5}\protected@file@percent }
+\newlabel{sec:rq2}{{5}{6}{RQ2: Coherence Weaknesses of FAR-Trans Baselines}{section.5}{}}
 \@LN{407}{5}
 \@LN{408}{5}
 \@LN{409}{5}
@@ -494,13 +498,13 @@
 \@LN{414}{5}
 \@LN{415}{5}
 \@LN{416}{5}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Temporal Split Protocol}{6}{subsection.5.1}\protected@file@percent }
-\newlabel{sec:setup:splits}{{5.1}{6}{Temporal Split Protocol}{subsection.5.1}{}}
 \@LN{417}{5}
 \@LN{418}{5}
 \@LN{419}{5}
 \@LN{420}{5}
 \@LN{421}{5}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Temporal Split Protocol}{6}{subsection.5.1}\protected@file@percent }
+\newlabel{sec:setup:splits}{{5.1}{6}{Temporal Split Protocol}{subsection.5.1}{}}
 \@LN{422}{5}
 \@LN{423}{5}
 \@LN{424}{5}
@@ -509,33 +513,33 @@
 \@LN{427}{5}
 \@LN{428}{5}
 \@LN{429}{5}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Baselines and Hyperparameter Grids}{6}{subsection.5.2}\protected@file@percent }
-\newlabel{sec:setup:baselines}{{5.2}{6}{Baselines and Hyperparameter Grids}{subsection.5.2}{}}
 \@LN{430}{5}
 \@LN{431}{5}
 \@LN{432}{5}
 \@LN{433}{5}
 \@LN{434}{5}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Per-Band Audit Method}{6}{subsection.5.3}\protected@file@percent }
-\newlabel{sec:rq2:method}{{5.3}{6}{Per-Band Audit Method}{subsection.5.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Baselines and Hyperparameter Grids}{6}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:setup:baselines}{{5.2}{6}{Baselines and Hyperparameter Grids}{subsection.5.2}{}}
 \@LN{435}{5}
 \@LN{436}{5}
 \@LN@col{2}
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Baseline hyperparameter grids and best-trial values. ``grid'' rows are searched, ``fixed'' rows are held constant.}}{6}{table.caption.17}\protected@file@percent }
 \newlabel{tab:baseline-grids}{{2}{6}{Baseline hyperparameter grids and best-trial values. ``grid'' rows are searched, ``fixed'' rows are held constant}{table.caption.17}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces RQ2 aggregate metrics at primary-metric optima, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 is PC@10 divided by the band-conditional random baseline $\pi (b)$.}}{6}{table.caption.18}\protected@file@percent }
-\newlabel{tab:rq3-aggregate}{{3}{6}{RQ2 aggregate metrics at primary-metric optima, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 is PC@10 divided by the band-conditional random baseline $\pi (b)$}{table.caption.18}{}}
+\newlabel{tab:baseline-aggregate}{{3}{6}{RQ2 aggregate metrics at primary-metric optima, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 is PC@10 divided by the band-conditional random baseline $\pi (b)$}{table.caption.18}{}}
 \@LN{437}{5}
 \@LN{438}{5}
 \@LN{439}{5}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Per-Band Audit Method}{6}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:rq2:method}{{5.3}{6}{Per-Band Audit Method}{subsection.5.3}{}}
 \@LN{440}{5}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Results}{6}{subsection.5.4}\protected@file@percent }
-\newlabel{sec:rq2:results}{{5.4}{6}{Results}{subsection.5.4}{}}
 \@LN{441}{5}
 \@LN{442}{5}
 \@LN{443}{5}
 \@LN{444}{5}
 \@LN{445}{5}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Results}{6}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:rq2:results}{{5.4}{6}{Results}{subsection.5.4}{}}
 \@LN{446}{5}
 \@LN{447}{5}
 \@LN{448}{5}
@@ -551,8 +555,8 @@
 \@LN{458}{5}
 \@LN{459}{5}
 \@LN{460}{5}
+\@LN{461}{5}
 \@LN@col{1}
-\@LN{461}{6}
 \@LN{462}{6}
 \@LN{463}{6}
 \@LN{464}{6}
@@ -564,29 +568,29 @@
 \@LN{470}{6}
 \@LN{471}{6}
 \@LN{472}{6}
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Per-band PC@10 and PC-lift@10 versus the band-conditional random baseline $\pi (b)$ for the two FAR-Trans baselines at their primary-metric optima, aggregated over 69 splits. PC-lift@10 = PC@10 / $\pi (b)$.}}{7}{table.caption.19}\protected@file@percent }
-\newlabel{tab:per-band-rq3}{{4}{7}{Per-band PC@10 and PC-lift@10 versus the band-conditional random baseline $\pi (b)$ for the two FAR-Trans baselines at their primary-metric optima, aggregated over 69 splits. PC-lift@10 = PC@10 / $\pi (b)$}{table.caption.19}{}}
 \@LN{473}{6}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Limitations}{7}{subsection.5.5}\protected@file@percent }
-\newlabel{sec:rq2:limitations}{{5.5}{7}{Limitations}{subsection.5.5}{}}
 \@LN{474}{6}
 \@LN{475}{6}
 \@LN{476}{6}
 \@LN{477}{6}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Per-band PC@10 and PC-lift@10 versus the band-conditional random baseline $\pi (b)$ for the two FAR-Trans baselines at their primary-metric optima, aggregated over 69 splits. PC-lift@10 = PC@10 / $\pi (b)$.}}{7}{table.caption.19}\protected@file@percent }
+\newlabel{tab:baseline-per-band}{{4}{7}{Per-band PC@10 and PC-lift@10 versus the band-conditional random baseline $\pi (b)$ for the two FAR-Trans baselines at their primary-metric optima, aggregated over 69 splits. PC-lift@10 = PC@10 / $\pi (b)$}{table.caption.19}{}}
 \@LN{478}{6}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Limitations}{7}{subsection.5.5}\protected@file@percent }
+\newlabel{sec:rq2:limitations}{{5.5}{7}{Limitations}{subsection.5.5}{}}
 \@LN{479}{6}
 \@LN{480}{6}
 \@LN{481}{6}
 \@LN{482}{6}
 \@LN{483}{6}
 \@LN{484}{6}
-\@writefile{toc}{\contentsline {section}{\numberline {6}RQ3: Stratified Profile-Coherent LightGCN}{7}{section.6}\protected@file@percent }
-\newlabel{sec:rq3}{{6}{7}{RQ3: Stratified Profile-Coherent LightGCN}{section.6}{}}
 \@LN{485}{6}
 \@LN{486}{6}
 \@LN{487}{6}
 \@LN{488}{6}
 \@LN{489}{6}
+\@writefile{toc}{\contentsline {section}{\numberline {6}RQ3: Stratified Profile-Coherent LightGCN}{7}{section.6}\protected@file@percent }
+\newlabel{sec:rq3}{{6}{7}{RQ3: Stratified Profile-Coherent LightGCN}{section.6}{}}
 \@LN{490}{6}
 \@LN{491}{6}
 \@LN{492}{6}
@@ -595,34 +599,34 @@
 \@LN{495}{6}
 \@LN{496}{6}
 \@LN{497}{6}
-\@LN@col{2}
 \@LN{498}{6}
+\@LN@col{2}
 \@LN{499}{6}
 \@LN{500}{6}
 \@LN{501}{6}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Backbone}{7}{subsection.6.1}\protected@file@percent }
-\newlabel{sec:method:pclgcn}{{6.1}{7}{Backbone}{subsection.6.1}{}}
 \@LN{502}{6}
 \@LN{503}{6}
 \@LN{504}{6}
 \@LN{505}{6}
 \@LN{506}{6}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Backbone}{7}{subsection.6.1}\protected@file@percent }
+\newlabel{sec:method:pclgcn}{{6.1}{7}{Backbone}{subsection.6.1}{}}
 \@LN{507}{6}
 \@LN{508}{6}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Stratified Architecture}{7}{subsection.6.2}\protected@file@percent }
 \@LN{509}{6}
 \@LN{510}{6}
 \@LN{511}{6}
 \@LN{512}{6}
 \@LN{513}{6}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Stratified Architecture}{7}{subsection.6.2}\protected@file@percent }
 \@LN{514}{6}
 \@LN{515}{6}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Profile-Coherent Margin Loss}{7}{subsection.6.3}\protected@file@percent }
 \@LN{516}{6}
 \@LN{517}{6}
 \@LN{518}{6}
 \@LN{519}{6}
 \@LN{520}{6}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Profile-Coherent Margin Loss}{7}{subsection.6.3}\protected@file@percent }
 \@LN{521}{6}
 \@LN{522}{6}
 \@LN{523}{6}
@@ -636,48 +640,44 @@
 \@LN{531}{6}
 \@LN{532}{6}
 \@LN{533}{6}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Total Loss}{7}{subsection.6.4}\protected@file@percent }
 \@LN{534}{6}
 \@LN{535}{6}
 \@LN{536}{6}
 \@LN{537}{6}
 \@LN{538}{6}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Customer Regrouping}{7}{subsection.6.5}\protected@file@percent }
-\newlabel{sec:rq3:regrouping}{{6.5}{7}{Customer Regrouping}{subsection.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Total Loss}{7}{subsection.6.4}\protected@file@percent }
 \@LN{539}{6}
 \@LN{540}{6}
 \@LN{541}{6}
 \@LN{542}{6}
 \@LN{543}{6}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Customer Regrouping}{7}{subsection.6.5}\protected@file@percent }
+\newlabel{sec:rq3:regrouping}{{6.5}{7}{Customer Regrouping}{subsection.6.5}{}}
 \@LN{544}{6}
 \@LN{545}{6}
 \@LN{546}{6}
 \@LN{547}{6}
 \@LN{548}{6}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces PC-LightGCN architecture. Each customer is routed by declared MiFID II band to a dedicated sub-model. Training combines $\mathcal  {L}_{\text  {BPR}}$ with a coherence margin $\lambda \cdot \mathcal  {L}_{\text  {coh}}$. At inference the sub-model produces the top-$k$ list directly.}}{8}{figure.caption.20}\protected@file@percent }
-\newlabel{fig:architecture}{{5}{8}{PC-LightGCN architecture. Each customer is routed by declared MiFID II band to a dedicated sub-model. Training combines $\mathcal {L}_{\text {BPR}}$ with a coherence margin $\lambda \cdot \mathcal {L}_{\text {coh}}$. At inference the sub-model produces the top-$k$ list directly}{figure.caption.20}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces RQ3 aggregate metrics, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 $=$ PC@10 $/\,\pi (b_u)$ and is n/a for the regrouped trials, whose shifted bands make aggregate lift incomparable (Section~\ref {sec:rq3:regroup-results}).}}{8}{table.caption.21}\protected@file@percent }
-\newlabel{tab:rq4-aggregate}{{5}{8}{RQ3 aggregate metrics, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 $=$ PC@10 $/\,\pi (b_u)$ and is n/a for the regrouped trials, whose shifted bands make aggregate lift incomparable (Section~\ref {sec:rq3:regroup-results})}{table.caption.21}{}}
 \@LN@col{1}
 \@LN{549}{7}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Ablation and Evaluation Setup}{8}{subsection.6.6}\protected@file@percent }
-\newlabel{sec:rq3:setup}{{6.6}{8}{Ablation and Evaluation Setup}{subsection.6.6}{}}
 \@LN{550}{7}
 \@LN{551}{7}
 \@LN{552}{7}
 \@LN{553}{7}
 \@LN{554}{7}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Ablation and Evaluation Setup}{8}{subsection.6.6}\protected@file@percent }
+\newlabel{sec:rq3:setup}{{6.6}{8}{Ablation and Evaluation Setup}{subsection.6.6}{}}
 \@LN{555}{7}
 \@LN{556}{7}
 \@LN{557}{7}
 \@LN{558}{7}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Results}{8}{subsection.6.7}\protected@file@percent }
-\newlabel{sec:rq3:results}{{6.7}{8}{Results}{subsection.6.7}{}}
 \@LN{559}{7}
 \@LN{560}{7}
 \@LN{561}{7}
 \@LN{562}{7}
 \@LN{563}{7}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Results}{8}{subsection.6.7}\protected@file@percent }
+\newlabel{sec:rq3:results}{{6.7}{8}{Results}{subsection.6.7}{}}
 \@LN{564}{7}
 \@LN{565}{7}
 \@LN{566}{7}
@@ -689,7 +689,6 @@
 \@LN{572}{7}
 \@LN{573}{7}
 \@LN{574}{7}
-\@LN@col{2}
 \@LN{575}{7}
 \@LN{576}{7}
 \@LN{577}{7}
@@ -715,121 +714,123 @@
 \@LN{597}{7}
 \@LN{598}{7}
 \@LN{599}{7}
-\@LN@col{1}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Per-split win rates against the global LightGCN baseline for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$.}}{9}{figure.caption.22}\protected@file@percent }
-\newlabel{fig:rq4-winrate}{{6}{9}{Per-split win rates against the global LightGCN baseline for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$}{figure.caption.22}{}}
-\@LN{600}{8}
-\@LN{601}{8}
-\@LN{602}{8}
-\@LN{603}{8}
-\@LN{604}{8}
-\@LN{605}{8}
-\@LN{606}{8}
-\@LN{607}{8}
-\@LN{608}{8}
-\@LN{609}{8}
-\@LN{610}{8}
-\@LN{611}{8}
-\@LN{612}{8}
-\@LN{613}{8}
-\@LN{614}{8}
-\@LN{615}{8}
-\@LN{616}{8}
-\@LN{617}{8}
-\@LN{618}{8}
-\@LN{619}{8}
+\@LN{600}{7}
+\@LN{601}{7}
 \@LN@col{2}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Paired per-split deltas against the baseline LightGCN for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$. PC@10 is positive on every one of the 69 splits for all three.}}{9}{figure.caption.23}\protected@file@percent }
-\newlabel{fig:rq4-deltas}{{7}{9}{Paired per-split deltas against the baseline LightGCN for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$. PC@10 is positive on every one of the 69 splits for all three}{figure.caption.23}{}}
-\@LN{620}{8}
-\@LN{621}{8}
-\@LN{622}{8}
-\@LN{623}{8}
-\@LN{624}{8}
-\@LN{625}{8}
-\@LN{626}{8}
-\@LN{627}{8}
-\@LN{628}{8}
-\@LN{629}{8}
-\@LN{630}{8}
-\@LN{631}{8}
-\@LN{632}{8}
-\@LN{633}{8}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Effect of Regrouping}{9}{subsection.6.8}\protected@file@percent }
-\newlabel{sec:rq3:regroup-results}{{6.8}{9}{Effect of Regrouping}{subsection.6.8}{}}
-\@LN{634}{8}
-\@LN{635}{8}
-\@LN{636}{8}
-\@LN{637}{8}
-\@LN{638}{8}
+\@LN{602}{7}
+\@LN{603}{7}
+\@LN{604}{7}
+\@LN{605}{7}
+\@LN{606}{7}
+\@LN{607}{7}
+\@LN{608}{7}
+\@LN{609}{7}
+\@LN{610}{7}
+\@LN{611}{7}
+\@LN{612}{7}
+\@LN{613}{7}
+\@LN{614}{7}
+\@LN{615}{7}
+\@LN{616}{7}
+\@LN{617}{7}
+\@LN{618}{7}
+\@LN{619}{7}
+\@LN{620}{7}
+\@LN{621}{7}
+\@LN{622}{7}
+\@LN{623}{7}
+\@LN{624}{7}
+\@LN{625}{7}
+\@LN{626}{7}
+\@LN{627}{7}
+\@LN{628}{7}
+\@LN{629}{7}
+\@LN{630}{7}
+\@LN{631}{7}
+\@LN{632}{7}
+\@LN{633}{7}
+\@LN{634}{7}
+\@LN{635}{7}
+\@LN{636}{7}
+\@LN{637}{7}
+\@LN{638}{7}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.8}Effect of Regrouping}{8}{subsection.6.8}\protected@file@percent }
+\newlabel{sec:rq3:regroup-results}{{6.8}{8}{Effect of Regrouping}{subsection.6.8}{}}
+\@LN{639}{7}
+\@LN{640}{7}
+\@LN{641}{7}
+\@LN{642}{7}
+\@LN{643}{7}
+\@LN{644}{7}
+\@LN{645}{7}
+\@LN{646}{7}
+\@LN{647}{7}
+\@LN{648}{7}
+\@LN{649}{7}
+\@LN{650}{7}
+\@LN{651}{7}
+\@LN{652}{7}
+\@LN{653}{7}
+\@LN{654}{7}
+\@LN{655}{7}
+\@LN{656}{7}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces PC-LightGCN architecture. Each customer is routed by declared MiFID II band to a dedicated sub-model. Training combines $\mathcal  {L}_{\text  {BPR}}$ with a coherence margin $\lambda \cdot \mathcal  {L}_{\text  {coh}}$. At inference the sub-model produces the top-$k$ list directly.}}{9}{figure.caption.20}\protected@file@percent }
+\newlabel{fig:architecture}{{5}{9}{PC-LightGCN architecture. Each customer is routed by declared MiFID II band to a dedicated sub-model. Training combines $\mathcal {L}_{\text {BPR}}$ with a coherence margin $\lambda \cdot \mathcal {L}_{\text {coh}}$. At inference the sub-model produces the top-$k$ list directly}{figure.caption.20}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces RQ3 aggregate metrics, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 $=$ PC@10 $/\,\pi (b_u)$ and is n/a for the regrouped trials, whose shifted bands make aggregate lift incomparable (Section~\ref {sec:rq3:regroup-results}).}}{9}{table.caption.21}\protected@file@percent }
+\newlabel{tab:pclgcn-aggregate}{{5}{9}{RQ3 aggregate metrics, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 $=$ PC@10 $/\,\pi (b_u)$ and is n/a for the regrouped trials, whose shifted bands make aggregate lift incomparable (Section~\ref {sec:rq3:regroup-results})}{table.caption.21}{}}
 \@LN@col{1}
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Per-band PC-lift@10 for the five RQ3 configurations. Values above $1.00\times $ beat the random baseline $\pi (b)$.}}{10}{table.caption.24}\protected@file@percent }
-\newlabel{tab:rq4-per-band}{{6}{10}{Per-band PC-lift@10 for the five RQ3 configurations. Values above $1.00\times $ beat the random baseline $\pi (b)$}{table.caption.24}{}}
-\@LN{639}{9}
-\@LN{640}{9}
-\@LN{641}{9}
-\@LN{642}{9}
-\@LN{643}{9}
-\@LN{644}{9}
-\@LN{645}{9}
-\@LN{646}{9}
-\@LN{647}{9}
-\@LN{648}{9}
-\@LN{649}{9}
-\@LN{650}{9}
-\@LN{651}{9}
-\@LN{652}{9}
-\@LN{653}{9}
-\@LN{654}{9}
-\@LN{655}{9}
-\@LN{656}{9}
-\@LN{657}{9}
-\@LN{658}{9}
-\@LN{659}{9}
-\@LN{660}{9}
-\@LN{661}{9}
-\@LN{662}{9}
-\@LN{663}{9}
-\@LN{664}{9}
-\@LN{665}{9}
-\@LN{666}{9}
-\@LN{667}{9}
-\@LN{668}{9}
-\@LN{669}{9}
-\@LN{670}{9}
-\@LN{671}{9}
-\@LN{672}{9}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.9}Limitations}{10}{subsection.6.9}\protected@file@percent }
-\newlabel{sec:rq3:limitations}{{6.9}{10}{Limitations}{subsection.6.9}{}}
-\@LN{673}{9}
-\@LN{674}{9}
-\@LN{675}{9}
-\@LN{676}{9}
-\@LN{677}{9}
-\@LN{678}{9}
-\@LN{679}{9}
-\@LN{680}{9}
-\@LN{681}{9}
-\@LN{682}{9}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Per-band PC-lift@10 for the five RQ3 configurations. Values above $1.00\times $ beat the random baseline $\pi (b)$.}}{9}{table.caption.24}\protected@file@percent }
+\newlabel{tab:pclgcn-per-band}{{6}{9}{Per-band PC-lift@10 for the five RQ3 configurations. Values above $1.00\times $ beat the random baseline $\pi (b)$}{table.caption.24}{}}
+\@LN{657}{8}
+\@LN{658}{8}
+\@LN{659}{8}
+\@LN{660}{8}
+\@LN{661}{8}
+\@LN{662}{8}
+\@LN{663}{8}
+\@LN{664}{8}
+\@LN{665}{8}
+\@LN{666}{8}
+\@LN{667}{8}
+\@LN{668}{8}
+\@LN{669}{8}
+\@LN{670}{8}
+\@LN{671}{8}
 \@LN@col{2}
-\@LN{683}{9}
-\@LN{684}{9}
-\@LN{685}{9}
-\@LN{686}{9}
-\@LN{687}{9}
-\@LN{688}{9}
-\@LN{689}{9}
-\@LN{690}{9}
-\@LN{691}{9}
-\@LN{692}{9}
-\@LN{693}{9}
+\@LN{672}{8}
+\@LN{673}{8}
+\@LN{674}{8}
+\@LN{675}{8}
+\@LN{676}{8}
+\@LN{677}{8}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.9}Limitations}{9}{subsection.6.9}\protected@file@percent }
+\newlabel{sec:rq3:limitations}{{6.9}{9}{Limitations}{subsection.6.9}{}}
+\@LN{678}{8}
+\@LN{679}{8}
+\@LN{680}{8}
+\@LN{681}{8}
+\@LN{682}{8}
+\@LN{683}{8}
+\@LN{684}{8}
+\@LN{685}{8}
+\@LN{686}{8}
+\@LN{687}{8}
+\@LN{688}{8}
+\@LN{689}{8}
+\@LN{690}{8}
+\@LN{691}{8}
+\@LN{692}{8}
+\@LN{693}{8}
+\@LN{694}{8}
+\@LN{695}{8}
+\@LN{696}{8}
+\@LN{697}{8}
+\@LN@col{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Per-split win rates against the global LightGCN baseline for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$.}}{10}{figure.caption.22}\protected@file@percent }
+\newlabel{fig:win-rates}{{6}{10}{Per-split win rates against the global LightGCN baseline for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$}{figure.caption.22}{}}
+\@LN{698}{9}
 \@writefile{toc}{\contentsline {section}{\numberline {7}Future Work}{10}{section.7}\protected@file@percent }
 \newlabel{sec:futurework}{{7}{10}{Future Work}{section.7}{}}
-\@LN{694}{9}
-\@LN{695}{9}
-\@LN{696}{9}
-\@LN{697}{9}
-\@LN{698}{9}
 \@LN{699}{9}
 \@LN{700}{9}
 \@LN{701}{9}
@@ -849,6 +850,9 @@
 \@LN{715}{9}
 \@LN{716}{9}
 \@LN{717}{9}
+\@LN@col{2}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Paired per-split deltas against the baseline LightGCN for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$. PC@10 is positive on every one of the 69 splits for all three.}}{10}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:paired-deltas}{{7}{10}{Paired per-split deltas against the baseline LightGCN for three stratified configurations: declared $\lambda {=}0$, declared $\lambda {=}1$, and regrouped $\lambda {=}0$. PC@10 is positive on every one of the 69 splits for all three}{figure.caption.23}{}}
 \@LN{718}{9}
 \@LN{719}{9}
 \@LN{720}{9}
@@ -856,13 +860,13 @@
 \@LN{722}{9}
 \@LN{723}{9}
 \@LN{724}{9}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{10}{section.8}\protected@file@percent }
-\newlabel{sec:conclusion}{{8}{10}{Conclusion}{section.8}{}}
 \@LN{725}{9}
 \@LN{726}{9}
 \@LN{727}{9}
 \@LN{728}{9}
 \@LN{729}{9}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{10}{section.8}\protected@file@percent }
+\newlabel{sec:conclusion}{{8}{10}{Conclusion}{section.8}{}}
 \@LN{730}{9}
 \@LN{731}{9}
 \@LN{732}{9}
@@ -874,9 +878,13 @@
 \citation{10.1145/3773966.3779383}
 \bibstyle{named}
 \bibdata{ijcai26}
+\bibcite{cnbc2019stockmarket}{\citeauthoryear {{CNBC}}{2019}}
 \bibcite{Ghiye_2024}{\citeauthoryear {Ghiye \bgroup \em  et al.\egroup }{2024}}
 \bibcite{he2020lightgcnsimplifyingpoweringgraph}{\citeauthoryear {He \bgroup \em  et al.\egroup }{2020}}
 \bibcite{rendle2012bprbayesianpersonalizedranking}{\citeauthoryear {Rendle \bgroup \em  et al.\egroup }{2012}}
+\bibcite{reuters2020sp500recovery}{\citeauthoryear {{Reuters}}{2020}}
+\bibcite{reuters2021fedtaper}{\citeauthoryear {{Reuters}}{2021}}
+\bibcite{reuters2022marketwrap}{\citeauthoryear {{Reuters}}{2022}}
 \bibcite{10.1145/3773966.3779383}{\citeauthoryear {Sakurai \bgroup \em  et al.\egroup }{2026}}
 \bibcite{sanzcruzado2024fartransinvestmentdatasetfinancial}{\citeauthoryear {Sanz-Cruzado \bgroup \em  et al.\egroup }{2024}}
 \bibcite{10.1145/3780097}{\citeauthoryear {Sanz-Cruzado \bgroup \em  et al.\egroup }{2026}}
@@ -909,13 +917,13 @@
 \@LN{760}{10}
 \@LN{761}{10}
 \@LN{762}{10}
-\@writefile{toc}{\contentsline {section}{\numberline {9}Reproducibility}{11}{section.9}\protected@file@percent }
-\newlabel{sec:reproducibility}{{9}{11}{Reproducibility}{section.9}{}}
 \@LN{763}{10}
 \@LN{764}{10}
 \@LN{765}{10}
 \@LN{766}{10}
 \@LN{767}{10}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Reproducibility}{11}{section.9}\protected@file@percent }
+\newlabel{sec:reproducibility}{{9}{11}{Reproducibility}{section.9}{}}
 \@LN{768}{10}
 \@LN{769}{10}
 \@LN{770}{10}
@@ -936,9 +944,9 @@
 \@LN{785}{10}
 \@LN{786}{10}
 \@LN{787}{10}
-\@LN@col{2}
 \@LN{788}{10}
 \@LN{789}{10}
+\@LN@col{2}
 \@LN{790}{10}
 \@LN{791}{10}
 \@LN{792}{10}
@@ -949,4 +957,27 @@
 \@LN{797}{10}
 \@LN{798}{10}
 \@LN{799}{10}
+\@LN{800}{10}
+\@LN{801}{10}
+\@LN{802}{10}
+\@LN{803}{10}
+\@LN{804}{10}
+\@LN{805}{10}
+\@LN{806}{10}
+\@LN{807}{10}
+\@LN{808}{10}
+\@LN{809}{10}
+\@LN{810}{10}
+\@LN{811}{10}
+\@LN{812}{10}
+\@LN{813}{10}
+\@LN{814}{10}
+\@LN{815}{10}
+\@LN{816}{10}
+\@LN{817}{10}
+\@LN{818}{10}
+\@LN{819}{10}
+\@LN{820}{10}
+\@LN{821}{10}
+\@LN{822}{10}
 \gdef \@abspage@last{11}

@@ -121,7 +121,7 @@ Baseline & $0.330$ & $-0.005$ & $0.495$ & $0.794$ & $1.17\times$ \\
 \bottomrule
 \end{tabular}
 \caption{RQ3 aggregate metrics, averaged over 69 splits. ROI@10 is per-month. PC-lift@10 $=$ PC@10 $/\,\pi(b_u)$ and is n/a for the regrouped trials, whose shifted bands make aggregate lift incomparable (Section~\ref{sec:rq3:regroup-results}).}
-\label{tab:rq4-aggregate}
+\label{tab:pclgcn-aggregate}
 \end{table*}
 
 \subsection{Ablation and Evaluation Setup}
@@ -133,7 +133,7 @@ This separates the gains from stratification and from the PC-loss, with every me
 \subsection{Results}
 \label{sec:rq3:results}
 
-We read the declared-band ablation off each table and figure first, comparing the baseline against the two declared trials ($\lambda \in \{0, 1\}$). The regrouped rows and columns follow in Section~\ref{sec:rq3:regroup-results}. In Table~\ref{tab:rq4-aggregate}, the full treatment's coherence gain decomposes into a cheap stratification step and a costlier coherence-margin step.
+We read the declared-band ablation off each table and figure first, comparing the baseline against the two declared trials ($\lambda \in \{0, 1\}$). The regrouped rows and columns follow in Section~\ref{sec:rq3:regroup-results}. In Table~\ref{tab:pclgcn-aggregate}, the full treatment's coherence gain decomposes into a cheap stratification step and a costlier coherence-margin step.
 \begin{itemize}
     \item \textbf{Full treatment ($\lambda = 1$).} Lifts PC@10 from $0.794$ to $0.918$, a $+12.4$ pp gain, and PC-lift from $1.17\times$ to $1.40\times$.
     \item \textbf{Stratification alone ($\lambda = 0$).} Supplies $+2.7$ pp of PC@10, about a quarter of the total, at virtually no cost elsewhere: nDCG@10 $+0.2$ pp, Recall@10 $+0.6$ pp, and ROI@10 $-0.2$ pp/mo, none of which registers as a meaningful effect.
@@ -142,7 +142,7 @@ We read the declared-band ablation off each table and figure first, comparing th
 \end{itemize}
 Together with the RQ1 coherence premium, this null ROI effect shows the recommender can be made more profile-coherent without giving up the return story.
 
-The win rate, the fraction of splits on which a configuration beats the baseline, captures how consistently a gain is paid rather than resting on a single strong split. Looking at the win rates (Figure~\ref{fig:rq4-winrate}):
+The win rate, the fraction of splits on which a configuration beats the baseline, captures how consistently a gain is paid rather than resting on a single strong split. Looking at the win rates (Figure~\ref{fig:win-rates}):
 \begin{itemize}
     \item \textbf{Coherence wins everywhere.} The full treatment posts a 100\% win rate on PC@10 across all 69 splits.
     \item \textbf{Cost is uniform too.} The full treatment's nDCG@10 and Recall@10 fall below baseline on all but a handful of splits (a 7\% win rate), so the ranking penalty is a consistent shift rather than a few bad splits.
@@ -152,29 +152,29 @@ The win rate, the fraction of splits on which a configuration beats the baseline
     \centering
     \includegraphics[width=\linewidth]{figures/paired_win_rates.pdf}
     \caption{Per-split win rates against the global LightGCN baseline for three stratified configurations: declared $\lambda{=}0$, declared $\lambda{=}1$, and regrouped $\lambda{=}0$.}
-    \label{fig:rq4-winrate}
+    \label{fig:win-rates}
 \end{figure}
 
-Next, the paired trial-minus-baseline deltas (Figure~\ref{fig:rq4-deltas}) make each metric's shift visible split by split.
+Next, the paired trial-minus-baseline deltas (Figure~\ref{fig:paired-deltas}) make each metric's shift visible split by split.
 \begin{itemize}
     \item \textbf{PC@10 always positive.} PC@10 is positive on every one of the 69 splits for all three configurations, so the aggregate coherence gains are not an averaging artefact.
-    \item \textbf{Ranking deltas match the table.} They track the aggregate costs from Table~\ref{tab:rq4-aggregate}: consistently negative for the declared margin trial and hugging zero for stratification alone.
+    \item \textbf{Ranking deltas match the table.} They track the aggregate costs from Table~\ref{tab:pclgcn-aggregate}: consistently negative for the declared margin trial and hugging zero for stratification alone.
 \end{itemize}
 
 \begin{figure}[!t]
     \centering
     \includegraphics[width=\linewidth]{figures/paired_deltas.pdf}
     \caption{Paired per-split deltas against the baseline LightGCN for three stratified configurations: declared $\lambda{=}0$, declared $\lambda{=}1$, and regrouped $\lambda{=}0$. PC@10 is positive on every one of the 69 splits for all three.}
-    \label{fig:rq4-deltas}
+    \label{fig:paired-deltas}
 \end{figure}
 
-Lastly, Table~\ref{tab:rq4-per-band} decomposes PC-lift@10 by band, tracing how the intervention resolves the per-band deficit from RQ2 (declared columns):
+Lastly, Table~\ref{tab:pclgcn-per-band} decomposes PC-lift@10 by band, tracing how the intervention resolves the per-band deficit from RQ2 (declared columns):
 \begin{itemize}
     \item \textbf{Conservative.} Sits at $0.75\times$ under the baseline, climbs to $0.91\times$ under stratification alone but stays below the random baseline, and only crosses it at $1.19\times$ once the coherence margin is added.
     \item \textbf{Aggressive.} Non-monotonic: stratification alone reduces lift from $1.35\times$ to $1.17\times$, likely because the smaller Aggressive training graph yields lower-quality embeddings in isolation, but the coherence margin more than recovers the loss at $1.97\times$.
     \item \textbf{Income and Balanced.} Already above-random under the baseline, they improve modestly without being sacrificed.
 \end{itemize}
-Under declared $\lambda = 1$, all four bands clear the random baseline for the first time. Reading the three views together is what motivates regrouping. The coherence margin spends ranking quality to buy coherence: Figure~\ref{fig:rq4-winrate} shows nDCG@10 and Recall@10 dropping on almost every split while ROI@10 is barely touched, and Table~\ref{tab:rq4-aggregate} returns only a modest aggregate lift in return. Table~\ref{tab:rq4-per-band} shows where that cost goes: the margin is largely spent rescuing a single band, dragging Conservative from $0.91\times$ past random to $1.19\times$. Penalising incoherence during training is therefore an expensive patch for what RQ1 already flagged as noisy declared bands.
+Under declared $\lambda = 1$, all four bands clear the random baseline for the first time. Reading the three views together is what motivates regrouping. The coherence margin spends ranking quality to buy coherence: Figure~\ref{fig:win-rates} shows nDCG@10 and Recall@10 dropping on almost every split while ROI@10 is barely touched, and Table~\ref{tab:pclgcn-aggregate} returns only a modest aggregate lift in return. Table~\ref{tab:pclgcn-per-band} shows where that cost goes: the margin is largely spent rescuing a single band, dragging Conservative from $0.91\times$ past random to $1.19\times$. Penalising incoherence during training is therefore an expensive patch for what RQ1 already flagged as noisy declared bands.
 
 The natural alternative is to correct the labels at the source instead of fighting them with a penalty: regroup each customer onto their revealed band first, which should lift coherence under the hood.
 
@@ -196,7 +196,7 @@ Aggressive   & $1.35\times$ & $1.17\times$ & $1.97\times$ & $2.24\times$ & $2.68
 \bottomrule
 \end{tabular}
 \caption{Per-band PC-lift@10 for the five RQ3 configurations. Values above $1.00\times$ beat the random baseline $\pi(b)$.}
-\label{tab:rq4-per-band}
+\label{tab:pclgcn-per-band}
 \end{table}
 
 \subsection{Effect of Regrouping}
@@ -204,11 +204,11 @@ Aggressive   & $1.35\times$ & $1.17\times$ & $1.97\times$ & $2.24\times$ & $2.68
 
 Rerunning the ablation on the regrouped bands changes the picture in three ways:
 \begin{itemize}
-    \item \textbf{Strongest and free lever.} Regrouping without the PC-loss (regrouped $\lambda = 0$) lifts PC@10 to $0.949$, a $+15.5$ pp gain that already exceeds the declared full treatment ($0.918$), and posts the highest nDCG@10 ($0.352$, $+2.2$ pp) and Recall@10 ($0.522$, $+2.7$ pp) of all five configurations with ROI@10 flat (Table~\ref{tab:rq4-aggregate}), each winning on every split (Figures~\ref{fig:rq4-winrate} and~\ref{fig:rq4-deltas}). Where the margin buys coherence by spending ranking quality, regrouping raises both together.
-    \item \textbf{Dominates declared stratification.} Against declared $\lambda = 0$, it adds $+12.8$ pp PC@10, $+2.0$ pp nDCG@10, and $+2.1$ pp Recall@10 on every split and removes the small ROI cost (Table~\ref{tab:rq4-aggregate}, with the per-split wins in Figures~\ref{fig:rq4-winrate} and~\ref{fig:rq4-deltas}). Since nDCG and Recall are band-independent, this is direct evidence that the declared bands were injecting label noise.
-    \item \textbf{Margin adds little once corrected.} The margin's marginal PC@10 gain collapses from $+9.7$ pp on the declared bands to $+3.3$ pp on the regrouped bands (regrouped $\lambda = 1$ reaches $0.982$), still costing $-1.9$ pp nDCG@10 and $-2.9$ pp Recall@10 (Table~\ref{tab:rq4-aggregate}). Margin and regrouping are partial substitutes, but only regrouping pays no ranking penalty.
+    \item \textbf{Strongest and free lever.} Regrouping without the PC-loss (regrouped $\lambda = 0$) lifts PC@10 to $0.949$, a $+15.5$ pp gain that already exceeds the declared full treatment ($0.918$), and posts the highest nDCG@10 ($0.352$, $+2.2$ pp) and Recall@10 ($0.522$, $+2.7$ pp) of all five configurations with ROI@10 flat (Table~\ref{tab:pclgcn-aggregate}), each winning on every split (Figures~\ref{fig:win-rates} and~\ref{fig:paired-deltas}). Where the margin buys coherence by spending ranking quality, regrouping raises both together.
+    \item \textbf{Dominates declared stratification.} Against declared $\lambda = 0$, it adds $+12.8$ pp PC@10, $+2.0$ pp nDCG@10, and $+2.1$ pp Recall@10 on every split and removes the small ROI cost (Table~\ref{tab:pclgcn-aggregate}, with the per-split wins in Figures~\ref{fig:win-rates} and~\ref{fig:paired-deltas}). Since nDCG and Recall are band-independent, this is direct evidence that the declared bands were injecting label noise.
+    \item \textbf{Margin adds little once corrected.} The margin's marginal PC@10 gain collapses from $+9.7$ pp on the declared bands to $+3.3$ pp on the regrouped bands (regrouped $\lambda = 1$ reaches $0.982$), still costing $-1.9$ pp nDCG@10 and $-2.9$ pp Recall@10 (Table~\ref{tab:pclgcn-aggregate}). Margin and regrouping are partial substitutes, but only regrouping pays no ranking penalty.
 \end{itemize}
-We therefore take regrouped $\lambda = 0$ as the recommended operating point: it captures the bulk of the coherence gain at no ranking or return cost. Within the regrouped assignment every band also clears its own random baseline (Table~\ref{tab:rq4-per-band}, where regrouped $\lambda = 1$ reaches $1.25\times$ Conservative, $1.27\times$ Income, $1.30\times$ Balanced, and $2.68\times$ Aggressive).
+We therefore take regrouped $\lambda = 0$ as the recommended operating point: it captures the bulk of the coherence gain at no ranking or return cost. Within the regrouped assignment every band also clears its own random baseline (Table~\ref{tab:pclgcn-per-band}, where regrouped $\lambda = 1$ reaches $1.25\times$ Conservative, $1.27\times$ Income, $1.30\times$ Balanced, and $2.68\times$ Aggressive).
 
 Taken together, these results show that correcting each customer's band (regrouping) is a cheaper and stronger lever than penalising incoherence during training (the PC-loss): once the bands are corrected, it is not necessary to add the PC-loss signal during training, and because nDCG, Recall, and ROI rise alongside coherence, the declared bands rather than the model were the binding problem.
 

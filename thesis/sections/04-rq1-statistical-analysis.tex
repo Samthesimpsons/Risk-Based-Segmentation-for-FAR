@@ -54,7 +54,7 @@ In addition to what was introduced in Section~\ref{sec:intro}, FAR-Trans~\cite{s
 \subsection{Prevalence and Structure of Discordance}
 \label{sec:rq1:prevalence}
 
-We characterise discordance in four slices, starting from the pooled transaction rate and drilling into the customer, band, and year dimensions in turn. At the transaction level (Figure~\ref{fig:rq1-dist}), of 228{,}241 scoreable Buys:
+We characterise discordance in four slices, starting from the pooled transaction rate and drilling into the customer, band, and year dimensions in turn. At the transaction level (Figure~\ref{fig:discordance-distribution}), of 228{,}241 scoreable Buys:
 \begin{enumerate}
     \item 18.6\% violate the declared band by two or more steps.
     \item 81.4\% are coherent, of which 34.1\% are strictly coherent ($d = 0$).
@@ -67,36 +67,36 @@ All in all, nearly one in five scoreable Buys lands two or more bands away from 
     \centering
     \includegraphics[width=\linewidth]{figures/discordance_distribution.pdf}
     \caption{Distribution of pairwise discordance $d$ over 228{,}241 scoreable Buys. Most mass sits at $d \leq 1$ (coherent), with non-negligible density at $d \geq 2$ (discordant).}
-    \label{fig:rq1-dist}
+    \label{fig:discordance-distribution}
 \end{figure}
 
-The pooled rate cannot tell us whether these violations are i.i.d.\ transaction-level slips spread thinly across the customer base or a structural trait concentrated in a subset. Slicing by customer settles the question. The per-customer discordant share (Figure~\ref{fig:rq1-self}) is sharply bimodal, concentrating in the lowest and highest bins rather than clustering near the 18.6\% population mean. More explicitly, 64.4\% of banded customers are fully coherent across every Buy and 17.2\% are fully discordant.
+The pooled rate cannot tell us whether these violations are i.i.d.\ transaction-level slips spread thinly across the customer base or a structural trait concentrated in a subset. Slicing by customer settles the question. The per-customer discordant share (Figure~\ref{fig:self-discordance}) is sharply bimodal, concentrating in the lowest and highest bins rather than clustering near the 18.6\% population mean. More explicitly, 64.4\% of banded customers are fully coherent across every Buy and 17.2\% are fully discordant.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/self_discordance.pdf}
     \caption{Per-customer share of discordant Buys is sharply bimodal, concentrating in the lowest and highest bins and ruling out i.i.d.\ transaction-level noise.}
-    \label{fig:rq1-self}
+    \label{fig:self-discordance}
 \end{figure}
 
 Hartigan's dip test on the 28{,}770 per-customer values rejects unimodality ($D = 0.086$, $p < 10^{-15}$), confirming that discordance is a persistent customer-level trait rather than i.i.d.\ transaction-level noise.
 
-Since the trait is customer-level, the next question is which customers carry it. Coherence per declared band is U-shaped (Figure~\ref{fig:rq1-per-band}). The two centre bands sit around 90\%, while Conservative drops to 45.1\% (possibly reflecting a ``reach for yield'' tendency) and Aggressive to 56.2\% (possibly reflecting a regression toward safer assets). This concentration of mismatch at the ordinal extremes corroborates the bimodality finding from the customer slice.
+Since the trait is customer-level, the next question is which customers carry it. Coherence per declared band is U-shaped (Figure~\ref{fig:per-band-coherence}). The two centre bands sit around 90\%, while Conservative drops to 45.1\% (possibly reflecting a ``reach for yield'' tendency) and Aggressive to 56.2\% (possibly reflecting a regression toward safer assets). This concentration of mismatch at the ordinal extremes corroborates the bimodality finding from the customer slice.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/per_band_coherence.pdf}
-    \caption{Coherence share by declared band. The U-shape supports the bimodality result of Figure~\ref{fig:rq1-self}: discordance concentrates on the ordinal extremes.}
-    \label{fig:rq1-per-band}
+    \caption{Coherence share by declared band. The U-shape supports the bimodality result of Figure~\ref{fig:self-discordance}: discordance concentrates on the ordinal extremes.}
+    \label{fig:per-band-coherence}
 \end{figure}
 
-A final slice rules out a regime-driven artefact. Mean discordance is flat across 2019 to 2022 (within 0.02 bands, see Figure~\ref{fig:rq1-yearly}), so the pattern is not the product of any single year's market conditions. The 2018 value (0.98) sits higher but covers a small slice. MiFID II came into force on 2018-01-03, the exact start of FAR-Trans, so we hypothesise the elevation as a transition effect. However, this hypothesis is not tested and is potential future work.
+A final slice rules out a regime-driven artefact. Mean discordance is flat across 2019 to 2022 (within 0.02 bands, see Figure~\ref{fig:yearly-discordance}), so the pattern is not the product of any single year's market conditions. The 2018 value (0.98) sits higher but covers a small slice. MiFID II came into force on 2018-01-03, the exact start of FAR-Trans, so we hypothesise the elevation as a transition effect. However, this hypothesis is not tested and is potential future work.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{figures/yearly_discordance.pdf}
     \caption{Mean discordance by calendar year. The 2019 to 2022 cluster sits within 0.02 bands, with 2018 elevated (transition-effect hypothesis).}
-    \label{fig:rq1-yearly}
+    \label{fig:yearly-discordance}
 \end{figure}
 
 \begin{table*}[!t]
@@ -120,7 +120,7 @@ Intercept                                & $-0.0471$ & $0.0141$ & $[-0.0746,\, -
 \bottomrule
 \end{tabular}
 \caption{Full RQ1 OLS coefficient table on 208{,}029 priced Buys, cluster-robust SE on \texttt{customerID}. Reference cell: Inactive \texttt{customerType} (the alphabetically first segment in FAR-Trans), year 2018, $\texttt{asset\_volatility} = 0$, $\texttt{is\_coherent} = 0$.}
-\label{tab:rq2-full}
+\label{tab:return-premium-ols}
 \end{table*}
 
 \subsection{Conditional Return Premium}
@@ -131,7 +131,7 @@ We have shown that discordance is a persistent customer-level trait concentrated
 \subsubsection{Regression specification}
 We test whether profile-coherent Buys earn different realised returns from discordant ones via a transaction-level Ordinary Least Squares (OLS) regression on 208{,}029 priced Buys with cluster-robust standard errors on \texttt{customerID} and a two-sided Wald test at $\alpha = 0.05$. Clustering is warranted because each customer contributes roughly 8 Buys on average, so within-customer residuals share unobserved shocks. The specification is:
 \begin{equation}
-\label{eq:rq2-ols}
+\label{eq:return-premium-ols}
 \begin{split}
 r ={}& \beta_0 + \beta_1 \cdot \text{is\_coherent} \\
     &{}+ \beta_2 \cdot \text{asset\_volatility} \\
@@ -146,7 +146,7 @@ Prices are matched via a backward-nearest join: the start price is the most rece
 
 \subsubsection{Results}
 
-Table~\ref{tab:rq2-full} reports the full coefficient table. The key results on the coherence premium are:
+Table~\ref{tab:return-premium-ols} reports the full coefficient table. The key results on the coherence premium are:
 \begin{itemize}
     \item \textbf{Conditional premium.} Coherent Buys earn $+2.94$ percentage points (pp) higher 6-month realised return than discordant ones, conditional on volatility, segment, and year.
     \item \textbf{Significance.} The positive sign with $p = 2.3 \times 10^{-13}$ provides strong evidence against the prior that regulatory coherence imposes a return tax.
@@ -156,10 +156,10 @@ We note that the adjusted $R^2$ is 0.051 which implies that the covariates expla
 Moving on, the volatility coefficient is $-10.25$ pp per unit, consistent with low-volatility outperformance over 2019 to 2022 and the 2022 rate shock that hit high-beta names. All four year dummies reject $H_0$, reflecting distinct market regimes relative to the 2018 reference year:
 
 \begin{enumerate}
-    \item 2019 coefficient captures the equity recovery from the late-2018 selloff.
-    \item 2020 is the strongest at $+21.07$ pp driven by the post-COVID V-shaped rebound.
-    \item 2021 reflects continued recovery under accommodative monetary policy before late-2021 rate-hike expectations set in.
-    \item 2022 coefficient turns negative at $-1.95$ pp as aggressive Fed hikes triggered a broad fixed-income drawdown.
+    \item The 2019 coefficient reflects the broad equity recovery in the year after the December 2018 sell-off, which had left the S\&P 500 just short of bear-market territory~\cite{cnbc2019stockmarket}.
+    \item 2020 is the strongest at $+21.07$ pp, coinciding with the rapid rebound from the COVID-19 sell-off that returned major indices to record highs by August~\cite{reuters2020sp500recovery}.
+    \item 2021 reflects continued gains under still-accommodative monetary policy, before the Federal Reserve's expected late-2021 taper and rising rate-hike expectations~\cite{reuters2021fedtaper}.
+    \item The 2022 coefficient turns negative at $-1.95$ pp, the year an aggressive Federal Reserve hiking cycle drove a broad fixed-income drawdown~\cite{reuters2022marketwrap}.
 \end{enumerate}
 
 Lastly, all four \texttt{customerType} dummies fail to reject $H_0$, indicating that segmentation contributes no detectable return signal. Together with the bimodality found above, this suggests that customer type does not capture the persistent discordance trait either.
