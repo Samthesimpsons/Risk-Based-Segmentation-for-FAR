@@ -41,6 +41,7 @@ from src.pipeline.preprocessing import (
 )
 from src.utils.metrics import (
     build_price_lookup,
+    compute_balance,
     compute_monthly_return,
     evaluate_model_on_split,
 )
@@ -205,21 +206,27 @@ def _summarise(results: list[EvaluationResult]) -> dict[str, float]:
         return {
             "average_ndcg": 0.0,
             "average_roi": 0.0,
-            "average_recall": 0.0,
             "average_profile_coherence": 0.0,
             "average_profile_coherence_lift": 0.0,
+            "average_balance": 0.0,
         }
     number_of_splits = len(results)
+    average_ndcg = sum(r.ndcg_at_k for r in results) / number_of_splits
+    average_roi = sum(r.roi_at_k for r in results) / number_of_splits
+    average_profile_coherence = (
+        sum(r.profile_coherence_at_k for r in results) / number_of_splits
+    )
     return {
-        "average_ndcg": sum(r.ndcg_at_k for r in results) / number_of_splits,
-        "average_roi": sum(r.roi_at_k for r in results) / number_of_splits,
-        "average_recall": sum(r.recall_at_k for r in results) / number_of_splits,
-        "average_profile_coherence": sum(r.profile_coherence_at_k for r in results)
-        / number_of_splits,
+        "average_ndcg": average_ndcg,
+        "average_roi": average_roi,
+        "average_profile_coherence": average_profile_coherence,
         "average_profile_coherence_lift": sum(
             r.profile_coherence_lift_at_k for r in results
         )
         / number_of_splits,
+        "average_balance": compute_balance(
+            average_roi, average_ndcg, average_profile_coherence
+        ),
     }
 
 
@@ -239,9 +246,13 @@ def _save_per_trial_metrics_csv(
             "time_point": result.time_point.isoformat(),
             "ndcg_at_k": result.ndcg_at_k,
             "roi_at_k": result.roi_at_k,
-            "recall_at_k": result.recall_at_k,
             "profile_coherence_at_k": result.profile_coherence_at_k,
             "profile_coherence_lift_at_k": result.profile_coherence_lift_at_k,
+            "balance": compute_balance(
+                result.roi_at_k,
+                result.ndcg_at_k,
+                result.profile_coherence_at_k,
+            ),
         }
         for result in evaluation.per_split_results
     ]
@@ -415,13 +426,13 @@ def _save_baseline_trial_summary(
         row: dict[str, Any] = dict(result.config)
         row["average_ndcg"] = result.metrics.get("average_ndcg")
         row["average_roi"] = result.metrics.get("average_roi")
-        row["average_recall"] = result.metrics.get("average_recall")
         row["average_profile_coherence"] = result.metrics.get(
             "average_profile_coherence"
         )
         row["average_profile_coherence_lift"] = result.metrics.get(
             "average_profile_coherence_lift"
         )
+        row["average_balance"] = result.metrics.get("average_balance")
         rows.append(row)
 
     output_directory = results_directory / "tuning" / spec.model_name

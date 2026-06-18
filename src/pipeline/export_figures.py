@@ -1,4 +1,4 @@
-"""Export all thesis figures as single-column PDFs into thesis/figures/."""
+"""Export all thesis figures as single-column PDFs into thesis/thesis_draft_2/figures/."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from src.analysis.findings import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUTPUT_DIRECTORY = ROOT / "thesis/figures"
+DEFAULT_OUTPUT_DIRECTORY = ROOT / "thesis/thesis_draft_2/figures"
 
 
 def main() -> None:

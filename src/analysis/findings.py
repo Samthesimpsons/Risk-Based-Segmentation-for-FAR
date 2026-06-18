@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from src.utils.metrics import compute_balance
+
 RISK_BAND_NAMES: dict[int, str] = {
     0: "Conservative",
     1: "Income",
@@ -31,15 +33,15 @@ MODEL_DISPLAY_MAP: dict[str, str] = {
 METRIC_COLUMNS: list[str] = [
     "ndcg_at_k",
     "roi_at_k",
-    "recall_at_k",
     "profile_coherence_at_k",
+    "balance",
     "profile_coherence_lift_at_k",
 ]
 PRETTY_METRIC: dict[str, str] = {
     "ndcg_at_k": "nDCG@10",
     "roi_at_k": "ROI@10 (mo.)",
-    "recall_at_k": "Recall@10",
     "profile_coherence_at_k": "PC@10",
+    "balance": "Balance",
     "profile_coherence_lift_at_k": "PC-lift@10",
 }
 # PC-lift@10 is omitted from the paired figures: regrouping changes each customer's
@@ -49,7 +51,7 @@ PRETTY_METRIC: dict[str, str] = {
 PC_METRIC_ORDER: list[str] = [
     "PC@10",
     "ROI@10 (mo.)",
-    "Recall@10",
+    "Balance",
     "nDCG@10",
 ]
 CONTRAST_DESCRIPTIONS: dict[str, str] = {
@@ -63,7 +65,6 @@ CONTRAST_COLOURS: dict[str, str] = {
     "Stratify+Regroup": "#55A868",
 }
 CONTRAST_ORDER: list[str] = list(CONTRAST_DESCRIPTIONS.keys())
-SIGNIFICANCE_ALPHA: float = 0.05
 
 SINGLE_COLUMN_WIDTH_INCHES: float = 3.3
 DEFAULT_FIGURE_HEIGHT_INCHES: float = 2.2
@@ -502,87 +503,6 @@ def style_coefficient_table(coefficients: pd.DataFrame) -> pd.DataFrame:
     return display_df[["term", "estimate", "std_error", "ci", "p_value", "meaning"]]
 
 
-def plot_coefficient_forest(
-    coefficients: pd.DataFrame,
-    save_path: Path | None = None,
-) -> None:
-    """Forest plot of every transaction-return regression coefficient with 95% CIs in pp."""
-    filtered = _filtered_coefficients(coefficients)
-    plot_df = filtered.copy()
-    plot_df["significant"] = plot_df["p_value"] < SIGNIFICANCE_ALPHA
-    plot_df["estimate_pp"] = plot_df["estimate"] * 100
-    plot_df["ci_lower_pp"] = plot_df["ci_lower"] * 100
-    plot_df["ci_upper_pp"] = plot_df["ci_upper"] * 100
-    plot_df = plot_df.iloc[::-1].reset_index(drop=True)
-
-    y_positions = np.arange(len(plot_df))
-    sig_colour = "#1f4e1f"
-    ns_colour = "#888888"
-    point_colours = [sig_colour if s else ns_colour for s in plot_df["significant"]]
-
-    fig, ax = plt.subplots(figsize=(SINGLE_COLUMN_WIDTH_INCHES, 3.6))
-    for y, row, colour in zip(y_positions, plot_df.itertuples(), point_colours):
-        ax.errorbar(
-            row.estimate_pp,
-            y,
-            xerr=[
-                [row.estimate_pp - row.ci_lower_pp],
-                [row.ci_upper_pp - row.estimate_pp],
-            ],
-            fmt="o",
-            color=colour,
-            ecolor=colour,
-            elinewidth=0.9,
-            capsize=2,
-            markersize=4,
-        )
-        label = f"{row.estimate_pp:+.2f} pp  (p={_format_p_value(row.p_value)})"
-        ax.text(
-            row.ci_upper_pp + 0.4,
-            y,
-            label,
-            va="center",
-            ha="left",
-            fontsize=6,
-            color=colour,
-        )
-
-    ax.axvline(0, color="black", linewidth=0.6, linestyle="--")
-    ax.set_yticks(y_positions)
-    ax.set_yticklabels(plot_df["term"], fontsize=6.5)
-    ax.set_xlabel("Coefficient estimate (pp on 6-mo. realised return)")
-    ax.grid(axis="x", linestyle=":", alpha=0.4)
-    ax.set_axisbelow(True)
-    ax.set_xlim(
-        min(plot_df["ci_lower_pp"].min(), 0) - 2,
-        plot_df["ci_upper_pp"].max() + 26,
-    )
-
-    legend_handles = [
-        plt.Line2D(
-            [0],
-            [0],
-            marker="o",
-            color="white",
-            markerfacecolor=sig_colour,
-            markersize=5,
-            label=f"$p < {SIGNIFICANCE_ALPHA}$",
-        ),
-        plt.Line2D(
-            [0],
-            [0],
-            marker="o",
-            color="white",
-            markerfacecolor=ns_colour,
-            markersize=5,
-            label=f"$p \\geq {SIGNIFICANCE_ALPHA}$",
-        ),
-    ]
-    ax.legend(handles=legend_handles, loc="lower right", fontsize=6.5)
-    plt.tight_layout(pad=0.3)
-    _finalise(fig, save_path)
-
-
 def style_baseline_main_results(baseline_decomposition_directory: Path) -> Any:
     """Headline metrics table for the two FAR-Trans baselines at their primary-metric optima."""
     main_results = pd.read_csv(baseline_decomposition_directory / "main_results.csv")
@@ -592,8 +512,8 @@ def style_baseline_main_results(baseline_decomposition_directory: Path) -> Any:
         "primary_metric",
         "ndcg_at_k_mean",
         "roi_at_k_mean",
-        "recall_at_k_mean",
         "profile_coherence_at_k_mean",
+        "balance",
         "profile_coherence_lift_at_k_mean",
     ]
     renamed = main_results[display_columns].rename(
@@ -603,8 +523,8 @@ def style_baseline_main_results(baseline_decomposition_directory: Path) -> Any:
             "primary_metric": "Primary metric",
             "ndcg_at_k_mean": "nDCG@10",
             "roi_at_k_mean": "ROI@10 (mo.)",
-            "recall_at_k_mean": "Recall@10",
             "profile_coherence_at_k_mean": "PC@10",
+            "balance": "Balance",
             "profile_coherence_lift_at_k_mean": "PC-lift@10",
         }
     )
@@ -612,8 +532,8 @@ def style_baseline_main_results(baseline_decomposition_directory: Path) -> Any:
         {
             "nDCG@10": "{:.3f}",
             "ROI@10 (mo.)": "{:+.4f}",
-            "Recall@10": "{:.3f}",
             "PC@10": "{:.3f}",
+            "Balance": "{:.3f}",
             "PC-lift@10": "{:.3f}",
         }
     )
@@ -666,83 +586,6 @@ def style_per_band_summary(summary: pd.DataFrame) -> pd.DataFrame:
     ]
 
 
-def plot_per_band_pc(
-    summary: pd.DataFrame,
-    pi_series: pd.Series,
-    save_path: Path | None = None,
-) -> None:
-    """Grouped bar chart of mean PC@10 by band/model, with pi(b) reference lines."""
-    models = list(summary["model_display"].drop_duplicates())
-    tab10 = plt.get_cmap("tab10")
-    model_colours = {model: tab10(i) for i, model in enumerate(models)}
-
-    x_positions = np.arange(len(BANDS_ORDER))
-    group_width = 0.78
-    bar_width = group_width / max(len(models), 1)
-
-    fig, ax = plt.subplots(figsize=(SINGLE_COLUMN_WIDTH_INCHES, 2.6))
-    bar_handles = []
-    for i, model in enumerate(models):
-        rows = (
-            summary[summary["model_display"] == model]
-            .set_index("band_label")
-            .reindex(BANDS_ORDER)
-            .reset_index()
-        )
-        offsets = -group_width / 2 + bar_width / 2 + i * bar_width
-        xs = x_positions + offsets
-        bars = ax.bar(
-            xs,
-            rows["mean_pc"],
-            width=bar_width * 0.95,
-            color=model_colours[model],
-            label=model,
-            edgecolor="white",
-            linewidth=0.3,
-        )
-        bar_handles.append(bars)
-        for x, pc, lift in zip(xs, rows["mean_pc"], rows["lift"]):
-            ax.text(
-                x,
-                pc + 0.012,
-                f"{pc:.0%}\n{lift:.2f}x",
-                ha="center",
-                va="bottom",
-                fontsize=5.5,
-                color=model_colours[model],
-                fontweight="bold",
-            )
-
-    for j, band in enumerate(BANDS_ORDER):
-        pi_val = pi_series[band]
-        left = x_positions[j] - group_width / 2
-        right = x_positions[j] + group_width / 2
-        ax.hlines(pi_val, left, right, colors="black", linestyles="--", linewidth=0.7)
-
-    ax.set_xticks(x_positions)
-    ax.set_xticklabels(BANDS_ORDER, fontsize=6.5)
-    ax.set_ylabel("Mean PC@10")
-    ax.set_ylim(0, max(summary["mean_pc"].max(), pi_series.max()) * 1.4)
-    ax.grid(axis="y", linestyle=":", alpha=0.4)
-    ax.set_axisbelow(True)
-
-    baseline_handle = plt.Line2D(
-        [0],
-        [0],
-        color="black",
-        linestyle="--",
-        linewidth=0.7,
-        label="Random baseline $\\pi(b)$",
-    )
-    ax.legend(
-        handles=[*bar_handles, baseline_handle],
-        loc="upper left",
-        fontsize=6,
-    )
-    plt.tight_layout(pad=0.3)
-    _finalise(fig, save_path)
-
-
 def load_stratified_per_split(
     stratified_baseline_directory: Path,
     stratified_results_directory: Path,
@@ -780,6 +623,12 @@ def load_stratified_per_split(
 def _read_per_split(path: Path, label: str) -> pd.DataFrame:
     df = pd.read_csv(path)
     df["trial"] = label
+    df["balance"] = [
+        compute_balance(roi, ndcg, pc)
+        for roi, ndcg, pc in zip(
+            df["roi_at_k"], df["ndcg_at_k"], df["profile_coherence_at_k"]
+        )
+    ]
     return df
 
 
@@ -799,9 +648,16 @@ def style_stratified_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
             "Configuration": [trial_labels[key] for key in available],
             "nDCG@10": [per_split[key]["ndcg_at_k"].mean() for key in available],
             "ROI@10 (mo.)": [per_split[key]["roi_at_k"].mean() for key in available],
-            "Recall@10": [per_split[key]["recall_at_k"].mean() for key in available],
             "PC@10": [
                 per_split[key]["profile_coherence_at_k"].mean() for key in available
+            ],
+            "Balance": [
+                compute_balance(
+                    per_split[key]["roi_at_k"].mean(),
+                    per_split[key]["ndcg_at_k"].mean(),
+                    per_split[key]["profile_coherence_at_k"].mean(),
+                )
+                for key in available
             ],
             "PC-lift@10": [
                 per_split[key]["profile_coherence_lift_at_k"].mean()
@@ -815,8 +671,8 @@ def style_stratified_aggregate(per_split: dict[str, pd.DataFrame]) -> Any:
         {
             "nDCG@10": "{:.4f}",
             "ROI@10 (mo.)": "{:+.4f}",
-            "Recall@10": "{:.4f}",
             "PC@10": "{:.4f}",
+            "Balance": "{:.4f}",
             "PC-lift@10": "{:.3f}",
         }
     )
@@ -1086,12 +942,6 @@ def export_figures_as_pdf(
 ) -> list[Path]:
     """Render every findings figure to PDF under `output_directory` and return the written paths."""
     output_directory.mkdir(parents=True, exist_ok=True)
-    coefficients = load_return_regression_coefficients(
-        paths.return_regression_directory
-    )
-    per_band_summary, pi_series = build_per_band_summary(
-        paths.panel_regression_directory, eda_summary
-    )
     stratified_per_split = load_stratified_per_split(
         paths.stratified_baseline_directory,
         paths.stratified_results_directory,
@@ -1115,14 +965,6 @@ def export_figures_as_pdf(
         (
             "yearly_discordance.pdf",
             lambda p: plot_yearly_discordance(eda_summary, save_path=p),
-        ),
-        (
-            "coefficient_forest.pdf",
-            lambda p: plot_coefficient_forest(coefficients, save_path=p),
-        ),
-        (
-            "per_band_pc.pdf",
-            lambda p: plot_per_band_pc(per_band_summary, pi_series, save_path=p),
         ),
         (
             "paired_deltas.pdf",

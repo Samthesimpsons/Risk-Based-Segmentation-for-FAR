@@ -42,6 +42,5 @@ class EvaluationResult(BaseModel):
     model_name: str
     ndcg_at_k: float
     roi_at_k: float
-    recall_at_k: float
     profile_coherence_at_k: float
     profile_coherence_lift_at_k: float

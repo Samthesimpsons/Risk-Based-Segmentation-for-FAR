@@ -1,0 +1,21 @@
+\section{Limitations and Future Work}
+\label{sec:futurework}
+
+Beyond the data caveats already noted for the analytical study (Section~\ref{sec:analysis:limitations}), several limitations bound the experimental results, each pointing to a direction for future work.
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item \textit{Single operating point and backbone.} We audit each baseline only at its primary-metric optimum (nDCG@10 for LightGCN, ROI@10 for Random Forest), and we report a single operating point for the margin lever on the inherited best-trial backbone hyperparameters rather than re-tuning end to end. The segmentation itself extends only LightGCN. The reported suitability gains are therefore a lower bound on what a full frontier sweep over sequential, transformer, or content-based recommenders could reach, and the accuracy costs are an upper bound.
+    \item \textit{Baseline-relative reading.} Per-band PC-lift@10 should be read alongside its $\pi(b)$ reference rather than in isolation, since low-$\pi(b)$ bands such as Aggressive clear the random bar more easily.
+    \item \textit{Regrouping leakage and tautology.} The revealed bands are derived from each customer's full Buy history, so they carry look-ahead information relative to each split. A per-split variant using only training-window Buys is left to future work. Because PC@10 is then scored against bands chosen to match those purchases, the regrouped suitability gain is partly guaranteed by construction. The trustworthy signal is the simultaneous nDCG@10 and ROI@10 improvement, neither of which is defined relative to the band, and which the balance metric captures.
+\end{itemize}
+
+\subsection{Future Work}
+
+\begin{itemize}
+    \item \textit{Causal identification.} The coherence premium of Section~\ref{sec:analysis} is associational. Instrumental-variable or difference-in-differences designs on data spanning a regulatory boundary would move it towards causation, and would let the elevated 2018 mean discordance be tested directly against a pre-MiFID II counterfactual rather than left as a hypothesised transition effect.
+    \item \textit{Data-driven metric calibration.} The $\pm 1$ tolerance and the hierarchical asset-band assignment are set rather than derived. Future work could calibrate the tolerance from data and validate the band assignment against external MiFID II classifications from fund providers.
+    \item \textit{Broader backbones and a full frontier.} The segmentation and its two levers could be applied to sequential, transformer, and content-based recommenders, and the single margin operating point expanded into a full Pareto sweep with end-to-end re-tuning, mapping the balance frontier rather than reporting a single point on it.
+    \item \textit{Generalisation and online evaluation.} Results are shown on FAR-Trans under MiFID II's four-band scale. Extending to other jurisdictions, horizons, or asset universes would test the generalisability of PC@10 and the balance. Our analytical study measures realised return on executed Buys, whereas the experiments measure forward return on top-10 slates that may never be acted on. Bridging this gap through online evaluation or counterfactual off-policy estimation is a promising direction.
+\end{itemize}

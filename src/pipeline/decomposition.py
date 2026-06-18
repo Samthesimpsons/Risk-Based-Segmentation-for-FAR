@@ -19,6 +19,7 @@ from src.config.registry import (
     PRIMARY_METRIC_TO_KEY,
 )
 from src.config.settings import DataPaths
+from src.utils.metrics import compute_balance
 
 DEFAULT_EVALUATION_DIRECTORY = Path("outputs/results/evaluation")
 DEFAULT_OUTPUT_ROOT = Path("outputs/analysis/baseline_decomposition")
@@ -42,10 +43,13 @@ def _build_main_results_row(
         "ndcg_at_k_std": float(best["ndcg_at_k_std"]),
         "roi_at_k_mean": float(best["roi_at_k_mean"]),
         "roi_at_k_std": float(best["roi_at_k_std"]),
-        "recall_at_k_mean": float(best["recall_at_k_mean"]),
-        "recall_at_k_std": float(best["recall_at_k_std"]),
         "profile_coherence_at_k_mean": float(best["profile_coherence_at_k_mean"]),
         "profile_coherence_at_k_std": float(best["profile_coherence_at_k_std"]),
+        "balance": compute_balance(
+            float(best["roi_at_k_mean"]),
+            float(best["ndcg_at_k_mean"]),
+            float(best["profile_coherence_at_k_mean"]),
+        ),
     }
     if "profile_coherence_lift_at_k_mean" in best.index:
         row["profile_coherence_lift_at_k_mean"] = float(
@@ -65,7 +69,7 @@ def _print_main_results_table(main_results: pd.DataFrame, top_k: int) -> None:
     has_lift = "profile_coherence_lift_at_k_mean" in main_results.columns
     header = (
         f"{'Model':<28} {'nDCG@' + str(top_k):<14} {'ROI@' + str(top_k):<14}"
-        f" {'Recall@' + str(top_k):<14} {'PC@' + str(top_k):<10}"
+        f" {'PC@' + str(top_k):<10} {'Balance':<10}"
     )
     if has_lift:
         header += f" {'PC-lift@' + str(top_k):<10}"
@@ -78,8 +82,8 @@ def _print_main_results_table(main_results: pd.DataFrame, top_k: int) -> None:
             f"{row['display_name']:<28}"
             f" {row['ndcg_at_k_mean']:<14.4f}"
             f" {row['roi_at_k_mean']:<14.6f}"
-            f" {row['recall_at_k_mean']:<14.4f}"
             f" {row['profile_coherence_at_k_mean']:<10.4f}"
+            f" {row['balance']:<10.4f}"
         )
         if has_lift:
             line += f" {row['profile_coherence_lift_at_k_mean']:<10.4f}"

@@ -1,4 +1,4 @@
-"""nDCG@k, ROI@k, Recall@k, and PC@k computation."""
+"""nDCG@k, ROI@k, PC@k, and balance computation."""
 
 import math
 from datetime import date
@@ -11,6 +11,8 @@ from src.utils.profile_coherence import (
     compute_pairwise_discordance,
     is_profile_coherent,
 )
+
+BALANCE_ROI_TEMPERATURE: float = 0.01
 
 
 def compute_monthly_return(
@@ -48,18 +50,25 @@ def compute_ndcg_at_k(
     return dcg / idcg
 
 
-def compute_recall_at_k(
-    ranked_recommendations: list[str],
-    relevant_assets: set[str],
-    k: int = 10,
+def compute_balance(
+    roi: float,
+    ndcg: float,
+    profile_coherence: float,
+    temperature: float = BALANCE_ROI_TEMPERATURE,
 ) -> float:
-    """Compute Recall@k for a single user's recommendation list."""
-    if not relevant_assets:
-        return 0.0
+    """Harmonic mean of the three evaluation axes after squashing ROI into [0, 1].
 
-    top_k = set(ranked_recommendations[:k])
-    hits = len(top_k & relevant_assets)
-    return hits / len(relevant_assets)
+    ROI can be negative and lives on a different scale than nDCG and profile
+    coherence, which are already [0, 1] rates; a logistic squash rescales ROI to
+    [0, 1] so the three axes are comparable before combining. The harmonic mean is
+    used because it is high only when all three axes are simultaneously high: it
+    collapses toward zero whenever any single axis is weak, rewarding genuine
+    balance rather than a strong showing on one axis offsetting a weak one.
+    """
+    if ndcg <= 0.0 or profile_coherence <= 0.0:
+        return 0.0
+    roi_scaled = 1.0 / (1.0 + math.exp(-roi / temperature))
+    return 3.0 / (1.0 / roi_scaled + 1.0 / ndcg + 1.0 / profile_coherence)
 
 
 def compute_roi_at_k(
@@ -183,7 +192,7 @@ def evaluate_model_on_split(
     asset_risk_classes: dict[str, int],
     k: int = 10,
 ) -> EvaluationResult:
-    """Average nDCG@k, ROI@k, Recall@k, PC@k, and PC-lift@k across eligible users on one split."""
+    """Average nDCG@k, ROI@k, PC@k, and PC-lift@k across eligible users on one split."""
     price_lookup = build_price_lookup(
         close_prices, split.time_point, split.test_end, split.eligible_asset_ids
     )
@@ -199,7 +208,6 @@ def evaluate_model_on_split(
     random_baselines = compute_random_baseline_per_band(asset_risk_classes)
     ndcg_scores: list[float] = []
     roi_scores: list[float] = []
-    recall_scores: list[float] = []
     pc_scores: list[float] = []
     pc_lift_scores: list[float] = []
 
@@ -216,9 +224,6 @@ def evaluate_model_on_split(
         )
         roi_scores.append(
             compute_roi_at_k(customer_recommendations, price_lookup, days_in_period, k)
-        )
-        recall_scores.append(
-            compute_recall_at_k(customer_recommendations, relevant_assets, k)
         )
         pc_scores.append(
             compute_profile_coherence_at_k(
@@ -237,7 +242,6 @@ def evaluate_model_on_split(
 
     average_ndcg = sum(ndcg_scores) / len(ndcg_scores) if ndcg_scores else 0.0
     average_roi = sum(roi_scores) / len(roi_scores) if roi_scores else 0.0
-    average_recall = sum(recall_scores) / len(recall_scores) if recall_scores else 0.0
     average_pc = sum(pc_scores) / len(pc_scores) if pc_scores else 0.0
     average_pc_lift = (
         sum(pc_lift_scores) / len(pc_lift_scores) if pc_lift_scores else 0.0
@@ -249,7 +253,6 @@ def evaluate_model_on_split(
         model_name="",
         ndcg_at_k=average_ndcg,
         roi_at_k=average_roi,
-        recall_at_k=average_recall,
         profile_coherence_at_k=average_pc,
         profile_coherence_lift_at_k=average_pc_lift,
     )

@@ -7,19 +7,17 @@ from typing import Any, Literal
 
 from src.config.settings import LightGCNConfig, ModelConfig, RandomForestConfig
 
-PrimaryMetric = Literal["ndcg", "roi", "recall", "profile_coherence"]
+PrimaryMetric = Literal["ndcg", "roi", "profile_coherence"]
 
 PRIMARY_METRIC_TO_KEY: dict[PrimaryMetric, str] = {
     "ndcg": "average_ndcg",
     "roi": "average_roi",
-    "recall": "average_recall",
     "profile_coherence": "average_profile_coherence",
 }
 
 PRIMARY_METRIC_TO_PER_SPLIT_COLUMN: dict[str, str] = {
     "average_ndcg": "ndcg_at_k",
     "average_roi": "roi_at_k",
-    "average_recall": "recall_at_k",
     "average_profile_coherence": "profile_coherence_at_k",
 }
 

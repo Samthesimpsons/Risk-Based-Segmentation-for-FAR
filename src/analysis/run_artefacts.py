@@ -61,7 +61,6 @@ def average_per_trial(metrics_dataframe: pd.DataFrame) -> pd.DataFrame:
         for column in (
             "ndcg_at_k",
             "roi_at_k",
-            "recall_at_k",
             "profile_coherence_at_k",
             "profile_coherence_lift_at_k",
         )

@@ -45,7 +45,7 @@ format = { cmd = "uv run ruff format src/ notebooks/", help = "Format source fil
 type = { cmd = "uv run ty check src/ notebooks/", help = "Type-check source files and notebooks with ty" }
 setup = { cmd = "uv run lefthook install", help = "Install git hooks via lefthook" }
 jlab = { cmd = "uv run --with jupyter jupyter lab", help = "Run Jupyter Lab IDE" }
-figures = { cmd = "uv run python -m src.pipeline.export_figures", help = "Export all thesis figures as single-column PDFs into thesis/figures/" }
+figures = { cmd = "uv run python -m src.pipeline.export_figures", help = "Export all thesis figures as single-column PDFs into thesis/thesis_draft_2/figures/" }
 
 [tool.poe.tasks.preprocess]
 help = "Preprocess FAR-Trans data: load, split, and save to disk"

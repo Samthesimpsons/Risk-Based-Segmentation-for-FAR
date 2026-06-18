@@ -28,6 +28,7 @@ from src.pipeline.preprocessing import (
 )
 from src.utils.metrics import (
     build_price_lookup,
+    compute_balance,
     compute_monthly_return,
     evaluate_model_on_split,
 )
@@ -125,24 +126,27 @@ def _summarise(per_split_results: list[EvaluationResult]) -> dict[str, float]:
         return {
             "average_ndcg": 0.0,
             "average_roi": 0.0,
-            "average_recall": 0.0,
             "average_profile_coherence": 0.0,
             "average_profile_coherence_lift": 0.0,
+            "average_balance": 0.0,
         }
     number_of_splits = len(per_split_results)
+    average_ndcg = sum(r.ndcg_at_k for r in per_split_results) / number_of_splits
+    average_roi = sum(r.roi_at_k for r in per_split_results) / number_of_splits
+    average_profile_coherence = (
+        sum(r.profile_coherence_at_k for r in per_split_results) / number_of_splits
+    )
     return {
-        "average_ndcg": sum(r.ndcg_at_k for r in per_split_results) / number_of_splits,
-        "average_roi": sum(r.roi_at_k for r in per_split_results) / number_of_splits,
-        "average_recall": sum(r.recall_at_k for r in per_split_results)
-        / number_of_splits,
-        "average_profile_coherence": sum(
-            r.profile_coherence_at_k for r in per_split_results
-        )
-        / number_of_splits,
+        "average_ndcg": average_ndcg,
+        "average_roi": average_roi,
+        "average_profile_coherence": average_profile_coherence,
         "average_profile_coherence_lift": sum(
             r.profile_coherence_lift_at_k for r in per_split_results
         )
         / number_of_splits,
+        "average_balance": compute_balance(
+            average_roi, average_ndcg, average_profile_coherence
+        ),
     }
 
 
@@ -163,9 +167,13 @@ def _save_per_split_metrics(
             "time_point": result.time_point.isoformat(),
             "ndcg_at_k": result.ndcg_at_k,
             "roi_at_k": result.roi_at_k,
-            "recall_at_k": result.recall_at_k,
             "profile_coherence_at_k": result.profile_coherence_at_k,
             "profile_coherence_lift_at_k": result.profile_coherence_lift_at_k,
+            "balance": compute_balance(
+                result.roi_at_k,
+                result.ndcg_at_k,
+                result.profile_coherence_at_k,
+            ),
         }
         for result in per_split_results
     ]
@@ -343,9 +351,9 @@ def run_stratified_training(
         print(
             f"  averages: ndcg={averages['average_ndcg']:.4f} "
             f"roi={averages['average_roi']:.4f} "
-            f"recall={averages['average_recall']:.4f} "
             f"pc={averages['average_profile_coherence']:.4f} "
-            f"pc_lift={averages['average_profile_coherence_lift']:.4f}"
+            f"pc_lift={averages['average_profile_coherence_lift']:.4f} "
+            f"balance={averages['average_balance']:.4f}"
         )
 
     summary_path = _save_trial_summary(run_timestamp, summary_rows, results_directory)

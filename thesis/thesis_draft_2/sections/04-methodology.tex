@@ -1,0 +1,104 @@
+\section{Methodology: Risk-Based Segmentation}
+\label{sec:method}
+
+Section~\ref{sec:analysis} established that discordance is prevalent, structural, and economically consequential, yet the FAR-Trans baselines optimise only return and ranking accuracy. Our methodology brings risk suitability inside the recommender. The core idea is \emph{risk-based segmentation}: instead of a single global model, we route each customer to a sub-model trained only on customers of their risk band. Figure~\ref{fig:overview} gives the full picture, from the discordance challenge through the segmentation backbone and its two alternatives to the harmonic-mean balance that ties the three axes together. We describe the baseline it improves on, the segmentation architecture, the two alternatives for raising risk suitability, and the balance score in turn.
+
+\begin{figure*}[t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  >=Stealth, font=\small,
+  banner/.style={draw, rounded corners=3pt, align=center, inner sep=6pt, minimum width=15.5cm},
+  challenge/.style={banner, fill=red!6},
+  evalbanner/.style={banner, fill=blue!6},
+  block/.style={draw, rounded corners=3pt, align=center, inner sep=5pt},
+  sub/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=3.6cm, minimum height=0.5cm},
+  alt/.style={draw, dashed, rounded corners=2pt, align=center, font=\scriptsize, fill=gray!12},
+  io/.style={align=center, font=\scriptsize},
+  grp/.style={draw, dashed, rounded corners=5pt, inner sep=9pt},
+  arr/.style={->, thick},
+  darr/.style={->, thick, dashed},
+]
+
+\node[challenge] (ch) {\textbf{The challenge: discordance.} A customer's declared risk band $b_u$ frequently differs from the revealed risk of the assets they actually buy, so a band-agnostic recommender ranks suitable and unsuitable assets alike.};
+
+\node[block, fill=gray!8, text width=3.6cm, anchor=north west] (base) at ([yshift=-2.3cm]ch.south west) {\textbf{(a) Previous}\\[2pt] FAR-Trans LightGCN: one global user-item graph, band-agnostic};
+
+\node[io, anchor=west] (cust) at ([xshift=1.4cm]base.east) {customers};
+\node[block, right=0.4cm of cust] (router) {Band\\router};
+
+\node[sub, anchor=west] (s0) at ([xshift=1.3cm,yshift=1.1cm]router.east) {Conservative sub-model};
+\node[sub, anchor=west, below=2pt of s0] (s1) {Income sub-model};
+\node[sub, anchor=west, below=2pt of s1] (s2) {Balanced sub-model};
+\node[sub, anchor=west, below=2pt of s2] (s3) {Aggressive sub-model};
+
+\node[io] (topk) at ([xshift=1.7cm]$(s0.east)!0.5!(s3.east)$) {top-$k$};
+
+\node[alt, above=0.5cm of router] (alt2) {Alt 2 (data):\\ regroup onto revealed band};
+\node[alt, anchor=north] (alt1) at ([yshift=-0.45cm]s3.south) {Alt 1 (model): $+$ margin loss};
+
+\begin{scope}[on background layer]
+\node[grp, fit=(cust)(alt2)(s0)(alt1)(topk), label={[font=\bfseries]above:(b) Ours: risk-based segmentation}] (seg) {};
+\end{scope}
+
+\node[evalbanner, anchor=north] (eval) at ([yshift=-7.3cm]ch.south) {\textbf{Evaluate on three axes:} Return (ROI), Accuracy (nDCG), Risk Suitability (PC).\quad \textbf{Balance} $=$ harmonic mean of the three, the objective in our title.};
+
+\draw[arr] (cust) -- (router);
+\coordinate (fo) at ([xshift=0.6cm]router.east);
+\draw[thick] (router.east) -- (fo);
+\draw[arr] (fo) |- (s0.west);
+\draw[arr] (fo) |- (s1.west);
+\draw[arr] (fo) |- (s2.west);
+\draw[arr] (fo) |- (s3.west);
+
+\coordinate (bus) at ([xshift=0.6cm]$(s0.east)!0.5!(s3.east)$);
+\draw[thick] (s0.east) -- (s0.east -| bus);
+\draw[thick] (s1.east) -- (s1.east -| bus);
+\draw[thick] (s2.east) -- (s2.east -| bus);
+\draw[thick] (s3.east) -- (s3.east -| bus);
+\draw[thick] (s0.east -| bus) -- (s3.east -| bus);
+\draw[arr] (bus) -- (topk);
+
+\draw[darr] (alt2) -- (router);
+\draw[darr] (alt1.north) -- (s3.south);
+
+\draw[arr] (base.south) -- (base.south |- eval.north) node[io, midway, right] {top-$k$};
+\draw[arr] (topk.south) -- (topk.south |- eval.north);
+
+\end{tikzpicture}%
+}
+\caption{Overview of risk-based segmentation. The previous FAR-Trans LightGCN baseline (a) trains one band-agnostic model over the global user-item graph. Our approach (b) routes each customer by declared MiFID II band to a dedicated LightGCN sub-model, with two exclusive alternatives for raising risk suitability: a model-side margin loss (Alt 1) and a data-side regrouping onto the revealed band (Alt 2). Every configuration is scored on return, accuracy, and risk suitability, summarised by their harmonic-mean balance.}
+\label{fig:overview}
+\end{figure*}
+
+\subsection{From a Global Model to Per-Band Segmentation}
+The FAR-Trans LightGCN baseline is a single collaborative filter over one user-item bipartite graph that connects every customer to the assets they bought. It learns an embedding per customer and per asset, propagates them over the graph, and scores an asset for a customer by the inner product of their embeddings, training with the Bayesian Personalised Ranking (BPR) objective~\cite{rendle2012bprbayesianpersonalizedranking}. The model never sees the customer's risk band, so suitability is whatever the purchase graph happens to imply. Because Section~\ref{sec:analysis} showed that purchases are frequently discordant, a band-agnostic model trained to reproduce them inherits that discordance.
+
+\subsection{Risk-Based Segmentation}
+We choose LightGCN as the backbone because its differentiable loss and per-customer embeddings let us condition on the risk band and, later, attach a coherence margin directly to the BPR objective. Prior work shows LightGCN readily carries domain-specific structure beyond plain BPR~\cite{Ghiye_2024}. Random Forest, the other FAR-Trans anchor, ranks assets from technical indicators alone and carries no customer-level signal to segment on, so we do not extend it.
+
+Risk-based segmentation partitions the customer base by declared MiFID II band and trains one LightGCN sub-model per band (Conservative, Income, Balanced, Aggressive). Each sub-model's training graph contains only the interactions of customers in that band, so its embeddings specialise to that band's preferences. A band router directs each customer at both training and inference: a customer is served by the sub-model of their declared band, and customers with no declared band fall back to the Balanced sub-model. Each sub-model is trained with the same BPR objective and edge-dropout regularisation as the baseline, changing only the population it learns from.
+
+\subsection{Two Alternatives for Raising Risk Suitability}
+Segmentation specialises each sub-model to a band but still trains purely to reproduce purchases, which Section~\ref{sec:analysis} showed are themselves often discordant. We therefore study two exclusive alternatives for pushing risk suitability higher, one acting on the model and one on the data. Their mechanics are introduced here, and the experiments evaluate them.
+
+\paragraph{Alternative 1: steering the model (margin loss).}
+BPR trains the model to score a bought asset (the positive) above a random unobserved asset (the negative). Independently of this sampling, we add a coherence margin that draws, from the sub-model's asset universe, one coherent asset $i_c$ ($d(u, i_c) \leq 1$) and one discordant asset $i_d$ ($d(u, i_d) > 1$), and pushes the coherent score above the discordant one:
+\begin{equation}
+\mathcal{L}_{\text{coh}}(u) = \text{softplus}\!\left(s(u, i_d) - s(u, i_c)\right),
+\end{equation}
+where $s(u, i)$ is the inner-product score and $\text{softplus}(x) = \ln(1 + e^x)$ smoothly approximates the hinge $\max(0, x)$. The total objective adds this term to BPR with weight $\lambda \geq 0$:
+\begin{equation}
+\mathcal{L} = \mathcal{L}_{\text{BPR}} + \omega \|\Theta\|_2^2 + \lambda \cdot \mathcal{L}_{\text{coh}},
+\end{equation}
+where $\omega$ is the L2 weight decay on embedding parameters $\Theta$. BPR remains the primary ranking signal: setting $\lambda = 0$ recovers plain segmentation, while $\lambda > 0$ steers scores towards coherent assets. We use softplus rather than a hard hinge because it is differentiable everywhere and matches the form of BPR's own $-\ln\sigma(\cdot)$ loss, keeping the two objectives consistent.
+
+\paragraph{Alternative 2: fixing the data (regrouping).}
+The router and the margin loss both key off the declared band, which Section~\ref{sec:analysis} showed is frequently inconsistent with revealed behaviour. The second alternative corrects the label at its source: before training, each banded customer is reassigned to the band implied by their purchases, taken as the lower median of the risk classes of the assets they bought (even-count ties resolve to the more conservative band). Segmentation then routes and trains on these regrouped bands, making the data coherent in the first place rather than penalising incoherence during training.
+
+\subsection{Balancing the Three Axes}
+We evaluate every configuration on the three axes of Section~\ref{sec:prelim}: return (ROI@10), ranking accuracy (nDCG@10), and risk suitability (PC@10). Because these axes can trade off, we summarise them with a single balance score, their harmonic mean:
+\begin{equation}
+\text{Balance} = 3 \left( \frac{1}{\text{ROI}'} + \frac{1}{\text{nDCG@10}} + \frac{1}{\text{PC@10}} \right)^{-1},
+\end{equation}
+where $\text{ROI}'$ denotes ROI@10 rescaled to the same $[0, 1]$ range as the other two axes, the mapping given in Section~\ref{sec:exp:metrics}. The harmonic mean is high only when return, accuracy, and risk suitability are strong together and falls sharply if any one is sacrificed, directly operationalising the balance our title targets.

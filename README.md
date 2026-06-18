@@ -1,6 +1,6 @@
-# Stratification and Regrouping for Profile-Coherent Financial Asset Recommendation
+# Risk-Based Segmentation for Financial Asset Recommendation: Balancing Return, Accuracy, and Risk Suitability
 
-A measurement framework for profile-aware financial asset recommendation on the FAR-Trans dataset. The work introduces **Profile Coherence at k (PC@k)** as a new evaluation axis, audits how profile-coherent existing FAR baselines (Random Forest, LightGCN) actually are, and proposes a stratified profile-coherent LightGCN extension as a prescriptive intervention.
+A study on the FAR-Trans dataset that brings regulatory risk suitability inside financial asset recommendation. It evaluates models on three axes, return (ROI), ranking accuracy (nDCG), and risk suitability (measured by **Profile Coherence at k, PC@k**), summarised by their harmonic-mean **balance**. It then proposes **risk-based segmentation** of LightGCN (one sub-model per declared risk band) with two exclusive interventions: a model-side coherence margin loss and data-side customer regrouping.
 
 ## Table of Contents
 
@@ -11,8 +11,8 @@ A measurement framework for profile-aware financial asset recommendation on the 
 
 ## Paper and Findings
 
-- **Conference writeup**: LaTeX sources live in `thesis/`. `ijcai26.pdf` is the compiled output and `sections/` contains the per-section sources. Figures are loaded from `thesis/figures/`.
-- **Figure export**: `uv run poe figures` renders every findings figure as a single-column PDF into `thesis/figures/`. All renderers live in `src/analysis/findings.py`.
+- **Conference writeup**: LaTeX sources live in `thesis/thesis_draft_2/` (the original first draft is retained in `thesis/thesis_draft_1/` for reference). `ijcai26.pdf` is the compiled output and `sections/` contains the per-section sources. Figures are loaded from `thesis/thesis_draft_2/figures/`.
+- **Figure export**: `uv run poe figures` renders every findings figure as a single-column PDF into `thesis/thesis_draft_2/figures/`. All renderers live in `src/analysis/findings.py`.
 
 This README is the engineering counterpart: project context, code architecture, reproduction instructions.
 
@@ -70,7 +70,7 @@ uv run poe stratify --splits-limit 2 --device cpu                             # 
 uv run poe regroup                                                            # reassign customers to their revealed band -> data/regrouped/
 uv run poe stratify-regrouped --splits-limit 2 --device cpu                   # stratified PC-LightGCN on regrouped data, smoke test
 uv run poe jlab                                                               # launch Jupyter Lab for notebook exploration
-uv run poe figures                                                            # export all thesis figures as PDFs into thesis/figures/
+uv run poe figures                                                            # export all findings figures as PDFs into thesis/thesis_draft_2/figures/
 uv run poe lint                                                               # ruff linting
 uv run poe type                                                               # ty type checks
 uv run poe format                                                             # ruff format
@@ -85,15 +85,15 @@ uv run poe setup        # install lefthook git hooks (precommit/postcommit check
 uv run poe preprocess   # generate temporal evaluation splits to data/splits/
 uv run poe eda          # dataset audit -> outputs/eda/
 uv run poe tune         # baseline grid + decomposition + transaction-return and panel regressions
-uv run poe stratify     # stratified profile-coherent LightGCN
-uv run poe regroup-stratify  # extension: reassign customers to their revealed band, then rerun stratified PC-LightGCN on data/regrouped/
-uv run poe figures      # export all thesis figures as single-column PDFs into thesis/figures/
+uv run poe stratify     # risk-based segmentation (per-band sub-models, with the coherence margin loss)
+uv run poe regroup-stratify  # extension: reassign customers to their revealed band, then rerun the segmentation on data/regrouped/
+uv run poe figures      # export all findings figures as single-column PDFs into thesis/thesis_draft_2/figures/
 ```
 
 After the figures export, rebuild the LaTeX paper to pick up the regenerated figures:
 
 ```sh
-cd thesis && latexmk -pdf ijcai26.tex
+cd thesis/thesis_draft_2 && latexmk -pdf ijcai26.tex
 ```
 
 > **Note**: the SLURM batch scripts described in [GPU Cluster](#gpu-cluster) are only relevant if you have access to the SMU GPU cluster. In that case, `sbatch scripts/tune.sh`, `sbatch scripts/stratify.sh`, and `sbatch scripts/regroup.sh` replace the corresponding `poe` tasks (`tune`, `stratify`, and `regroup-stratify`).
