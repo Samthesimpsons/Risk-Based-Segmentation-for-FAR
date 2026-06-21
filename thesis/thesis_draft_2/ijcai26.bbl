@@ -2,75 +2,49 @@
 
 \bibitem[\protect\citeauthoryear{{CNBC}}{2019}]{cnbc2019stockmarket}
 {CNBC}.
-\newblock The stock market boomed in 2019. here's how it happened.
-\newblock
-  \url{https://www.cnbc.com/2019/12/31/the-stock-market-boomed-in-2019-heres-how-it-happened.html},
-  December 2019.
+\newblock The stock market boomed in 2019. here's how it happened, December 2019.
 \newblock Accessed: 2026-06-08.
 
-\bibitem[\protect\citeauthoryear{Ghiye \bgroup \em et al.\egroup
-  }{2024}]{Ghiye_2024}
+\bibitem[\protect\citeauthoryear{Ghiye \bgroup \em et al.\egroup }{2024}]{Ghiye_2024}
 Ashraf Ghiye, Baptiste Barreau, Laurent Carlier, and Michalis Vazirgiannis.
-\newblock Rolling forward: Enhancing lightgcn with causal graph convolution for
-  credit bond recommendation.
-\newblock In {\em Proceedings of the 5th ACM International Conference on AI in
-  Finance}, ICAIF '24, pages 231--238. ACM, November 2024.
+\newblock Rolling forward: Enhancing lightgcn with causal graph convolution for credit bond recommendation.
+\newblock In {\em Proceedings of the 5th ACM International Conference on AI in Finance}, ICAIF '24, pages 231--238. ACM, November 2024.
 
-\bibitem[\protect\citeauthoryear{He \bgroup \em et al.\egroup
-  }{2020}]{he2020lightgcnsimplifyingpoweringgraph}
+\bibitem[\protect\citeauthoryear{He \bgroup \em et al.\egroup }{2020}]{he2020lightgcnsimplifyingpoweringgraph}
 Xiangnan He, Kuan Deng, Xiang Wang, Yan Li, Yongdong Zhang, and Meng Wang.
-\newblock Lightgcn: Simplifying and powering graph convolution network for
-  recommendation, 2020.
+\newblock Lightgcn: Simplifying and powering graph convolution network for recommendation, 2020.
 
-\bibitem[\protect\citeauthoryear{Rendle \bgroup \em et al.\egroup
-  }{2012}]{rendle2012bprbayesianpersonalizedranking}
+\bibitem[\protect\citeauthoryear{Rendle \bgroup \em et al.\egroup }{2012}]{rendle2012bprbayesianpersonalizedranking}
 Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme.
 \newblock Bpr: Bayesian personalized ranking from implicit feedback, 2012.
 
 \bibitem[\protect\citeauthoryear{{Reuters}}{2020}]{reuters2020sp500recovery}
 {Reuters}.
-\newblock S\&p 500 completes recovery from covid-19 sell-off, hits record high.
-\newblock
-  \url{https://www.reuters.com/article/business/media-telecom/sp-500-completes-recovery-from-covid-19-sell-off-hits-record-high-idUSL4N2FE2EE/},
-  August 2020.
+\newblock S\&p 500 completes recovery from covid-19 sell-off, hits record high, August 2020.
 \newblock Accessed: 2026-06-08.
 
 \bibitem[\protect\citeauthoryear{{Reuters}}{2021}]{reuters2021fedtaper}
 {Reuters}.
-\newblock With fed taper expected, investors brace for rate hikes on horizon.
-\newblock
-  \url{https://www.reuters.com/business/with-fed-taper-expected-investors-brace-rate-hikes-horizon-2021-11-02/},
-  November 2021.
+\newblock With fed taper expected, investors brace for rate hikes on horizon, November 2021.
 \newblock Accessed: 2026-06-08.
 
 \bibitem[\protect\citeauthoryear{{Reuters}}{2022}]{reuters2022marketwrap}
 {Reuters}.
-\newblock Global markets wrap-up.
-\newblock
-  \url{https://www.reuters.com/markets/global-markets-wrapup-1-pix-2022-12-22/},
-  December 2022.
+\newblock Global markets wrap-up, December 2022.
 \newblock Accessed: 2026-06-08.
 
-\bibitem[\protect\citeauthoryear{Sakurai \bgroup \em et al.\egroup
-  }{2026}]{10.1145/3773966.3779383}
+\bibitem[\protect\citeauthoryear{Sakurai \bgroup \em et al.\egroup }{2026}]{10.1145/3773966.3779383}
 Keigo Sakurai, Takahiro Ogawa, Miki Haseyama, Anjyu Anan, and Kei Nakagawa.
 \newblock Risk-aware utility re-ranking for financial asset recommendation.
-\newblock In {\em Proceedings of the Nineteenth ACM International Conference on
-  Web Search and Data Mining}, WSDM '26, pages 1227--1231, New York, NY, USA,
-  2026. Association for Computing Machinery.
+\newblock In {\em Proceedings of the Nineteenth ACM International Conference on Web Search and Data Mining}, WSDM '26, pages 1227--1231, New York, NY, USA, 2026. Association for Computing Machinery.
 
-\bibitem[\protect\citeauthoryear{Sanz-Cruzado \bgroup \em et al.\egroup
-  }{2024}]{sanzcruzado2024fartransinvestmentdatasetfinancial}
+\bibitem[\protect\citeauthoryear{Sanz-Cruzado \bgroup \em et al.\egroup }{2024}]{sanzcruzado2024fartransinvestmentdatasetfinancial}
 Javier Sanz-Cruzado, Nikolaos Droukas, and Richard McCreadie.
-\newblock Far-trans: An investment dataset for financial asset recommendation,
-  2024.
+\newblock Far-trans: An investment dataset for financial asset recommendation, 2024.
 
-\bibitem[\protect\citeauthoryear{Sanz-Cruzado \bgroup \em et al.\egroup
-  }{2026}]{10.1145/3780097}
-Javier Sanz-Cruzado, Richard McCreadie, Nikolaos Droukas, Craig Macdonald, and
-  Iadh Ounis.
-\newblock Investors are (not) always right: A comparison of transaction-based
-  and profitability-based metrics for financial asset recommendations.
+\bibitem[\protect\citeauthoryear{Sanz-Cruzado \bgroup \em et al.\egroup }{2026}]{10.1145/3780097}
+Javier Sanz-Cruzado, Richard McCreadie, Nikolaos Droukas, Craig Macdonald, and Iadh Ounis.
+\newblock Investors are (not) always right: A comparison of transaction-based and profitability-based metrics for financial asset recommendations.
 \newblock {\em ACM Trans. Inf. Syst.}, 44(2), January 2026.
 
 \end{thebibliography}

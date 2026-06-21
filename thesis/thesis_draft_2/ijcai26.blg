@@ -5,16 +5,16 @@ The style file: named.bst
 Database file #1: ijcai26.bib
 You've used 10 entries,
             2439 wiz_defined-function locations,
-            602 strings with 6695 characters,
-and the built_in function-call counts, 3846 in all, are:
-= -- 390
+            598 strings with 6272 characters,
+and the built_in function-call counts, 3802 in all, are:
+= -- 378
 > -- 181
 < -- 2
 + -- 63
 - -- 62
 * -- 283
-:= -- 614
-add.period$ -- 33
+:= -- 602
+add.period$ -- 29
 call.type$ -- 10
 change.case$ -- 71
 chr.to.int$ -- 10
@@ -22,17 +22,17 @@ cite$ -- 10
 duplicate$ -- 137
 empty$ -- 286
 format.name$ -- 72
-if$ -- 808
+if$ -- 796
 int.to.chr$ -- 1
 int.to.str$ -- 0
 missing$ -- 3
-newline$ -- 54
+newline$ -- 50
 num.names$ -- 30
-pop$ -- 90
+pop$ -- 94
 preamble$ -- 1
 purify$ -- 81
 quote$ -- 0
-skip$ -- 139
+skip$ -- 143
 stack$ -- 0
 substring$ -- 123
 swap$ -- 41
@@ -43,4 +43,4 @@ type$ -- 80
 warning$ -- 0
 while$ -- 26
 width$ -- 11
-write$ -- 132
+write$ -- 124

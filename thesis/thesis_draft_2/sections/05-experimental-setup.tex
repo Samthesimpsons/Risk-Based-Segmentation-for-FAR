@@ -1,19 +1,17 @@
 \section{Experimental Setup}
 \label{sec:exp}
 
-This section specifies how every configuration is evaluated: the temporal split protocol, the metrics that instantiate the three axes and the balance summary, the baseline hyperparameter grids, and the configurations compared in the ablation. The results follow in the next section.
-
 \subsection{Temporal Split Protocol}
 \label{sec:exp:splits}
-Evaluation uses 69 temporal splits with approximately biweekly split points on an evenly spaced trading-day grid running from August 2019 to December 2021, with per-split test windows extending evaluation coverage to May 2022. The two-week split cadence follows the original FAR-Trans benchmark~\cite{sanzcruzado2024fartransinvestmentdatasetfinancial}. For each split, the training set contains all Buys in $[0, \texttt{time\_point}]$ and the test set contains all Buys in $[\texttt{time\_point}, \texttt{test\_end}]$, deduplicated against training and filtered to the training-asset universe. Eligible customers have at least one interaction in both training and test, while eligible assets have prices on both endpoints.
+Evaluation uses 69 temporal splits with approximately biweekly split points on an evenly spaced trading-day grid running from August 2019 to December 2021, with per-split test windows extending evaluation coverage to May 2022. The two-week split cadence follows the original FAR-Trans benchmark~\cite{sanzcruzado2024fartransinvestmentdatasetfinancial}. For each split, the training set contains all buys up to the split point and the test set contains all buys from the split point to the end of the test window, deduplicated against training and filtered to the training-asset universe. Eligible customers have at least one interaction in both training and test, while eligible assets have prices on both endpoints.
 
 \subsection{Evaluation Metrics}
 \label{sec:exp:metrics}
-We score every recommender over its top-10 ranked items on the three axes of Section~\ref{sec:prelim}, then summarise them with a single balance.
+We score every recommender over its top-10 ranked items on the three axes, then summarise them with a single balance.
 
-\paragraph{Return: ROI@10.} For each recommended asset we form the holding-period return from its close price at the split's \texttt{time\_point} and at \texttt{test\_end}, convert it to a per-month geometric rate, average over the ten assets, and then over eligible customers. ROI@10 is reported per month.
+\paragraph{Return: ROI@10.} For each recommended asset we form the holding-period return from its close price at the split point and at the test-window end, convert it to a per-month geometric rate, average over the ten assets, and then over eligible customers. ROI@10 is reported per month.
 
-\paragraph{Accuracy: nDCG@10.} Ranking accuracy is the rank-discounted hit rate of the held-out test Buys within the top 10, normalised by the ideal ordering and averaged over eligible customers.
+\paragraph{Accuracy: nDCG@10.} Ranking accuracy is the rank-discounted hit rate of the held-out test buys within the top 10, normalised by the ideal ordering and averaged over eligible customers.
 
 \paragraph{Risk suitability: PC@10.} Profile Coherence is defined in Section~\ref{sec:analysis:coherence}. To read per-band coherence on a common footing, we normalise it by a band-conditional random baseline. The closed-form expectation of PC@$k$ under a uniformly random recommender for band $b$ is
 \begin{equation}
@@ -25,17 +23,20 @@ where $A$ is the asset universe. With the asset-band distribution of Section~\re
 \end{equation}
 so that lift $> 1$ beats the band-conditional random rate. Because 77.9\% of FAR-Trans assets sit in the Conservative, Income, and Balanced bands, a recommender that recommends Income assets to everyone would score well on raw PC@$k$ for any customer whose tolerance set includes Income. Dividing by $\pi(b_u)$ removes this advantage, so bands that are easier to satisfy by chance are not credited for it and the lift values are comparable across bands.
 
-\paragraph{Balance.} Section~\ref{sec:method} defined the balance as the harmonic mean of the three axes with ROI rescaled. We complete that definition here. nDCG@10 and PC@10 are already rates in $[0, 1]$, but ROI@10 can be negative and lives on a different scale, so we map it onto $[0, 1]$ with a logistic transform
+\paragraph{Harmonic Balance.} We summarise the three axes with a single balance score, their harmonic mean. nDCG@10 and PC@10 are already rates in $[0, 1]$, but ROI@10 can be negative and lives on a different scale, so we first map it onto $[0, 1]$ with a logistic transform
 \begin{equation}
 \text{ROI}' = \frac{1}{1 + e^{-\text{ROI@10} / \tau}}, \qquad \tau = 0.01,
 \end{equation}
-which sends a flat return to $0.5$ and moves smoothly towards $1$ for gains and $0$ for losses, with $\tau$ setting the scale at one percentage point per month. This rescaled $\text{ROI}'$ feeds the harmonic-mean balance defined in Section~\ref{sec:method}, which is high only when return, accuracy, and risk suitability are strong together and collapses if any one is sacrificed.
+which sends a flat return to $0.5$ and moves smoothly towards $1$ for gains and $0$ for losses, with $\tau$ setting the scale at one percentage point per month. The balance is then
+\begin{equation}
+\text{Balance} = 3 \left( \frac{1}{\text{ROI}'} + \frac{1}{\text{nDCG@10}} + \frac{1}{\text{PC@10}} \right)^{-1},
+\end{equation}
+which is high only when return, accuracy, and risk suitability are strong together and collapses if any one is sacrificed.
 
 \subsection{Baselines and Hyperparameter Grids}
 \label{sec:exp:grids}
-Table~\ref{tab:baseline-grids} reports the search grids, fixed values, and best-trial selections for the two FAR-Trans baselines. Both grids are swept with Ray Tune, with LightGCN tuned on average nDCG@10 and Random Forest on average ROI@10 across the 69 splits.
 
-\begin{table}[!t]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{llll}
@@ -62,15 +63,17 @@ horizon                    & 6 months               & n/a       & fixed \\
 \label{tab:baseline-grids}
 \end{table}
 
+Table~\ref{tab:baseline-grids} reports the search grids, fixed values, and best-trial selections for the two FAR-Trans baselines. Both grids are swept with Ray Tune, with LightGCN tuned on average nDCG@10 and Random Forest on average ROI@10 across the 69 splits.
+
 \subsection{Configurations and Per-Band Audit}
 \label{sec:exp:ablation}
 We compare the following configurations on the same 69 splits, each reported on all three axes and the balance:
 \begin{itemize}
     \item \textbf{Baseline.} The FAR-Trans LightGCN at its best trial, and the Random Forest baseline for the per-axis reference.
-    \item \textbf{Segmentation.} Risk-based segmentation alone (the coherence margin off), isolating the contribution of the architecture.
+    \item \textbf{Segmentation.} Risk-based segmentation alone without the coherence margin loss, isolating the contribution of the architecture.
     \item \textbf{Model lever.} Segmentation with the coherence margin loss added.
-    \item \textbf{Data lever.} Segmentation retrained and routed on the regrouped (revealed) bands.
+    \item \textbf{Data lever.} Segmentation retrained and routed on the regrouped bands.
 \end{itemize}
-The model lever and the data lever are the two exclusive interventions of Section~\ref{sec:method}, each applied on top of the segmentation baseline. All segmented configurations inherit the best LightGCN backbone hyperparameters of Table~\ref{tab:baseline-grids}, and the segmentation is trained with the same BPR objective and edge-dropout regularisation as the baseline. We additionally report the combined setting (regrouping with the margin loss) for completeness.
+All segmented configurations inherit the best LightGCN backbone hyperparameters of Table~\ref{tab:baseline-grids}, and the segmentation is trained with the same BPR objective and edge-dropout regularisation as the baseline.
 
 For the per-band audit, we average per-customer PC@10 unweighted over all (customer, split) pairs within each declared band, and report per-band PC-lift@10 against $\pi(b)$. This exposes which bands a recommender actually serves, which the aggregate PC@10 can mask because the random baselines $\pi(b)$ differ widely across bands.
