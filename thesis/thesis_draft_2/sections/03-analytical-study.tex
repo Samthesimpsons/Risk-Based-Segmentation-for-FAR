@@ -11,7 +11,7 @@ Customers and assets share the same 4-point ordinal scale running from Conservat
 
 \subsubsection{Step 1: subcategory metadata} Mutual funds are labelled directly from their subcategory: Money Market funds are treated as Conservative, Bond funds as Income, Balanced as Balanced, and Equity or Large Cap as Aggressive. Bond instruments are labelled by issuer type: Government as Conservative, Corporate as Income, and any remaining bond subcategory as Income by default.
 
-\subsubsection{Step 2: volatility quartiles for stocks} Stocks carry no subcategory tag we can use, so they fall through to a volatility rule. For each ISIN we compute the annualised standard deviation of daily log returns on a trailing 252-day window, then bucket all stocks into the four bands by the stock-only quartile thresholds $(q_1, q_2, q_3)$.
+\subsubsection{Step 2: volatility quartiles} Any asset without a usable subcategory tag, the majority being stocks, falls through to a volatility rule. For each such ISIN we compute the annualised standard deviation of daily log returns on a trailing 252-day window, then bucket it into the four bands by quartile thresholds $(q_1, q_2, q_3)$ calibrated on stocks alone.
 
 \subsubsection{Step 3: residual default} Any asset that falls through both prior steps is assigned to Balanced.
 
@@ -116,7 +116,7 @@ Intercept                                & $-0.0471$ & $0.0141$ & $[-0.0746,\, -
 We have shown that discordance is a persistent customer-level trait concentrated at the ordinal extremes. The next question is whether it carries an economic cost: do discordant buys earn lower returns than coherent ones?
 
 \subsubsection{Regression specification}
-We test whether profile-coherent buys earn different realised returns from discordant ones via a transaction-level Ordinary Least Squares (OLS) regression on 208{,}029 priced buys with cluster-robust standard errors at the customer level and a two-sided Wald test at $\alpha = 0.05$. Clustering is warranted because each customer contributes roughly 8 buys on average, so within-customer residuals share unobserved shocks. The specification is:
+We test whether profile-coherent buys earn different realised returns from discordant ones via a transaction-level Ordinary Least Squares (OLS) regression on 208{,}029 priced buys with cluster-robust standard errors at the customer level and a two-sided Wald test at $\alpha = 0.05$. Clustering is warranted because each customer contributes 7.46 buys on average, so within-customer residuals share unobserved shocks. The specification is:
 \begin{equation}
 \label{eq:return-premium-ols}
 \begin{split}
@@ -152,7 +152,7 @@ Turning to the controls, the volatility coefficient is $-10.25$ pp per unit, con
 
 Lastly, none of the four customer-type dummies is significant, each failing to reject its own null hypothesis, indicating that segmentation of customer type contributes no detectable return signal. Together with the bimodality found above, this suggests that customer type does not capture the persistent discordance trait either.
 
-Taken all together, these controls barely move the premium: the raw slice gap is $+3.31$ pp (unconditional mean 6-month return: 4.23\% coherent vs 0.92\% discordant), whereas the coherence coefficient, which already conditions on volatility, segment, and year, is $+2.94$ pp. Adding the controls therefore absorbs only $0.37$ pp which is around 11\% of the unconditional gap, so coherence is not a volatility, segment, or year confound. The coherence premium therefore survives all controls we can measure, motivating the question of whether existing recommenders produce coherent asset lists at all.
+Taken all together, these controls barely move the premium: the raw slice gap is $+3.31$ pp (unconditional mean 6-month return: 4.23\% coherent vs 0.92\% discordant), whereas the coherence coefficient, which already conditions on volatility, segment, and year, is $+2.94$ pp. Adding the controls therefore absorbs only $0.37$ pp, which is around 11\% of the unconditional gap, so coherence is not a volatility, segment, or year confound. The coherence premium therefore survives all controls we can measure, motivating the question of whether existing recommenders produce coherent asset lists at all.
 
 \subsection{Limitations}
 \label{sec:analysis:limitations}

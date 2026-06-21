@@ -31,12 +31,12 @@ Segmentation $+$ regrouping $+$ margin (combined) & $0.333$ & $-0.005$ & $0.982$
 Band & $\pi(b)$ & RF & LightGCN & Segment. & $+$Margin & $+$Regroup & Combined \\
 \midrule
 Conservative & $0.65$ & $0.52$ & $0.75$ & $0.91$ & $1.19$ & $1.21$ & $1.25$ \\
-Income       & $0.78$ & $0.70$ & $1.13$ & $1.20$ & $1.26$ & $1.25$ & $1.27$ \\
+Income       & $0.78$ & $0.70$ & $1.13$ & $1.20$ & $1.26$ & $1.25$ & $1.26$ \\
 Balanced     & $0.76$ & $1.03$ & $1.17$ & $1.22$ & $1.28$ & $1.24$ & $1.30$ \\
 Aggressive   & $0.35$ & $1.88$ & $1.35$ & $1.17$ & $1.97$ & $2.24$ & $2.68$ \\
 \bottomrule
 \end{tabular}
-\caption{Per-band PC-lift@10 (PC@10$/\pi(b)$) for the baselines and the segmentation configurations.}
+\caption{Per-band PC-lift@10 (PC@10$/\pi(b)$) for the baselines and the segmentation configurations. The $+$Regroup and Combined columns score coherence and $\pi(b)$ against each customer's regrouped band, whereas the others use the declared band.}
 \label{tab:perband}
 \end{table*}
 
@@ -77,7 +77,7 @@ The per-band lifts in Table~\ref{tab:perband} trace where each lever spends its 
     \item \textbf{Margin loss} is largely spent rescuing the two extremes the baselines failed, dragging Conservative from $0.75$ past the random baseline to $1.19$ and Aggressive from $1.35$ to $1.97$.
     \item \textbf{Segmentation alone} barely moves Conservative ($0.75 \to 0.91$, still below random) and even lowers Aggressive to $1.17$, because partitioning by declared band still trains each sub-model on the same discordant purchases: the underlying labels stay uncorrected, so coherence cannot rise much.
     \item \textbf{Regrouping} clears the random baseline in every band ($1.21$, $1.25$, $1.24$, $2.24$).
-    \item \textbf{Combined} reaches the highest per-band lifts of all ($1.25$, $1.27$, $1.30$, $2.68$).
+    \item \textbf{Combined} reaches the highest per-band lifts of all ($1.25$, $1.26$, $1.30$, $2.68$).
 \end{itemize}
 The Conservative deficit that both baselines exhibited is thus closed by either lever, but only regrouping closes it without the accuracy penalty seen in the aggregate.
 

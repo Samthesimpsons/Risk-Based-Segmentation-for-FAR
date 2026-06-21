@@ -41,7 +41,7 @@ Our methodology brings risk suitability inside the recommender. The core idea is
 \node[grp, fit=(cust)(alt2)(s0)(alt1)(topk), label={[font=\bfseries]above:(b) Ours: risk-based segmentation}] (seg) {};
 \end{scope}
 
-\node[evalbanner, anchor=north] (eval) at ([yshift=-7.3cm]ch.south) {\textbf{Evaluate on three axes:} Return (ROI), Accuracy (nDCG), Risk Suitability (PC).\quad \textbf{Balance} $=$ harmonic mean of the three, the objective in our title.};
+\node[evalbanner, anchor=north] (eval) at ([yshift=-7.3cm]ch.south) {\textbf{Evaluate on three axes:} Return (ROI), Accuracy (nDCG), Risk Suitability (PC).\quad \textbf{Balance} $=$ harmonic mean of the three, the evaluation criterion behind our title.};
 
 \draw[arr] (cust) -- (router);
 \coordinate (fo) at ([xshift=0.6cm]router.east);
@@ -72,12 +72,12 @@ Our methodology brings risk suitability inside the recommender. The core idea is
 \end{figure*}
 
 \subsection{Suitability Gap of Single Global Model}
-The FAR-Trans LightGCN baseline is a single collaborative filter over one user-item bipartite graph that connects every customer to the assets they bought. It learns an embedding per customer and per asset, propagates them over the graph, and scores an asset for a customer by the inner product of their embeddings, training with the Bayesian Personalised Ranking (BPR) objective~\cite{rendle2012bprbayesianpersonalizedranking}. The model never sees the customer's risk band, so suitability is whatever the purchase graph happens to imply. Section~\ref{sec:analysis} showed that purchases are frequently discordant, a band-agnostic model trained to reproduce them inherits that discordance.
+The FAR-Trans LightGCN baseline is a single collaborative filter over one user-item bipartite graph that connects every customer to the assets they bought. It learns an embedding per customer and per asset, propagates them over the graph, and scores an asset for a customer by the inner product of their embeddings, training with the Bayesian Personalised Ranking (BPR) objective~\cite{rendle2012bprbayesianpersonalizedranking}. The model never sees the customer's risk band, so suitability is whatever the purchase graph happens to imply. Section~\ref{sec:analysis} showed that purchases are frequently discordant, so a band-agnostic model trained to reproduce them inherits that discordance.
 
 \subsection{Risk-Based Segmentation}
 We choose LightGCN as the backbone because its differentiable loss and per-customer embeddings let us condition on the risk band and, later, attach a coherence margin directly to the BPR objective. Prior work shows LightGCN readily carries domain-specific structure beyond plain BPR~\cite{Ghiye_2024}. Random Forest, the other FAR-Trans anchor, ranks assets from technical indicators alone and carries no customer-level signal to segment on, so we do not extend it.
 
-Risk-based segmentation partitions the customer base by declared MiFID II band and trains one LightGCN sub-model per band: Conservative, Income, Balanced and Aggressive. Each sub-model's training graph contains only the interactions of customers in that band, so its embeddings specialise to that band's preferences. A band router directs each customer at both training and inference: a customer is served by the sub-model of their declared band, and customers with no declared band fall back to the Balanced sub-model. Each sub-model is trained with the same BPR objective and edge-dropout regularisation as the baseline, changing only the population it learns from.
+Risk-based segmentation partitions the customer base by declared MiFID II band and trains one LightGCN sub-model per band: Conservative, Income, Balanced and Aggressive. Each sub-model's training graph contains only the interactions of customers in that band, so its embeddings specialise to that band's preferences. A band router serves each customer through the sub-model of their declared band. Customers with no declared band do not enter any sub-model at training and fall back to the Balanced sub-model at inference. Each sub-model is trained with the same BPR objective and edge-dropout regularisation as the baseline, changing only the population it learns from.
 
 \subsection{Two Alternatives for Raising Risk Suitability}
 Segmentation specialises each sub-model to a band but still trains purely to reproduce purchases, which Section~\ref{sec:analysis} showed are themselves often discordant. We therefore study two exclusive alternatives for pushing risk suitability higher, one acting on the model and one on the data.
