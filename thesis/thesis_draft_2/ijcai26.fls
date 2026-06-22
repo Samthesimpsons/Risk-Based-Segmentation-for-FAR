@@ -400,8 +400,6 @@ INPUT ./sections/04-methodology.tex
 INPUT ./sections/04-methodology.tex
 INPUT sections/04-methodology.tex
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm
-INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/adobe/courier/pcrr7t.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/courier/pcrr8r.tfm
 INPUT ./sections/05-experimental-setup.tex
@@ -411,11 +409,16 @@ INPUT ./sections/05-experimental-setup.tex
 INPUT sections/05-experimental-setup.tex
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/adobe/times/ptmb7t.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm
 INPUT ./sections/06-results.tex
 INPUT ./sections/06-results.tex
 INPUT ./sections/06-results.tex
 INPUT ./sections/06-results.tex
 INPUT sections/06-results.tex
+INPUT /usr/share/texlive/texmf-dist/fonts/vf/adobe/times/ptmb7t.vf
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/adobe/times/ptmb8r.tfm
 INPUT ./figures/paired_deltas.pdf
 INPUT ./figures/paired_deltas.pdf
 INPUT ./figures/paired_deltas.pdf

@@ -7,43 +7,55 @@ Our methodology brings risk suitability inside the recommender. The core idea is
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
-  >=Stealth, font=\small,
-  banner/.style={draw, rounded corners=3pt, align=center, inner sep=6pt, minimum width=15.5cm},
-  challenge/.style={banner, fill=red!6},
-  evalbanner/.style={banner, fill=blue!6},
+  >=Stealth, font=\scriptsize,
   block/.style={draw, rounded corners=3pt, align=center, inner sep=5pt},
-  sub/.style={draw, rounded corners=2pt, align=center, font=\scriptsize, minimum width=3.6cm, minimum height=0.5cm},
-  alt/.style={draw, dashed, rounded corners=2pt, align=center, font=\scriptsize, fill=gray!12},
+  inp/.style={draw, rounded corners=3pt, align=center, font=\scriptsize, inner sep=4pt, fill=gray!4},
+  prev/.style={draw, thick, rounded corners=3pt, align=center, fill=red!8, text width=3.6cm, minimum height=1.6cm, inner sep=5pt, font=\scriptsize},
+  sub/.style={draw, thick, rounded corners=2pt, align=center, font=\scriptsize, minimum width=3.3cm, minimum height=0.5cm, fill=red!8},
+  evalblock/.style={draw, rounded corners=3pt, align=center, fill=blue!6, text width=4.0cm, inner sep=7pt},
+  alt/.style={draw, dashed, rounded corners=3pt, align=center, font={\scriptsize\hyphenpenalty=10000}, fill=gray!12, inner sep=4pt, text width=3.6cm},
   io/.style={align=center, font=\scriptsize},
-  grp/.style={draw, dashed, rounded corners=5pt, inner sep=9pt},
+  grp/.style={draw, dashed, rounded corners=6pt, inner sep=9pt},
   arr/.style={->, thick},
   darr/.style={->, thick, dashed},
 ]
 
-\node[challenge] (ch) {\textbf{The challenge: discordance.} A customer's declared risk band $b_u$ frequently differs from the revealed risk of the assets they actually buy, so a band-agnostic recommender ranks suitable and unsuitable assets alike.};
+% --- layout anchor (top-left reference) ---
+\coordinate (anchor) at (0,0);
 
-\node[block, fill=gray!8, text width=3.6cm, anchor=north west] (base) at ([yshift=-2.3cm]ch.south west) {\textbf{(a) Previous}\\[2pt] FAR-Trans LightGCN: one global user-item graph, band-agnostic};
+% --- (b) Ours: sub-models (shifted right) ---
+\node[sub, anchor=north west] (s0) at ([xshift=7.0cm, yshift=-4.3cm]anchor) {Conservative risk-band sub-model};
+\node[sub, below=3pt of s0] (s1) {Income risk-band sub-model};
+\node[sub, below=3pt of s1] (s2) {Balanced risk-band sub-model};
+\node[sub, below=3pt of s2] (s3) {Aggressive risk-band sub-model};
 
-\node[io, anchor=west] (cust) at ([xshift=1.4cm]base.east) {customers};
-\node[block, right=0.4cm of cust] (router) {Band\\router};
+% router centered on the stack
+\node[block, anchor=east] (router) at ([xshift=-1.5cm]$(s0.west)!0.5!(s3.west)$) {Risk-band\\router};
 
-\node[sub, anchor=west] (s0) at ([xshift=1.3cm,yshift=1.1cm]router.east) {Conservative sub-model};
-\node[sub, anchor=west, below=2pt of s0] (s1) {Income sub-model};
-\node[sub, anchor=west, below=2pt of s1] (s2) {Balanced sub-model};
-\node[sub, anchor=west, below=2pt of s2] (s3) {Aggressive sub-model};
+% --- (a) Previous lane (kept near the top, decoupled from the stack) ---
+\coordinate (prevpos) at (s0.north west |- anchor);
+\node[prev, anchor=north west] (prev) at ([yshift=-1.2cm]prevpos) {\textbf{(a) Baseline}\\[2pt] A single risk band-agnostic \mbox{LightGCN}};
 
-\node[io] (topk) at ([xshift=1.7cm]$(s0.east)!0.5!(s3.east)$) {top-$k$};
+% --- shared customers input, boxed, anchored at the left edge ---
+\coordinate (lanemid) at ($(prev.west)!0.5!(router.west)$);
+\node[inp, anchor=west] (cust) at ([xshift=0.15cm]lanemid -| anchor) {\textbf{FAR-Trans Data}};
 
-\node[alt, above=0.5cm of router] (alt2) {Alt 2 (data):\\ regroup onto revealed band};
-\node[alt, anchor=north] (alt1) at ([yshift=-0.45cm]s3.south) {Alt 1 (model): $+$ margin loss};
+% --- levers ---
+\node[alt, anchor=south] (alt2) at ([yshift=0.8cm]router.north) {\textbf{Approach 2 (data lever):} Regroup customers onto revealed risk-band};
+\node[alt, anchor=north] (alt1) at ([yshift=-0.5cm]s3.south) {\textbf{Approach 1 (model lever):} With additional margin loss};
 
+% group box for (b)
 \begin{scope}[on background layer]
-\node[grp, fit=(cust)(alt2)(s0)(alt1)(topk), label={[font=\bfseries]above:(b) Ours: risk-based segmentation}] (seg) {};
+\node[grp, fit=(router)(alt2)(s0)(s3)(alt1), label={[font=\scriptsize\bfseries]below:(b) Methodology: Risk-based segmentation}] (seg) {};
 \end{scope}
 
-\node[evalbanner, anchor=north] (eval) at ([yshift=-7.3cm]ch.south) {\textbf{Evaluate on three axes:} Return (ROI), Accuracy (nDCG), Risk Suitability (PC).\quad \textbf{Balance} $=$ harmonic mean of the three, the evaluation criterion behind our title.};
+% --- evaluation terminal (right) ---
+\node[evalblock, anchor=west] (eval) at ([xshift=2.2cm]seg.east |- cust) {\textbf{Evaluate on three axes:}\\[3pt] Return (ROI)\\ Accuracy (nDCG)\\ Risk suitability (PC)\\[4pt] With the harmonic mean of the three.};
 
-\draw[arr] (cust) -- (router);
+% --- intra-(b) wiring ---
+\draw[arr] (cust) |- (prev.west);
+\draw[arr] (cust) |- (router.west);
+
 \coordinate (fo) at ([xshift=0.6cm]router.east);
 \draw[thick] (router.east) -- (fo);
 \draw[arr] (fo) |- (s0.west);
@@ -51,23 +63,26 @@ Our methodology brings risk suitability inside the recommender. The core idea is
 \draw[arr] (fo) |- (s2.west);
 \draw[arr] (fo) |- (s3.west);
 
-\coordinate (bus) at ([xshift=0.6cm]$(s0.east)!0.5!(s3.east)$);
+\coordinate (bus) at ([xshift=0.8cm]$(s0.east)!0.5!(s3.east)$);
 \draw[thick] (s0.east) -- (s0.east -| bus);
 \draw[thick] (s1.east) -- (s1.east -| bus);
 \draw[thick] (s2.east) -- (s2.east -| bus);
 \draw[thick] (s3.east) -- (s3.east -| bus);
 \draw[thick] (s0.east -| bus) -- (s3.east -| bus);
-\draw[arr] (bus) -- (topk);
 
+% --- both lanes converge to top-k, then evaluated ---
+\coordinate (jct) at ([xshift=-1.1cm]eval.west);
+\draw[thick] (prev.east) -| (jct);
+\draw[thick] (bus) -| (jct);
+\draw[arr] (jct) -- (eval.west) node[io, midway, above] {top-$k$};
+
+% --- levers point at where they act ---
 \draw[darr] (alt2) -- (router);
 \draw[darr] (alt1.north) -- (s3.south);
 
-\draw[arr] (base.south) -- (base.south |- eval.north) node[io, midway, right] {top-$k$};
-\draw[arr] (topk.south) -- (topk.south |- eval.north);
-
 \end{tikzpicture}%
 }
-\caption{Overview of risk-based segmentation.}
+\caption{Overview of risk-based segmentation. The band-agnostic baseline (a) and our segmentation (b) are built from the same FAR-Trans data and scored on the same three axes. In (b) a band router sends each customer to the LightGCN sub-model of their band, and two exclusive levers raise risk suitability: a data-side regrouping onto the revealed band or a model-side coherence margin.}
 \label{fig:overview}
 \end{figure*}
 
@@ -79,10 +94,10 @@ We choose LightGCN as the backbone because its differentiable loss and per-custo
 
 Risk-based segmentation partitions the customer base by declared MiFID II band and trains one LightGCN sub-model per band: Conservative, Income, Balanced and Aggressive. Each sub-model's training graph contains only the interactions of customers in that band, so its embeddings specialise to that band's preferences. A band router serves each customer through the sub-model of their declared band. Customers with no declared band do not enter any sub-model at training and fall back to the Balanced sub-model at inference. Each sub-model is trained with the same BPR objective and edge-dropout regularisation as the baseline, changing only the population it learns from.
 
-\subsection{Two Alternatives for Raising Risk Suitability}
-Segmentation specialises each sub-model to a band but still trains purely to reproduce purchases, which Section~\ref{sec:analysis} showed are themselves often discordant. We therefore study two exclusive alternatives for pushing risk suitability higher, one acting on the model and one on the data.
+\subsection{Two Approaches for Raising Risk Suitability}
+Segmentation specialises each sub-model to a band but still trains purely to reproduce purchases, which Section~\ref{sec:analysis} showed are themselves often discordant. We therefore study two exclusive levers for pushing risk suitability higher, one acting on the model and one on the data.
 
-\subsubsection{Approach 1: Steering the model via margin loss}
+\subsubsection{Approach 1 (model lever): Steering the model via margin loss}
 BPR trains the model to score a bought asset (the positive) above a random unobserved asset (the negative). Independently of this sampling, we add a coherence margin that draws, from the sub-model's asset universe, one coherent asset $i_c$ ($d(u, i_c) \leq 1$) and one discordant asset $i_d$ ($d(u, i_d) > 1$), and pushes the coherent score above the discordant one:
 \begin{equation}
 \mathcal{L}_{\text{coh}}(u) = \text{softplus}\!\left(s(u, i_d) - s(u, i_c)\right),
@@ -93,5 +108,5 @@ where $s(u, i)$ is the inner-product score and $\text{softplus}(x) = \ln(1 + e^x
 \end{equation}
 where $\omega$ is the L2 weight decay on embedding parameters $\Theta$. BPR remains the primary ranking signal: setting $\lambda = 0$ recovers plain segmentation, while $\lambda > 0$ steers scores towards coherent assets. We use softplus rather than a hard hinge because it is differentiable everywhere and is the same form BPR itself uses, keeping the two objectives consistent.
 
-\subsubsection{Approach 2: Fixing the data via regrouping}
+\subsubsection{Approach 2 (data lever): Fixing the data via regrouping}
 The second approach corrects the label at its source: before training, each banded customer is reassigned to the band implied by their purchases, taken as the lower median of the risk classes of the assets they bought (even-count ties resolve to the more conservative band). Segmentation then routes and trains on these regrouped bands, making the data coherent in the first place rather than penalising incoherence during training.

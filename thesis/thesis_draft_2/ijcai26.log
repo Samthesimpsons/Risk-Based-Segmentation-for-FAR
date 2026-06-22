@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.22)  21 JUN 2026 16:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.5.22)  22 JUN 2026 11:31
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -702,17 +702,17 @@ Underfull \hbox (badness 2221) in paragraph at lines 57--58
  []
 
 [7]
-<figures/paired_deltas.pdf, id=368, 233.12701pt x 343.56355pt>
+<figures/paired_deltas.pdf, id=367, 233.12701pt x 343.56355pt>
 File: figures/paired_deltas.pdf Graphic file (type pdf)
 <use figures/paired_deltas.pdf>
 Package pdftex.def Info: figures/paired_deltas.pdf  used on input line 97.
 (pdftex.def)             Requested size: 243.91125pt x 359.4575pt.
-<figures/paired_win_rates.pdf, id=369, 232.4324pt x 343.56355pt>
+<figures/paired_win_rates.pdf, id=368, 232.4324pt x 343.56355pt>
 File: figures/paired_win_rates.pdf Graphic file (type pdf)
 <use figures/paired_win_rates.pdf>
 Package pdftex.def Info: figures/paired_win_rates.pdf  used on input line 104.
 (pdftex.def)             Requested size: 243.91125pt x 360.54266pt.
-) (./sections/07-limitations-future-work.tex
+) (./sections/07-limitations-future-work.tex [8]
 Underfull \hbox (badness 1303) in paragraph at lines 9--10
 []\OT1/ptm/m/it/10 (+20) Associational co-her-ence pre-mium. \OT1/ptm/m/n/10 (+20) The co-her-ence
  []
@@ -722,34 +722,32 @@ Underfull \hbox (badness 1072) in paragraph at lines 9--10
 \OT1/ptm/m/n/10 (+20) pre-mium of Sec-tion []3[] is as-so-ci-a-tional, not causal.
  []
 
-[8]) (./sections/08-conclusion.tex) (./sections/09-reproducibility.tex) [9 <./figures/paired_deltas.pdf> <./figures/paired_win_rates.pdf>] (./ijcai26.bbl
-Underfull \hbox (badness 1838) in paragraph at lines 25--27
+) (./sections/08-conclusion.tex [9 <./figures/paired_deltas.pdf> <./figures/paired_win_rates.pdf>]) (./sections/09-reproducibility.tex) (./ijcai26.bbl
+Underfull \hbox (badness 1838) in paragraph at lines 18--20
 []\OT1/ptm/m/n/10 (+20) Steffen Ren-dle, Christoph Freuden-
  []
 
-) [10
-
-] (./ijcai26.aux)
+) [10] (./ijcai26.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
  ***********
 Package rerunfilecheck Info: File `ijcai26.out' has not changed.
-(rerunfilecheck)             Checksum: 045953C7B4F2F443C340F765C0A91701;6603.
+(rerunfilecheck)             Checksum: 85F6EDA12681F9B2F7E2485522BB8FE0;6752.
  ) 
 Here is how much of TeX's memory you used:
- 25336 strings out of 474222
- 470767 string characters out of 5748733
- 1965975 words of memory out of 5000000
- 46748 multiletter control sequences out of 15000+600000
- 596782 words of font info for 269 fonts, out of 8000000 for 9000
+ 25370 strings out of 474222
+ 471209 string characters out of 5748733
+ 1964975 words of memory out of 5000000
+ 46765 multiletter control sequences out of 15000+600000
+ 599007 words of font info for 281 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 89i,19n,96p,1870b,1030s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,19n,96p,1885b,1030s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on ijcai26.pdf (10 pages, 378008 bytes).
+Output written on ijcai26.pdf (10 pages, 378523 bytes).
 PDF statistics:
  518 PDF objects out of 1000 (max. 8388607)
  415 compressed objects within 5 object streams
  89 named destinations out of 1000 (max. 500000)
- 61259 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 65355 words of extra memory for PDF output out of 74296 (max. 10000000)
 
